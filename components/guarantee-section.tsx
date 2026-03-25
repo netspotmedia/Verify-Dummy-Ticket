@@ -1,68 +1,43 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Shield, RefreshCcw, Clock, HeadphonesIcon } from "lucide-react"
-
-const guarantees = [
-  {
-    icon: Shield,
-    title: "100% Money Back",
-    description: "If VerifyDummyTickets isn't the best fit, simply reach out! We'll happily refund 100% of your money.",
-  },
-  {
-    icon: RefreshCcw,
-    title: "Free Revisions",
-    description: "Need changes to your documents? We offer free revisions to ensure everything is perfect.",
-  },
-  {
-    icon: Clock,
-    title: "24-Hour Delivery",
-    description: "We deliver all documents within 24 hours. Rush delivery available for urgent requests.",
-  },
-  {
-    icon: HeadphonesIcon,
-    title: "24/7 Support",
-    description: "Our support team is available around the clock via WhatsApp, email, or phone.",
-  },
-]
+import { Shield } from "lucide-react"
 
 export function GuaranteeSection() {
   return (
-    <section className="py-16 md:py-24 bg-primary text-primary-foreground">
-      <div className="container mx-auto max-w-7xl px-4">
-        <div className="text-center mb-12">
-          <Badge variant="secondary" className="mb-4 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20">
-            Our Promise
-          </Badge>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-balance">
-            Our 100% No-Risk Money Back Guarantee
-          </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-primary-foreground/80">
-            {"We're excited to have you experience VerifyDummyTickets. Within 14 days after your purchase, if VerifyDummyTickets isn't the best fit, simply reach out! We'll happily refund 100% of your money."}
-          </p>
-        </div>
+    <section className="py-16 md:py-20">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="bg-gradient-to-br from-red-700 to-red-800 rounded-[3rem] p-12 md:p-20 text-white text-center relative overflow-hidden">
+          {/* Decorative circles */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full -ml-32 -mb-32 blur-3xl" />
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {guarantees.map((item) => (
-            <div
-              key={item.title}
-              className="flex flex-col items-center text-center p-6 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10"
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-foreground/10 mb-4">
-                <item.icon className="h-7 w-7" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-              <p className="text-sm text-primary-foreground/80 leading-relaxed">
-                {item.description}
-              </p>
+          <div className="relative z-10">
+            {/* Icon */}
+            <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-xl">
+              <Shield className="w-10 h-10 text-white" />
             </div>
-          ))}
-        </div>
 
-        <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
-            <Shield className="h-5 w-5" />
-            <span className="font-medium">PayPal Buyer Protection</span>
+            {/* Heading */}
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-6">
+              100% Satisfaction Guarantee
+            </h2>
+
+            {/* Description */}
+            <p className="text-xl text-red-100 max-w-3xl mx-auto mb-10">
+              Join over 100,000 travelers who trusted us for their visa journey. If your documents are not delivered as promised, we provide a full refund. No questions asked.
+            </p>
+
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center gap-12 pt-8 border-t border-white/20">
+              <div>
+                <p className="text-4xl font-black">12K+</p>
+                <p className="text-xs uppercase tracking-widest font-bold opacity-70">5-Star Reviews</p>
+              </div>
+              <div>
+                <p className="text-4xl font-black">5K+</p>
+                <p className="text-xs uppercase tracking-widest font-bold opacity-70">5-Star Rating</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -6,22 +6,20 @@ import { ArrowRight } from "lucide-react"
 
 export function CTASection() {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-r from-primary to-primary/80">
-      <div className="container mx-auto max-w-4xl px-4 text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl text-balance">
-          Get Your Reservations Today
+    <section className="py-20 md:py-32 bg-slate-50 text-center">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8">
+        <h2 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-6">
+          Ready to Secure Your Visa?
         </h2>
-        <p className="mt-4 text-lg text-primary-foreground/80 max-w-2xl mx-auto">
-          Perfect solution for digital nomads and travellers who want to extend or apply for visas.
+        <p className="text-xl text-slate-600 mb-10">
+          Don&apos;t risk your application with unverified documents. Get your professional itinerary today.
         </p>
-        <div className="mt-8">
-          <Link href="/order">
-            <Button size="lg" variant="secondary" className="gap-2">
-              Explore Our Products
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
+        <Link href="/order">
+          <Button size="lg" className="bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-white shadow-2xl shadow-red-200/50 rounded-full px-10 py-6 text-xl font-bold gap-2 hover:scale-105 transition-transform">
+            Start Your Order Now
+            <ArrowRight className="w-5 h-5" />
+          </Button>
+        </Link>
       </div>
     </section>
   )
