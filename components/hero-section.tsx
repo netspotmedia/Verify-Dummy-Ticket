@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Clock, CheckCircle2 } from "lucide-react"
-import Image from "next/image"
+import { AirlineCarousel } from "./airline-carousel"
 
 const features = [
   { icon: Shield, text: "Instant delivery within 24 hours" },
@@ -127,6 +127,9 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* Airline Carousel */}
+      <AirlineCarousel />
     </section>
   )
 }

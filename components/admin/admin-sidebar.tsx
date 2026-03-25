@@ -26,6 +26,7 @@ import {
   FileText,
   CreditCard,
   Package,
+  BookOpen,
 } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 
@@ -47,6 +48,7 @@ const mainNavItems = [
 
 const contentNavItems = [
   { href: "/admin/testimonials", label: "Testimonials", icon: FileText },
+  { href: "/admin/blog", label: "Blog", icon: BookOpen },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ]
 
