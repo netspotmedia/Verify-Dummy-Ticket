@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Save, Check, Eye, EyeOff, CreditCard } from "lucide-react"
 import { toast } from "sonner"
@@ -21,6 +20,7 @@ interface PaymentSettings {
   paystack_public_key: string
   paystack_secret_key: string
   paystack_merchant_email: string
+  card_enabled: boolean
 }
 
 const DEFAULT_SETTINGS: PaymentSettings = {
@@ -32,6 +32,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   paystack_public_key: "",
   paystack_secret_key: "",
   paystack_merchant_email: "",
+  card_enabled: true,
 }
 
 export function PaymentGatewaySettings() {
@@ -69,6 +70,7 @@ export function PaymentGatewaySettings() {
         paystack_public_key: settingsMap.paystack_public_key || "",
         paystack_secret_key: settingsMap.paystack_secret_key || "",
         paystack_merchant_email: settingsMap.paystack_merchant_email || "",
+        card_enabled: settingsMap.card_enabled !== false && settingsMap.card_enabled !== "false",
       })
     } catch (error) {
       console.error("Failed to load payment settings:", error)
@@ -97,6 +99,7 @@ export function PaymentGatewaySettings() {
       await saveSetting("paystack_public_key", settings.paystack_public_key)
       await saveSetting("paystack_secret_key", settings.paystack_secret_key)
       await saveSetting("paystack_merchant_email", settings.paystack_merchant_email)
+      await saveSetting("card_enabled", settings.card_enabled)
 
       setSaved(true)
       toast.success("Payment gateway settings saved successfully")
@@ -131,29 +134,41 @@ export function PaymentGatewaySettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Tabs defaultValue="paypal" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="paypal">PayPal</TabsTrigger>
-            <TabsTrigger value="paystack">PayStack</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="paypal" className="space-y-6 pt-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Enable PayPal</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow customers to pay with PayPal (USD payments)
-                </p>
-              </div>
-              <Switch
-                checked={settings.paypal_enabled}
-                onCheckedChange={(checked) => setSettings({ ...settings, paypal_enabled: checked })}
-              />
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium uppercase text-muted-foreground">Card Payments</h3>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="space-y-0.5">
+              <Label className="text-base">Accept Card Payments</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow customers to pay directly with Credit/Debit cards (Visa, Mastercard, Verve)
+              </p>
             </div>
+            <Switch
+              checked={settings.card_enabled}
+              onCheckedChange={(checked) => setSettings({ ...settings, card_enabled: checked })}
+            />
+          </div>
+        </div>
 
-            <Separator />
+        <Separator />
 
-            <div className="space-y-4">
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium uppercase text-muted-foreground">PayPal</h3>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="space-y-0.5">
+              <Label className="text-base">Accept PayPal Payments</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow customers to pay with PayPal or Credit/Debit cards via PayPal
+              </p>
+            </div>
+            <Switch
+              checked={settings.paypal_enabled}
+              onCheckedChange={(checked) => setSettings({ ...settings, paypal_enabled: checked })}
+            />
+          </div>
+
+          {settings.paypal_enabled && (
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
               <div className="space-y-2">
                 <Label>Mode</Label>
                 <div className="flex gap-4">
@@ -206,35 +221,34 @@ export function PaymentGatewaySettings() {
                       onClick={() => setShowPayPalSecret(!showPayPalSecret)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPayPalSecret ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                      {showPayPalSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-          </TabsContent>
+          )}
+        </div>
 
-          <TabsContent value="paystack" className="space-y-6 pt-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Enable PayStack</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow customers to pay with PayStack (NGN payments)
-                </p>
-              </div>
-              <Switch
-                checked={settings.paystack_enabled}
-                onCheckedChange={(checked) => setSettings({ ...settings, paystack_enabled: checked })}
-              />
+        <Separator />
+
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium uppercase text-muted-foreground">PayStack</h3>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="space-y-0.5">
+              <Label className="text-base">Accept PayStack Payments</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow customers to pay with PayStack (Cards, Bank Transfer, USSD, Mobile Money)
+              </p>
             </div>
+            <Switch
+              checked={settings.paystack_enabled}
+              onCheckedChange={(checked) => setSettings({ ...settings, paystack_enabled: checked })}
+            />
+          </div>
 
-            <Separator />
-
-            <div className="space-y-4">
+          {settings.paystack_enabled && (
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
               <div className="space-y-2">
                 <Label htmlFor="paystackMerchantEmail">Merchant Email</Label>
                 <Input
@@ -272,18 +286,14 @@ export function PaymentGatewaySettings() {
                       onClick={() => setShowPayStackSecret(!showPayStackSecret)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPayStackSecret ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                      {showPayStackSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
 
         <Separator />
 
