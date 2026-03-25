@@ -8,25 +8,26 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info, Zap } from "lucide-react"
+import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info, Zap, Lock } from "lucide-react"
 import { toast } from "sonner"
 import { calculatePriceBreakdown, formatCurrency, getAllowedPaymentMethods } from "@/lib/types"
+import { cn } from "@/lib/utils"
 import type { PaymentMethod } from "@/lib/types"
 
 const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description: string; icon: string }> = {
   card: {
     name: "Credit/Debit Card",
-    description: "Pay securely with Visa, Mastercard, or Verve card",
+    description: "Visa, Mastercard, Verve",
     icon: "💳",
   },
   paypal: {
     name: "PayPal",
-    description: "Pay with your PayPal account or Credit/Debit card",
+    description: "PayPal account or card",
     icon: "🅿️",
   },
   paystack: {
     name: "PayStack",
-    description: "Cards, Bank Transfer, USSD, Mobile Money",
+    description: "Cards, Bank, USSD, Mobile",
     icon: "💰",
   },
 }
@@ -55,13 +56,13 @@ export function StepPayment() {
     setTimeout(() => {
       setCaptchaVerified(true)
       setCaptchaToken("verified_token_" + Date.now())
-      toast.success("CAPTCHA verified")
+      toast.success("Verification complete")
     }, 500)
   }
 
   const handleSubmitOrder = async () => {
     if (!captchaVerified) {
-      toast.error("Please complete CAPTCHA verification")
+      toast.error("Please complete verification")
       return
     }
 
@@ -69,7 +70,6 @@ export function StepPayment() {
 
     try {
       const supabase = createClient()
-      
       const { data: { user } } = await supabase.auth.getUser()
 
       const { data: order, error: orderError } = await supabase
@@ -101,16 +101,25 @@ export function StepPayment() {
     }
   }
 
-  const getMethodDisplayName = (method: PaymentMethod) => {
-    return PAYMENT_METHODS_CONFIG[method].name
-  }
-
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="space-y-8">
+      {/* Security Verification */}
+      <Card className={cn(
+        "border-2 transition-colors",
+        captchaVerified ? "border-green-200 bg-green-50/50" : "border-border"
+      )}>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <div className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-lg",
+              captchaVerified ? "bg-green-500 text-white" : "bg-primary/10 text-primary"
+            )}>
+              {captchaVerified ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Shield className="h-4 w-4" />
+              )}
+            </div>
             Security Verification
           </CardTitle>
         </CardHeader>
@@ -118,20 +127,20 @@ export function StepPayment() {
           {captchaVerified ? (
             <div className="flex items-center gap-2 text-green-600">
               <Check className="h-5 w-5" />
-              <span>Verification complete</span>
+              <span className="font-medium">Verification complete</span>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Please complete the security check to proceed with payment.
+                Click to verify you&apos;re human
               </p>
-              <Button onClick={handleCaptcha} variant="outline">
-                Verify I&apos;m human
+              <Button onClick={handleCaptcha} variant="outline" className="rounded-xl">
+                Verify Now
               </Button>
-              <div className="p-4 bg-muted rounded-lg flex items-center gap-2">
-                <Info className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  This helps us prevent automated orders
+              <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-sm">
+                <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <span className="text-muted-foreground">
+                  This helps prevent automated orders
                 </span>
               </div>
             </div>
@@ -139,96 +148,105 @@ export function StepPayment() {
         </CardContent>
       </Card>
 
+      {/* Payment Method Selection */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+          <CardTitle className="text-base flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" />
             Payment Method
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-            <p className="text-sm text-primary">
-              <Zap className="h-4 w-4 inline mr-1" />
-              Secure payment accepted via Credit/Debit cards, PayPal, and PayStack
-            </p>
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4 flex items-center gap-3">
+            <Zap className="h-5 w-5 text-primary" />
+            <p className="text-sm">Secure payment with 256-bit SSL encryption</p>
           </div>
 
           <div className="space-y-3">
-            {allowedMethods.map((method) => (
-              <div
-                key={method}
-                onClick={() => setPaymentMethod(method)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  paymentMethod === method
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 bg-background rounded-lg flex items-center justify-center border text-2xl">
-                      {PAYMENT_METHODS_CONFIG[method].icon}
-                    </div>
-                    <div>
-                      <p className="font-medium">
-                        {PAYMENT_METHODS_CONFIG[method].name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {PAYMENT_METHODS_CONFIG[method].description}
-                      </p>
-                    </div>
-                  </div>
-                  {paymentMethod === method && (
-                    <Check className="h-5 w-5 text-primary" />
+            {allowedMethods.map((method) => {
+              const config = PAYMENT_METHODS_CONFIG[method]
+              const isSelected = paymentMethod === method
+              
+              return (
+                <div
+                  key={method}
+                  onClick={() => setPaymentMethod(method)}
+                  className={cn(
+                    "group relative rounded-xl border-2 p-4 cursor-pointer transition-all",
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-border/50 hover:border-primary/30"
                   )}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-colors",
+                      isSelected ? "bg-primary" : "bg-muted group-hover:bg-primary/10"
+                    )}>
+                      {config.icon}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">{config.name}</p>
+                      <p className="text-sm text-muted-foreground">{config.description}</p>
+                    </div>
+                    {isSelected && (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                        <Check className="h-3.5 w-3.5 text-primary-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Order Total</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Order Summary */}
+      <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5">
+        <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-primary">
+              <p className="text-sm text-muted-foreground">Total Amount</p>
+              <p className="text-3xl font-bold text-primary">
                 {formatCurrency(pricing.total, pricing.currency)}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {pricing.currency === "NGN" ? "Naira" : "USD"} • {getMethodDisplayName(paymentMethod)}
+              <p className="text-sm text-muted-foreground mt-1">
+                {pricing.currency === "NGN" ? "Naira" : "USD"} • {PAYMENT_METHODS_CONFIG[paymentMethod].name}
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
-        <Shield className="h-5 w-5 text-accent mt-0.5" />
-        <div>
-          <p className="font-medium text-sm">Secure Payment</p>
-          <p className="text-xs text-muted-foreground">
-            Your payment information is encrypted and secure. We never store your card details.
-          </p>
-        </div>
+      {/* Security Badge */}
+      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+        <Lock className="h-4 w-4" />
+        <span>Your payment is secure and encrypted</span>
       </div>
 
+      {/* Navigation */}
       <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2" disabled={isSubmitting}>
+        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-xl px-6" disabled={isSubmitting}>
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
         <Button 
           onClick={handleSubmitOrder} 
           disabled={!captchaVerified || isSubmitting} 
-          className="gap-2"
+          size="lg"
+          className="gap-2 rounded-xl px-8"
         >
-          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isSubmitting ? "Processing..." : `Pay ${formatCurrency(pricing.total, pricing.currency)}`}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              Pay {formatCurrency(pricing.total, pricing.currency)}
+            </>
+          )}
         </Button>
       </div>
     </div>

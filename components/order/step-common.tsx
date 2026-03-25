@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, ArrowRight, Plus, Minus, User } from "lucide-react"
+import { ArrowLeft, ArrowRight, Plus, Minus, User, Globe, Mail, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Title } from "@/lib/types"
 
@@ -63,7 +63,7 @@ const COUNTRIES = [
 ]
 
 export function StepCommon() {
-  const { formData, setCustomerInfo, setTravelers, updateTraveler, syncTravelers, nextStep, prevStep } = useOrderStore()
+  const { formData, setCustomerInfo, updateTraveler, syncTravelers, nextStep, prevStep } = useOrderStore()
   const { travelerCount, travelers, email, customerCountry, customerCountryCode, separatePnrPerTraveler, services } = formData
 
   useEffect(() => {
@@ -81,118 +81,153 @@ export function StepCommon() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Number of Travelers */}
-      <div className="space-y-3">
-        <Label>Number of Travelers</Label>
+    <div className="space-y-8">
+      {/* Number of Travelers - Modern Counter */}
+      <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 space-y-4">
         <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Users className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <Label className="text-base font-semibold">Number of Travelers</Label>
+            <p className="text-sm text-muted-foreground">Maximum 10 travelers per order</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
           <Button
             variant="outline"
-            size="icon"
+            size="lg"
             onClick={() => setCustomerInfo({ travelerCount: Math.max(1, travelerCount - 1) })}
             disabled={travelerCount <= 1}
+            className="h-12 w-12 rounded-xl border-2"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-5 w-5" />
           </Button>
-          <Input
-            type="number"
-            value={travelerCount}
-            onChange={(e) => setCustomerInfo({ travelerCount: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) })}
-            className="w-20 text-center"
-            min={1}
-            max={10}
-          />
+          
+          <div className="flex-1 text-center">
+            <span className="text-4xl font-bold text-primary">{travelerCount}</span>
+            <p className="text-sm text-muted-foreground">
+              {travelerCount === 1 ? "Traveler" : "Travelers"}
+            </p>
+          </div>
+          
           <Button
             variant="outline"
-            size="icon"
+            size="lg"
             onClick={() => setCustomerInfo({ travelerCount: Math.min(10, travelerCount + 1) })}
             disabled={travelerCount >= 10}
+            className="h-12 w-12 rounded-xl border-2"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">Maximum 10 travelers per order</p>
       </div>
 
-      {/* Email */}
-      <div className="space-y-2">
-        <Label htmlFor="email">Email Address for Delivery</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="your@email.com"
-          value={email}
-          onChange={(e) => setCustomerInfo({ email: e.target.value })}
-        />
-        <p className="text-sm text-muted-foreground">Documents will be sent to this email</p>
+      {/* Contact Information */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Email */}
+        <div className="space-y-3">
+          <Label htmlFor="email" className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            Email Address
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setCustomerInfo({ email: e.target.value })}
+            className="h-12 rounded-xl"
+          />
+          <p className="text-xs text-muted-foreground">Documents will be delivered to this email</p>
+        </div>
+
+        {/* Country */}
+        <div className="space-y-3">
+          <Label htmlFor="country" className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            Your Country
+          </Label>
+          <Select
+            value={customerCountryCode}
+            onValueChange={(code) => {
+              const country = COUNTRIES.find((c) => c.code === code)
+              setCustomerInfo({ 
+                customerCountryCode: code,
+                customerCountry: country?.name || "",
+              })
+            }}
+          >
+            <SelectTrigger className="h-12 rounded-xl">
+              <SelectValue placeholder="Select your country" />
+            </SelectTrigger>
+            <SelectContent>
+              {COUNTRIES.map((country) => (
+                <SelectItem key={country.code} value={country.code}>
+                  {country.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Country */}
-      <div className="space-y-2">
-        <Label htmlFor="country">Your Country</Label>
-        <Select
-          value={customerCountryCode}
-          onValueChange={(code) => {
-            const country = COUNTRIES.find((c) => c.code === code)
-            setCustomerInfo({ 
-              customerCountryCode: code,
-              customerCountry: country?.name || "",
-            })
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select your country" />
-          </SelectTrigger>
-          <SelectContent>
-            {COUNTRIES.map((country) => (
-              <SelectItem key={country.code} value={country.code}>
-                {country.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {customerCountryCode === "NG" && (
-          <p className="text-sm text-muted-foreground bg-blue-50 p-2 rounded">
-            Nigeria detected. Prices will be shown in Naira (NGN). Payment via Paystack only.
-          </p>
-        )}
-      </div>
+      {/* Nigeria Notice */}
+      {customerCountryCode === "NG" && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 flex items-start gap-3">
+          <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+            <Globe className="h-4 w-4 text-blue-600" />
+          </div>
+          <div>
+            <p className="font-medium">Nigeria Detected</p>
+            <p className="text-sm">Prices will be shown in Naira (NGN). Payment available via Paystack only.</p>
+          </div>
+        </div>
+      )}
 
-      {/* Separate PNR (show only for flight + multiple travelers) */}
+      {/* Separate PNR Option */}
       {showSeparatePnr && (
-        <div className="flex items-center space-x-2">
+        <div className="bg-muted/50 rounded-xl p-4 flex items-center gap-4">
           <Checkbox
             id="separatePnr"
             checked={separatePnrPerTraveler}
             onCheckedChange={(checked) => setCustomerInfo({ separatePnrPerTraveler: checked as boolean })}
+            className="h-5 w-5"
           />
-          <Label htmlFor="separatePnr" className="cursor-pointer">
-            Give each traveler a separate PNR / reservation code
+          <Label htmlFor="separatePnr" className="cursor-pointer flex-1">
+            <span className="font-medium">Separate PNR for each traveler</span>
+            <p className="text-sm text-muted-foreground">Each traveler gets their own reservation code</p>
           </Label>
         </div>
       )}
 
       {/* Traveler Cards */}
       <div className="space-y-4">
-        <Label>Traveler Information</Label>
-        <p className="text-sm text-muted-foreground">Enter names exactly as they appear on passport</p>
+        <div className="flex items-center gap-2">
+          <User className="h-5 w-5 text-muted-foreground" />
+          <Label className="text-base font-semibold">Traveler Information</Label>
+        </div>
+        <p className="text-sm text-muted-foreground -mt-2">Enter names exactly as they appear on passport</p>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {travelers.map((traveler, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg border bg-card space-y-3"
+              className="bg-card border rounded-2xl p-5 space-y-4 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <User className="h-4 w-4" />
-                Traveler {index + 1}
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary text-sm font-bold">
+                  {index + 1}
+                </div>
+                <span className="font-medium">Traveler {index + 1}</span>
               </div>
               
               <Select
                 value={traveler.title}
                 onValueChange={(value) => updateTraveler(index, { title: value as Title })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-10 rounded-lg">
                   <SelectValue placeholder="Title" />
                 </SelectTrigger>
                 <SelectContent>
@@ -208,11 +243,14 @@ export function StepCommon() {
                 placeholder="First Name"
                 value={traveler.firstName}
                 onChange={(e) => updateTraveler(index, { firstName: e.target.value })}
+                className="rounded-lg"
               />
+              
               <Input
                 placeholder="Last Name"
                 value={traveler.lastName}
                 onChange={(e) => updateTraveler(index, { lastName: e.target.value })}
+                className="rounded-lg"
               />
             </div>
           ))}
@@ -221,11 +259,11 @@ export function StepCommon() {
 
       {/* Navigation */}
       <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2">
+        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-xl px-6">
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="gap-2">
+        <Button onClick={nextStep} disabled={!isValid()} className="gap-2 rounded-xl px-8">
           Continue
           <ArrowRight className="h-4 w-4" />
         </Button>
