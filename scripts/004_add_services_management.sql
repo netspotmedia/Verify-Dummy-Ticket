@@ -25,5 +25,6 @@ INSERT INTO public.site_settings (key, value) VALUES
   ('paypal_client_secret', '""'),
   ('paystack_public_key', '""'),
   ('paystack_secret_key', '""'),
-  ('paystack_merchant_email', '""')
+  ('paystack_merchant_email', '""'),
+  ('card_enabled', true)
 ON CONFLICT (key) DO NOTHING;

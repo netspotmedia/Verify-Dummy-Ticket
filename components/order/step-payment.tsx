@@ -8,10 +8,28 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info } from "lucide-react"
+import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info, Zap } from "lucide-react"
 import { toast } from "sonner"
 import { calculatePriceBreakdown, formatCurrency, getAllowedPaymentMethods } from "@/lib/types"
 import type { PaymentMethod } from "@/lib/types"
+
+const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description: string; icon: string }> = {
+  card: {
+    name: "Credit/Debit Card",
+    description: "Pay securely with Visa, Mastercard, or Verve card",
+    icon: "💳",
+  },
+  paypal: {
+    name: "PayPal",
+    description: "Pay with your PayPal account or Credit/Debit card",
+    icon: "🅿️",
+  },
+  paystack: {
+    name: "PayStack",
+    description: "Cards, Bank Transfer, USSD, Mobile Money",
+    icon: "💰",
+  },
+}
 
 export function StepPayment() {
   const router = useRouter()
@@ -21,10 +39,8 @@ export function StepPayment() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [captchaVerified, setCaptchaVerified] = useState(false)
 
-  const isNigeria = customerCountryCode === "NG"
   const allowedMethods = getAllowedPaymentMethods(customerCountryCode)
 
-  // Calculate pricing
   const pricing = calculatePriceBreakdown(
     services,
     travelerCount,
@@ -36,7 +52,6 @@ export function StepPayment() {
   )
 
   const handleCaptcha = () => {
-    // Simulate CAPTCHA verification
     setTimeout(() => {
       setCaptchaVerified(true)
       setCaptchaToken("verified_token_" + Date.now())
@@ -55,10 +70,8 @@ export function StepPayment() {
     try {
       const supabase = createClient()
       
-      // Get current user (optional - orders can be placed by guests)
       const { data: { user } } = await supabase.auth.getUser()
 
-      // Create order
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -76,10 +89,6 @@ export function StepPayment() {
 
       if (orderError) throw orderError
 
-      // TODO: Initialize payment gateway (Paystack/PayPal)
-      // For now, just show success
-      
-      // Reset form and redirect
       resetForm()
       toast.success("Order created successfully!")
       router.push(`/order/confirmation?id=${order.id}`)
@@ -92,9 +101,12 @@ export function StepPayment() {
     }
   }
 
+  const getMethodDisplayName = (method: PaymentMethod) => {
+    return PAYMENT_METHODS_CONFIG[method].name
+  }
+
   return (
     <div className="space-y-6">
-      {/* CAPTCHA */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -114,7 +126,7 @@ export function StepPayment() {
                 Please complete the security check to proceed with payment.
               </p>
               <Button onClick={handleCaptcha} variant="outline">
-                Verify I'm human
+                Verify I&apos;m human
               </Button>
               <div className="p-4 bg-muted rounded-lg flex items-center gap-2">
                 <Info className="h-4 w-4 text-muted-foreground" />
@@ -127,7 +139,6 @@ export function StepPayment() {
         </CardContent>
       </Card>
 
-      {/* Payment Method */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -136,42 +147,35 @@ export function StepPayment() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isNigeria && (
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Notice:</strong> Prices are shown in Naira (NGN). Payment is available via Paystack only.
-              </p>
-            </div>
-          )}
+          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <p className="text-sm text-primary">
+              <Zap className="h-4 w-4 inline mr-1" />
+              Secure payment accepted via Credit/Debit cards, PayPal, and PayStack
+            </p>
+          </div>
 
           <div className="space-y-3">
             {allowedMethods.map((method) => (
               <div
                 key={method}
-                onClick={() => !isNigeria && setPaymentMethod(method)}
+                onClick={() => setPaymentMethod(method)}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   paymentMethod === method
                     ? "border-primary bg-primary/5"
-                    : isNigeria
-                    ? "border-muted-foreground/30 cursor-not-allowed opacity-50"
                     : "border-border hover:border-primary/50"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-16 bg-background rounded flex items-center justify-center border">
-                      <span className="font-bold text-sm">
-                        {method === "paypal" ? "PayPal" : "Paystack"}
-                      </span>
+                    <div className="h-12 w-12 bg-background rounded-lg flex items-center justify-center border text-2xl">
+                      {PAYMENT_METHODS_CONFIG[method].icon}
                     </div>
                     <div>
                       <p className="font-medium">
-                        {method === "paypal" ? "Pay with PayPal" : "Pay with Paystack"}
+                        {PAYMENT_METHODS_CONFIG[method].name}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {method === "paypal"
-                          ? "Secure payment via PayPal (USD)"
-                          : `Secure payment via Paystack (${pricing.currency})`}
+                        {PAYMENT_METHODS_CONFIG[method].description}
                       </p>
                     </div>
                   </div>
@@ -185,7 +189,6 @@ export function StepPayment() {
         </CardContent>
       </Card>
 
-      {/* Order Total */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg">Order Total</CardTitle>
@@ -197,14 +200,13 @@ export function StepPayment() {
                 {formatCurrency(pricing.total, pricing.currency)}
               </p>
               <p className="text-sm text-muted-foreground">
-                {pricing.currency === "NGN" ? "Naira" : "USD"} • {paymentMethod === "paypal" ? "PayPal" : "Paystack"}
+                {pricing.currency === "NGN" ? "Naira" : "USD"} • {getMethodDisplayName(paymentMethod)}
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Security Note */}
       <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
         <Shield className="h-5 w-5 text-accent mt-0.5" />
         <div>
@@ -215,7 +217,6 @@ export function StepPayment() {
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={prevStep} className="gap-2" disabled={isSubmitting}>
           <ArrowLeft className="h-4 w-4" />

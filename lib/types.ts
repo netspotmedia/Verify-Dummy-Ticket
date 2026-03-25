@@ -6,7 +6,7 @@ export type OrderStatus = "pending" | "processing" | "completed" | "cancelled" |
 
 export type PaymentStatus = "unpaid" | "paid" | "refunded" | "failed"
 
-export type PaymentMethod = "paypal" | "paystack"
+export type PaymentMethod = "paypal" | "paystack" | "card"
 
 export type Currency = "USD" | "NGN"
 
@@ -311,9 +311,9 @@ function getDeliveryLabel(speed: DeliverySpeed): string {
 
 export function getAllowedPaymentMethods(countryCode: string): PaymentMethod[] {
   if (countryCode === "NG") {
-    return ["paystack"] // Nigeria: Paystack only
+    return ["paystack", "card"] // Nigeria: Paystack and Card
   }
-  return ["paypal", "paystack"] // Others: both
+  return ["paypal", "paystack", "card"] // Others: all methods including Card
 }
 
 export function formatCurrency(amount: number, currency: Currency): string {

@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: "What payment methods do you accept?",
-    answer: "We accept PayPal (for international payments in USD) and Paystack (for Nigerian Naira payments). Both methods are secure and encrypted.",
+    answer: "We accept Credit/Debit cards (Visa, Mastercard, Verve), PayPal (PayPal account or card), and PayStack (Cards, Bank Transfer, USSD, Mobile Money). All payments are secure and encrypted.",
   },
   {
     question: "Can I use these documents for actual travel?",
