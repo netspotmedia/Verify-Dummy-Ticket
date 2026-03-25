@@ -1,10 +1,13 @@
 -- Migration: Add logo settings and storage bucket
 -- Run this SQL in Supabase SQL Editor
 
--- Ensure logo_url setting exists
-INSERT INTO public.site_settings (key, value) VALUES
-  ('logo_url', '""')
-ON CONFLICT (key) DO NOTHING;
+-- Add logo_url column if it doesn't exist as a key in site_settings
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.site_settings WHERE key = 'logo_url') THEN
+        INSERT INTO public.site_settings (key, value) VALUES ('logo_url', '""');
+    END IF;
+END $$;
 
 -- Note: You also need to create a storage bucket in Supabase:
 -- 1. Go to Storage in Supabase Dashboard
