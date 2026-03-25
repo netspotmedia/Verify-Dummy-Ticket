@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
@@ -8,7 +8,7 @@ import { OrderWizard } from "@/components/order/order-wizard"
 import { useOrderStore } from "@/lib/order-store"
 import type { ServiceType } from "@/lib/types"
 
-export default function OrderPage() {
+function OrderPageContent() {
   const searchParams = useSearchParams()
   const setServices = useOrderStore((state) => state.setServices)
 
@@ -29,5 +29,13 @@ export default function OrderPage() {
       </main>
       <SiteFooter />
     </div>
+  )
+}
+
+export default function OrderPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OrderPageContent />
+    </Suspense>
   )
 }
