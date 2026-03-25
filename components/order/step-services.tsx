@@ -3,9 +3,8 @@
 import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { SERVICE_PRICES, type ServiceType, type Currency } from "@/lib/types"
+import type { ServiceType } from "@/lib/types"
 import { Plane, Building2, Shield, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -13,32 +12,29 @@ const services = [
   {
     id: "flight" as ServiceType,
     icon: Plane,
-    title: "Flight Itinerary",
-    description: "Verifiable flight reservation with valid PNR",
-    priceUSD: SERVICE_PRICES.flight.USD,
-    priceNGN: SERVICE_PRICES.flight.NGN,
+    title: "Flight Reservation",
+    description: "Temporary flight booking for visa applications. Valid PNR confirmed.",
+    startingFrom: 5,
   },
   {
     id: "hotel" as ServiceType,
     icon: Building2,
-    title: "Hotel Booking",
-    description: "Confirmed hotel reservation for any city",
-    priceUSD: SERVICE_PRICES.hotel.USD,
-    priceNGN: SERVICE_PRICES.hotel.NGN,
+    title: "Hotel Confirmation",
+    description: "Proof of accommodation for visa submission. Verifiable booking.",
+    startingFrom: 5,
   },
   {
     id: "insurance" as ServiceType,
     icon: Shield,
     title: "Travel Insurance",
-    description: "$35,000 coverage with 90 days validity",
-    priceUSD: SERVICE_PRICES.insurance.USD,
-    priceNGN: SERVICE_PRICES.insurance.NGN,
+    description: "Visa-compliant travel medical insurance. $35,000 coverage.",
+    startingFrom: 20,
   },
 ]
 
 export function StepServices() {
-  const { formData, setServices, setCurrency, nextStep } = useOrderStore()
-  const { services: selectedServices, currency } = formData
+  const { formData, setServices, nextStep } = useOrderStore()
+  const { services: selectedServices } = formData
 
   const toggleService = (serviceId: ServiceType) => {
     if (selectedServices.includes(serviceId)) {
@@ -48,35 +44,13 @@ export function StepServices() {
     }
   }
 
-  const formatPrice = (priceUSD: number, priceNGN: number) => {
-    if (currency === "USD") return `$${priceUSD}`
-    return `₦${priceNGN.toLocaleString()}`
-  }
-
   return (
     <div className="space-y-6">
-      {/* Currency Selection */}
-      <div className="space-y-3">
-        <Label>Select Currency</Label>
-        <RadioGroup
-          value={currency}
-          onValueChange={(value) => setCurrency(value as Currency)}
-          className="flex gap-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="USD" id="usd" />
-            <Label htmlFor="usd" className="cursor-pointer">USD (PayPal)</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="NGN" id="ngn" />
-            <Label htmlFor="ngn" className="cursor-pointer">NGN (Paystack)</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
-      {/* Service Selection */}
       <div className="space-y-3">
         <Label>Select Services (choose one or more)</Label>
+        <p className="text-sm text-muted-foreground">
+          You can select any combination of services. Prices are per traveler.
+        </p>
         <div className="grid gap-4">
           {services.map((service) => {
             const isSelected = selectedServices.includes(service.id)
@@ -96,17 +70,17 @@ export function StepServices() {
                   onCheckedChange={() => toggleService(service.id)}
                   className="mt-1"
                 />
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
                   <service.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-foreground">{service.title}</h3>
                     <span className="font-semibold text-primary">
-                      {formatPrice(service.priceUSD, service.priceNGN)}/person
+                      From ${service.startingFrom}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{service.description}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                 </div>
               </div>
             )
@@ -114,7 +88,6 @@ export function StepServices() {
         </div>
       </div>
 
-      {/* Continue Button */}
       <div className="flex justify-end pt-4">
         <Button
           onClick={nextStep}
