@@ -1,10 +1,10 @@
 "use client"
 
 import { useOrderStore } from "@/lib/order-store"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
-import { Check } from "lucide-react"
+import { Check, ChevronRight } from "lucide-react"
 
 import { StepServices } from "./step-services"
 import { StepCommon } from "./step-common"
@@ -90,59 +90,74 @@ export function OrderWizard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Progress Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="font-medium text-foreground">
-            Step {currentStepIndex + 1} of {activeSteps.length}
-          </span>
-          <span className="text-muted-foreground">{stepInfo.title}</span>
+    <div className="space-y-8">
+      {/* Modern Progress Header */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Step {currentStepIndex + 1}
+              <span className="text-muted-foreground font-normal"> of {activeSteps.length}</span>
+            </h2>
+            <p className="text-muted-foreground">{stepInfo.title}</p>
+          </div>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="h-1.5 rounded-full" />
       </div>
 
-      {/* Step Indicators */}
-      <div className="hidden md:flex justify-between">
-        {activeSteps.map((step, index) => (
-          <button
-            key={step}
-            onClick={() => canNavigateToStep(index) && goToStep(index)}
-            disabled={!canNavigateToStep(index)}
-            className={cn(
-              "flex items-center gap-2 text-sm transition-colors",
-              canNavigateToStep(index) ? "cursor-pointer" : "cursor-not-allowed opacity-50",
-              currentStepIndex === step && "font-medium text-primary",
-              currentStepIndex > step && "text-accent",
-              currentStepIndex < step && "text-muted-foreground"
-            )}
-          >
-            <div
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors",
-                currentStepIndex === step && "border-primary bg-primary text-primary-foreground",
-                currentStepIndex > step && "border-accent bg-accent text-accent-foreground",
-                currentStepIndex < step && "border-muted-foreground/30"
-              )}
-            >
-              {isStepComplete(step) && currentStepIndex > step ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                index + 1
+      {/* Step Indicators - Modern Breadcrumb Style */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {activeSteps.map((step, index) => {
+          const isComplete = isStepComplete(step)
+          const isCurrent = currentStepIndex === index
+          const canNav = canNavigateToStep(index)
+
+          return (
+            <div key={step} className="flex items-center gap-2">
+              <button
+                onClick={() => canNav && goToStep(index)}
+                disabled={!canNav}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap",
+                  isCurrent && "bg-primary text-primary-foreground shadow-sm",
+                  !isCurrent && isComplete && "bg-green-100 text-green-700 hover:bg-green-200",
+                  !isCurrent && !isComplete && "bg-muted text-muted-foreground hover:bg-muted/80",
+                  !canNav && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                {isComplete && !isCurrent ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <span className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded-full text-xs",
+                    isCurrent ? "bg-primary-foreground/20" : "bg-current/10"
+                  )}>
+                    {index + 1}
+                  </span>
+                )}
+                <span className="hidden sm:inline">{STEP_TITLES[step]?.title || step}</span>
+              </button>
+              {index < activeSteps.length - 1 && (
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
               )}
             </div>
-            <span className="hidden lg:inline">{STEP_TITLES[step]?.title || step}</span>
-          </button>
-        ))}
+          )
+        })}
       </div>
 
-      {/* Step Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{stepInfo.title}</CardTitle>
-          <p className="text-sm text-muted-foreground">{stepInfo.description}</p>
+      {/* Step Content - Modern Card */}
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/80 overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20" />
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-bold">
+              {currentStepIndex + 1}
+            </span>
+            {stepInfo.title}
+          </CardTitle>
+          <CardDescription className="text-base">{stepInfo.description}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {renderStep()}
         </CardContent>
       </Card>
