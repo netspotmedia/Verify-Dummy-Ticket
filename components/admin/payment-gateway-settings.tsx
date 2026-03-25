@@ -155,12 +155,12 @@ export function PaymentGatewaySettings() {
         <div className="space-y-4">
           <h3 className="text-sm font-medium uppercase text-muted-foreground">PayPal</h3>
           <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="space-y-0.5">
-              <Label className="text-base">Accept PayPal Payments</Label>
-              <p className="text-sm text-muted-foreground">
-                Allow customers to pay with PayPal or Credit/Debit cards via PayPal
-              </p>
-            </div>
+              <div className="space-y-0.5">
+                <Label className="text-base">Accept PayPal Payments</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow customers to pay with PayPal account or Credit/Debit card
+                </p>
+              </div>
             <Switch
               checked={settings.paypal_enabled}
               onCheckedChange={(checked) => setSettings({ ...settings, paypal_enabled: checked })}

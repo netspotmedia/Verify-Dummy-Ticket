@@ -21,7 +21,7 @@ const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description:
   },
   paypal: {
     name: "PayPal",
-    description: "Pay with PayPal or Credit/Debit card via PayPal",
+    description: "Pay with your PayPal account or Credit/Debit card",
     icon: "🅿️",
   },
   paystack: {
