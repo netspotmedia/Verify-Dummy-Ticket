@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
 import { Loader2, Save, Globe, Mail, Image, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 
@@ -19,6 +18,15 @@ interface SiteSettings {
   address: string
   logo_url: string
 }
+
+const SETTINGS_KEYS = [
+  "site_name",
+  "support_email",
+  "support_phone",
+  "whatsapp_number",
+  "address",
+  "logo_url",
+]
 
 export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -44,23 +52,28 @@ export default function AdminSettingsPage() {
   async function loadSettings() {
     setIsLoading(true)
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("site_settings")
-        .select("*")
-        .single()
+        .select("key, value")
+        .in("key", SETTINGS_KEYS)
 
-      if (data) {
-        setSettings({
-          site_name: data.site_name || "VerifyDummyTickets",
-          support_email: data.support_email || "",
-          support_phone: data.support_phone || "",
-          whatsapp_number: data.whatsapp_number || "",
-          address: data.address || "",
-          logo_url: data.logo_url || "",
-        })
-        if (data.logo_url) {
-          setPreviewLogo(data.logo_url)
-        }
+      if (error) throw error
+
+      const settingsMap: Record<string, any> = {}
+      data?.forEach((item: { key: string; value: any }) => {
+        settingsMap[item.key] = item.value
+      })
+
+      setSettings({
+        site_name: settingsMap.site_name || "VerifyDummyTickets",
+        support_email: settingsMap.support_email || "",
+        support_phone: settingsMap.support_phone || "",
+        whatsapp_number: settingsMap.whatsapp_number || "",
+        address: settingsMap.address || "",
+        logo_url: settingsMap.logo_url || "",
+      })
+      if (settingsMap.logo_url) {
+        setPreviewLogo(settingsMap.logo_url)
       }
     } catch (error) {
       console.error("Failed to load settings:", error)
@@ -132,18 +145,18 @@ export default function AdminSettingsPage() {
 
     try {
       const settingsToSave = [
-        { key: "site_name", value: settings.site_name },
-        { key: "support_email", value: settings.support_email },
-        { key: "support_phone", value: settings.support_phone },
-        { key: "whatsapp_number", value: settings.whatsapp_number },
-        { key: "address", value: settings.address },
-        { key: "logo_url", value: settings.logo_url },
+        { category: "general", key: "site_name", value: settings.site_name },
+        { category: "general", key: "support_email", value: settings.support_email },
+        { category: "general", key: "support_phone", value: settings.support_phone },
+        { category: "general", key: "whatsapp_number", value: settings.whatsapp_number },
+        { category: "general", key: "address", value: settings.address },
+        { category: "general", key: "logo_url", value: settings.logo_url },
       ]
 
       for (const setting of settingsToSave) {
         const { error } = await supabase
           .from("site_settings")
-          .upsert({ key: setting.key, value: setting.value }, { onConflict: "key" })
+          .upsert(setting, { onConflict: "category,key" })
 
         if (error) throw error
       }
