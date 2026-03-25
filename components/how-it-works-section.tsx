@@ -1,70 +1,65 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { FileText, CreditCard, Mail, CheckCircle2 } from "lucide-react"
 
 const steps = [
   {
+    number: 1,
     icon: FileText,
-    title: "Fill the Form",
-    description: "Complete the order form with your travel details and traveler information.",
+    title: "Provide Details",
+    description: "Enter your travel dates, passenger information, and destination via our secure order form.",
   },
   {
+    number: 2,
     icon: CreditCard,
-    title: "Make Payment",
-    description: "Pay securely via PayPal (USD) or Paystack (NGN). All payments are encrypted.",
+    title: "Fast Processing",
+    description: "Our travel specialists verify schedules and generate authentic PNR codes from the GDS system.",
   },
   {
+    number: 3,
     icon: Mail,
-    title: "Receive Documents",
-    description: "Get your verified travel documents delivered to your email within 24 hours.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Apply for Visa",
-    description: "Use your documents for your visa application with confidence.",
+    title: "Instant Delivery",
+    description: "Receive your verified PDF documents via email within 24 hours, ready for embassy submission.",
   },
 ]
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-16 md:py-24">
-      <div className="container mx-auto max-w-7xl px-4">
-        <div className="text-center mb-12">
-          <Badge variant="secondary" className="mb-4">Simple Process</Badge>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-balance">
-            How It Works
-          </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-            Get your travel documents in 4 simple steps
-          </p>
-        </div>
+    <section id="how-it-works" className="py-20 md:py-32 bg-slate-50">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-16 items-center">
+          {/* Left Content */}
+          <div className="lg:w-1/2">
+            <span className="text-red-700 font-bold tracking-widest uppercase text-xs mb-4 block">The Process</span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 mb-8">
+              Three Simple Steps to Get Your Documents
+            </h2>
 
-        <div className="relative">
-          {/* Connection Line - Desktop */}
-          <div className="absolute top-24 left-0 right-0 h-0.5 bg-border hidden lg:block" />
-          
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step, index) => (
-              <div key={step.title} className="relative flex flex-col items-center text-center">
-                {/* Step Number */}
-                <div className="relative z-10 mb-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
-                    <step.icon className="h-7 w-7" />
+            <div className="space-y-12">
+              {steps.map((step) => (
+                <div key={step.number} className="flex gap-6">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-red-700 to-red-800 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-red-200/50">
+                    {step.number}
                   </div>
-                  <div className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-bold">
-                    {index + 1}
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-900 mb-2">{step.title}</h4>
+                    <p className="text-slate-600 leading-relaxed">{step.description}</p>
                   </div>
                 </div>
-                
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          {/* Right Content - Image */}
+          <div className="lg:w-1/2">
+            <div className="relative p-4">
+              <div className="absolute inset-0 bg-red-100/50 rounded-[3rem] rotate-3 translate-x-4 translate-y-4" />
+              <img
+                src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&h=600&fit=crop"
+                alt="Premium passport and tickets"
+                className="relative rounded-[2.5rem] shadow-2xl w-full aspect-square object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>

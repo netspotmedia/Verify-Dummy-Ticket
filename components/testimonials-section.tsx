@@ -1,95 +1,57 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Star, Quote } from "lucide-react"
-
 const testimonials = [
   {
-    name: "Pam K.",
-    location: "New York, US",
-    content: "I needed a dummy ticket for my visa application, and VerifyDummyTicket.com came through with flying colors! The service was quick, professional, and affordable. My visa was approved without any issues, thanks to the realistic ticket they provided. Highly recommended!",
-    rating: 5,
+    name: "Ahmed K.",
+    location: "Traveler to Germany",
+    content: "Received my flight itinerary for a Schengen visa in less than 6 hours. Embassy accepted it without issues. Highly recommend!",
   },
   {
-    name: "Alene M.",
-    location: "London, UK",
-    content: "As a frequent traveller, I often need dummy tickets for visa applications, and I've tried several services. VerifyDummyTicket.com is by far the best! The process was smooth, and the customer support was very responsive. I got my dummy ticket within minutes. Will definitely use them again!",
-    rating: 5,
+    name: "Sarah L.",
+    location: "Business Visa Applicant",
+    content: "The hotel booking was instantly verifiable. It saved me a lot of money as I didn't have to pay for the hotel upfront.",
   },
   {
-    name: "Priya K.",
-    location: "Mumbai, India",
-    content: "I was a bit skeptical at first, but VerifyDummyTicket.com exceeded my expectations. The dummy ticket looked authentic, and it was exactly what I needed for my Schengen visa application. The entire process was hassle-free and quick. Five stars!",
-    rating: 5,
-  },
-  {
-    name: "Carlos T.",
-    location: "Madrid, Spain",
-    content: "VerifyDummyTicket.com saved me a lot of stress and money. The dummy ticket they provided was perfect for my visa application, and I received it almost instantly after placing the order. The site is easy to use, and the service is top-notch. I'll be back for sure!",
-    rating: 5,
-  },
-  {
-    name: "Anita B.",
-    location: "Dubai, UAE",
-    content: "I've used verifydummytickets.com twice now, and both times, the service has been exceptional. The dummy tickets look very real, and I've never had any issues with my visa applications. The prices are reasonable, and the delivery is fast. I highly recommend this service!",
-    rating: 5,
-  },
-  {
-    name: "Adejoke B.",
-    location: "Lagos, Nigeria",
-    content: "I needed a dummy ticket on short notice, and VerifyDummyTicket.com delivered! The ticket looked so real that I had no issues with my visa application. The website is user-friendly, and the customer service team is very helpful. I'll definitely use their services again in the future.",
-    rating: 5,
+    name: "James M.",
+    location: "Tourist Visa, USA",
+    content: "I was skeptical but their WhatsApp support was excellent. The PNR worked on the airline's website perfectly.",
   },
 ]
 
 export function TestimonialsSection() {
   return (
-    <section className="py-16 md:py-24 bg-muted/30">
-      <div className="container mx-auto max-w-7xl px-4">
-        <div className="text-center mb-12">
-          <Badge variant="secondary" className="mb-4">Testimonials</Badge>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-balance">
-            Trusted by Thousands of Nomads
-          </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-            Based on 5,000+ five-star reviews
-          </p>
-        </div>
+    <section className="py-20 md:py-32 bg-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <h2 className="text-3xl md:text-4xl font-black text-center mb-16 tracking-tight text-slate-900">
+          What Our Clients Say
+        </h2>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="relative">
-              <CardContent className="pt-6">
-                <Quote className="absolute top-4 right-4 h-8 w-8 text-muted-foreground/20" />
-                
-                {/* Rating */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                  ))}
-                </div>
+            <div key={index} className="bg-slate-50 p-8 rounded-3xl relative">
+              {/* Stars */}
+              <div className="flex text-yellow-500 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
 
-                {/* Content */}
-                <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                  {testimonial.content}
-                </p>
+              {/* Quote */}
+              <p className="text-slate-700 mb-6 italic leading-relaxed">
+                &quot;{testimonial.content}&quot;
+              </p>
 
-                {/* Author */}
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                      {testimonial.name.split(" ").map(n => n[0]).join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-foreground">{testimonial.name}</p>
-                    <p className="text-xs text-muted-foreground">{testimonial.location}</p>
-                  </div>
+              {/* Author */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-200" />
+                <div>
+                  <p className="font-bold text-slate-900">{testimonial.name}</p>
+                  <p className="text-xs text-slate-500">{testimonial.location}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </div>
