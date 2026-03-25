@@ -24,6 +24,8 @@ import {
   Plane,
   BarChart3,
   FileText,
+  CreditCard,
+  Package,
 } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 
@@ -49,7 +51,9 @@ const contentNavItems = [
 ]
 
 const settingsNavItems = [
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/settings", label: "General", icon: Settings },
+  { href: "/admin/payment-gateways", label: "Payment Gateways", icon: CreditCard },
+  { href: "/admin/services", label: "Services", icon: Package },
 ]
 
 export function AdminSidebar({ user, profile }: AdminSidebarProps) {
