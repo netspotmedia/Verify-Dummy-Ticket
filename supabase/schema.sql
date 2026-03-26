@@ -1,5 +1,17 @@
 -- Run this in your Supabase SQL Editor
 
+-- Create Airline Table
+CREATE TABLE IF NOT EXISTS airline (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  code TEXT NOT NULL,
+  logo_url TEXT,
+  sort_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Logo in hero section (update existing row)
 INSERT INTO hero_section (badge_text, badge_color, heading, heading_color, subheading, subheading_color, embassy_notice, embassy_notice_color, cta_primary_text, cta_primary_link, cta_secondary_text, cta_secondary_link, background_type)
 VALUES (
@@ -61,4 +73,25 @@ VALUES
   ('general', 'site_logo', '{"light": "/logo-light.svg", "dark": "/logo-dark.svg", "favicon": "/favicon.ico"}', 'Site logo URLs', true),
   ('general', 'site_name', '"VerifyDummyTickets"', 'Site display name', true),
   ('general', 'site_tagline', '"Flight, Hotel & Travel Insurance for Visa Applications"', 'Site tagline', true)
+ON CONFLICT DO NOTHING;
+
+-- Airlines for Carousel
+INSERT INTO airline (name, code, logo_url, sort_order, is_active) VALUES
+  ('Emirates', 'EK', NULL, 1, true),
+  ('Qatar Airways', 'QR', NULL, 2, true),
+  ('Singapore Airlines', 'SQ', NULL, 3, true),
+  ('Lufthansa', 'LH', NULL, 4, true),
+  ('Cathay Pacific', 'CX', NULL, 5, true),
+  ('Etihad Airways', 'EY', NULL, 6, true),
+  ('Turkish Airlines', 'TK', NULL, 7, true),
+  ('Air France', 'AF', NULL, 8, true),
+  ('British Airways', 'BA', NULL, 9, true),
+  ('KLM', 'KL', NULL, 10, true),
+  ('Swiss Air', 'LX', NULL, 11, true),
+  ('Delta Airlines', 'DL', NULL, 12, true),
+  ('United Airlines', 'UA', NULL, 13, true),
+  ('American Airlines', 'AA', NULL, 14, true),
+  ('Air Canada', 'AC', NULL, 15, true),
+  ('Virgin Atlantic', 'VS', NULL, 16, true),
+  ('Air India', 'AI', NULL, 17, true)
 ON CONFLICT DO NOTHING;

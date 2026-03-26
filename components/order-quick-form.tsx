@@ -152,8 +152,8 @@ export function OrderQuickForm() {
           <Users className="h-5 w-5" />
         </span>
         <div>
-          <h3 className="text-lg font-bold text-[#0b1c30]" style={{ fontFamily: 'var(--font-outfit)' }}>Quick Order</h3>
-          <p className="text-xs text-[#5c3f40]">Expedited Booking</p>
+          <h3 className="text-lg font-bold text-[#0b1c30]" style={{ fontFamily: 'var(--font-outfit)' }}>Get Started</h3>
+          <p className="text-xs text-[#5c3f40]">Fill in your details below</p>
         </div>
       </div>
 

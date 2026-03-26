@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, Trash2, Star, GripVertical } from 'lucide-react'
 import Link from 'next/link'
+import { RichTextEditor } from '@/components/rich-text-editor'
 import type { Testimonial } from '@/lib/supabase'
 
 export default function TestimonialsPage() {
@@ -210,11 +210,10 @@ export default function TestimonialsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Comment</Label>
-                <Textarea
+                <RichTextEditor
                   value={item.comment || ''}
-                  onChange={(e) => setTestimonials(testimonials.map((t) => (t.id === item.id ? { ...t, comment: e.target.value } : t)))}
+                  onChange={(value) => setTestimonials(testimonials.map((t) => (t.id === item.id ? { ...t, comment: value } : t)))}
                   onBlur={() => handleUpdate(item)}
-                  rows={4}
                 />
               </div>
             </CardContent>

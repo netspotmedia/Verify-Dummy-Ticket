@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, Trash2, HelpCircle, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import type { FaqItem } from '@/lib/supabase'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { RichTextEditor, renderRichText } from '@/components/rich-text-editor'
 
 export default function FAQPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([])
@@ -111,7 +111,7 @@ export default function FAQPage() {
             Back to Landing Pages
           </Link>
           <h1 className="text-3xl font-bold tracking-tight">FAQ</h1>
-          <p className="text-muted-foreground">Manage frequently asked questions</p>
+          <p className="text-muted-foreground">Manage frequently asked questions with rich text formatting</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="h-4 w-4 mr-2" />
@@ -128,8 +128,10 @@ export default function FAQPage() {
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq) => (
               <AccordionItem key={faq.id} value={faq.id}>
-                <AccordionTrigger>{faq.question}</AccordionTrigger>
-                <AccordionContent>{faq.answer}</AccordionContent>
+                <AccordionTrigger dangerouslySetInnerHTML={{ __html: faq.question }} />
+                <AccordionContent>
+                  <div dangerouslySetInnerHTML={{ __html: renderRichText(faq.answer) }} />
+                </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
@@ -165,19 +167,24 @@ export default function FAQPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Question</Label>
-                <Input
+                <RichTextEditor
                   value={faq.question}
-                  onChange={(e) => setFaqs(faqs.map((f) => (f.id === faq.id ? { ...f, question: e.target.value } : f)))}
+                  onChange={(value) => setFaqs(faqs.map((f) => (f.id === faq.id ? { ...f, question: value } : f)))}
                   onBlur={() => handleUpdate(faq)}
+                  placeholder="Enter question..."
+                  className="rounded-lg"
+                  minHeight="60px"
                 />
               </div>
               <div className="space-y-2">
                 <Label>Answer</Label>
-                <Textarea
+                <RichTextEditor
                   value={faq.answer}
-                  onChange={(e) => setFaqs(faqs.map((f) => (f.id === faq.id ? { ...f, answer: e.target.value } : f)))}
+                  onChange={(value) => setFaqs(faqs.map((f) => (f.id === faq.id ? { ...f, answer: value } : f)))}
                   onBlur={() => handleUpdate(faq)}
-                  rows={4}
+                  placeholder="Enter answer with formatting..."
+                  className="rounded-lg"
+                  minHeight="150px"
                 />
               </div>
               <div className="space-y-2">
