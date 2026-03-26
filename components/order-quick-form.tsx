@@ -145,45 +145,43 @@ export function OrderQuickForm() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
       <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-5 py-4 sm:px-6">
-          <h2 className="text-base font-semibold text-white sm:text-lg">
+        <div className="bg-red-600 px-5 py-4 sm:px-6">
+          <h2 className="text-lg font-semibold text-white sm:text-xl">
             Complete the form below to get your visa documents
           </h2>
         </div>
 
-        <CardContent className="space-y-5 p-5 sm:space-y-6 sm:p-6">
+        <CardContent className="space-y-6 p-5 sm:p-6">
           <section className="space-y-3">
-            <div className="space-y-1">
-              <Label className="text-sm font-semibold text-slate-800">
-                Select Services
-              </Label>
-              <p className="text-xs text-slate-500">
+            <div>
+              <Label className="text-sm font-semibold text-slate-800">Select Services</Label>
+              <p className="mt-1 text-sm text-slate-500">
                 Choose the visa support services you need
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {SERVICES.map((service) => (
                 <button
                   key={service.value}
                   type="button"
                   onClick={() => toggleService(service.value)}
                   className={cn(
-                    "relative flex min-h-[88px] items-center gap-3 rounded-lg border px-3 py-3 text-left transition-all",
+                    "relative flex min-h-[84px] items-center gap-3 rounded-lg border px-3 py-3 text-left transition-all",
                     selectedServices.includes(service.value)
-                      ? "border-red-600 bg-red-50"
+                      ? "border-red-500 bg-red-50"
                       : "border-slate-300 bg-white hover:border-slate-400"
                   )}
                 >
                   {selectedServices.includes(service.value) && (
-                    <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600">
-                      <Check className="h-2.5 w-2.5 text-white" />
+                    <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600">
+                      <Check className="h-3 w-3 text-white" />
                     </div>
                   )}
 
                   <div
                     className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-md",
                       selectedServices.includes(service.value)
                         ? "bg-red-100 text-red-600"
                         : "bg-slate-100 text-slate-500"
@@ -192,10 +190,10 @@ export function OrderQuickForm() {
                     <service.icon className="h-4 w-4" />
                   </div>
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 leading-tight">
                     <p
                       className={cn(
-                        "text-sm font-medium leading-tight",
+                        "text-sm font-semibold",
                         selectedServices.includes(service.value)
                           ? "text-red-700"
                           : "text-slate-800"
@@ -203,14 +201,14 @@ export function OrderQuickForm() {
                     >
                       {service.label}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">{service.price}</p>
+                    <p className="mt-1 text-sm text-slate-500">{service.price}</p>
                   </div>
                 </button>
               ))}
             </div>
           </section>
 
-          <section className="grid gap-4 sm:grid-cols-2">
+          <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Users className="h-4 w-4 text-slate-500" />
@@ -219,23 +217,21 @@ export function OrderQuickForm() {
                 </Label>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
                   onClick={() => handleTravelerCountChange(-1)}
                   disabled={travelerCount <= 1}
-                  className="h-9 w-9 rounded-md border-slate-300"
+                  className="h-10 w-10 rounded-md border-slate-300 bg-white"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
 
-                <div className="flex-1 text-center">
-                  <div className="text-xl font-semibold text-slate-900">
-                    {travelerCount}
-                  </div>
-                  <p className="text-xs text-slate-500">
+                <div className="min-w-[70px] text-center">
+                  <div className="text-2xl font-semibold text-slate-900">{travelerCount}</div>
+                  <p className="text-sm text-slate-500">
                     {travelerCount === 1 ? "Traveler" : "Travelers"}
                   </p>
                 </div>
@@ -246,7 +242,7 @@ export function OrderQuickForm() {
                   size="icon"
                   onClick={() => handleTravelerCountChange(1)}
                   disabled={travelerCount >= 10}
-                  className="h-9 w-9 rounded-md border-slate-300"
+                  className="h-10 w-10 rounded-md border-slate-300 bg-white"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -254,7 +250,7 @@ export function OrderQuickForm() {
             </div>
 
             <div className="grid gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label
                   htmlFor="email"
                   className="flex items-center gap-2 text-sm font-semibold text-slate-800"
@@ -268,11 +264,11 @@ export function OrderQuickForm() {
                   placeholder="Documents will be sent here"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-10 rounded-md border-slate-300 px-3"
+                  className="h-11 rounded-md border-slate-300 px-3"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label
                   htmlFor="country"
                   className="flex items-center gap-2 text-sm font-semibold text-slate-800"
@@ -281,7 +277,7 @@ export function OrderQuickForm() {
                   Country
                 </Label>
                 <Select value={customerCountryCode} onValueChange={handleCountryChange}>
-                  <SelectTrigger className="h-10 rounded-md border-slate-300">
+                  <SelectTrigger className="h-11 rounded-md border-slate-300">
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
                   <SelectContent>
@@ -306,17 +302,15 @@ export function OrderQuickForm() {
               {travelers.map((traveler, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-1 gap-2 sm:grid-cols-[40px_90px_1fr_1fr]"
+                  className="grid grid-cols-1 gap-2 sm:grid-cols-[44px_88px_1fr_1fr]"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">
+                  <div className="flex h-10 w-11 items-center justify-center rounded-md bg-slate-100 text-sm font-medium text-slate-700">
                     {index + 1}
                   </div>
 
                   <Select
                     value={traveler.title}
-                    onValueChange={(value) =>
-                      handleTravelerChange(index, "title", value)
-                    }
+                    onValueChange={(value) => handleTravelerChange(index, "title", value)}
                   >
                     <SelectTrigger className="h-10 rounded-md border-slate-300">
                       <SelectValue />
@@ -333,18 +327,14 @@ export function OrderQuickForm() {
                   <Input
                     placeholder="First name"
                     value={traveler.firstName}
-                    onChange={(e) =>
-                      handleTravelerChange(index, "firstName", e.target.value)
-                    }
+                    onChange={(e) => handleTravelerChange(index, "firstName", e.target.value)}
                     className="h-10 rounded-md border-slate-300"
                   />
 
                   <Input
                     placeholder="Last name"
                     value={traveler.lastName}
-                    onChange={(e) =>
-                      handleTravelerChange(index, "lastName", e.target.value)
-                    }
+                    onChange={(e) => handleTravelerChange(index, "lastName", e.target.value)}
                     className="h-10 rounded-md border-slate-300"
                   />
                 </div>
@@ -352,15 +342,13 @@ export function OrderQuickForm() {
             </div>
           </section>
 
-          <div className="pt-1">
-            <Button
-              onClick={handleSubmit}
-              disabled={!isValid()}
-              className="h-11 w-full rounded-md bg-red-600 font-semibold text-white hover:bg-red-700"
-            >
-              Continue to Order
-            </Button>
-          </div>
+          <Button
+            onClick={handleSubmit}
+            disabled={!isValid()}
+            className="h-11 w-full rounded-md bg-red-500 text-base font-semibold text-white hover:bg-red-600"
+          >
+            Continue to Order
+          </Button>
         </CardContent>
       </Card>
     </div>
