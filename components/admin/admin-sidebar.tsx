@@ -47,6 +47,7 @@ const mainNavItems = [
 ]
 
 const contentNavItems = [
+  { href: "/admin/landing", label: "Landing Page", icon: LayoutDashboard },
   { href: "/admin/testimonials", label: "Testimonials", icon: FileText },
   { href: "/admin/blog", label: "Blog", icon: BookOpen },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
