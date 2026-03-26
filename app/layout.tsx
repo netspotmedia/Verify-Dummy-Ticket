@@ -3,6 +3,7 @@ import { Inter, Geist_Mono, Outfit } from 'next/font/google'
 import { Open_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
+import { SiteSettingsProvider } from '@/lib/site-settings'
 import './globals.css'
 
 const inter = Inter({ 
@@ -106,7 +107,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${geistMono.variable} ${outfit.variable} ${openSans.variable} font-outfit antialiased`}>
-        {children}
+        <SiteSettingsProvider>
+          {children}
+        </SiteSettingsProvider>
         <Toaster position="top-right" richColors />
         <Analytics />
       </body>

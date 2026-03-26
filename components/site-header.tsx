@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu, Plane, Phone } from "lucide-react"
+import { useSiteSettings } from "@/lib/site-settings"
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -18,6 +19,7 @@ const navigation = [
 export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { settings, loading } = useSiteSettings()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +28,9 @@ export function SiteHeader() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const siteName = settings?.site_name || "VerifyDummyTickets"
+  const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -37,12 +42,20 @@ export function SiteHeader() {
         <div className="flex h-16 md:h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-700 to-red-800 shadow-lg shadow-red-200 group-hover:scale-105 transition-transform">
-              <Plane className="h-5 w-5 md:h-6 md:w-6 text-white" />
-            </div>
+            {logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={siteName}
+                className="h-10 w-auto md:h-12 object-contain"
+              />
+            ) : (
+              <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-700 to-red-800 shadow-lg shadow-red-200 group-hover:scale-105 transition-transform">
+                <Plane className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+            )}
             <div className="hidden sm:block">
               <span className="font-bold text-lg text-slate-900">
-                Diplomatic Courier
+                {siteName}
               </span>
             </div>
           </Link>
@@ -90,10 +103,18 @@ export function SiteHeader() {
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b">
                   <Link href="/" className="flex items-center gap-3" onClick={() => setIsOpen(false)}>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-700 to-red-800">
-                      <Plane className="h-6 w-6 text-white" />
-                    </div>
-                    <span className="font-bold text-lg text-slate-900">Diplomatic Courier</span>
+                    {logoUrl ? (
+                      <img 
+                        src={logoUrl} 
+                        alt={siteName}
+                        className="h-12 w-auto object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-700 to-red-800">
+                        <Plane className="h-6 w-6 text-white" />
+                      </div>
+                    )}
+                    <span className="font-bold text-lg text-slate-900">{siteName}</span>
                   </Link>
                 </div>
                 
