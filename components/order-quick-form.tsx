@@ -7,20 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import { Plane, Hotel, Shield, Check, Plus, Minus, User, Globe, Mail, Users } from "lucide-react"
+import { Plane, Hotel, Shield, Minus, Plus, Mail, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Title, ServiceType } from "@/lib/types"
 
-const SERVICES: { value: ServiceType; label: string; icon: typeof Plane; price: string }[] = [
-  { value: "flight", label: "Flight Ticket", icon: Plane, price: "From $5" },
-  { value: "hotel", label: "Hotel Booking", icon: Hotel, price: "From $3" },
-  { value: "insurance", label: "Travel Insurance", icon: Shield, price: "From $2" },
+const SERVICES: { value: ServiceType; label: string; icon: typeof Plane }[] = [
+  { value: "flight", label: "Flight", icon: Plane },
+  { value: "hotel", label: "Hotel", icon: Hotel },
+  { value: "insurance", label: "Insurance", icon: Shield },
 ]
 
 const TITLES: { value: Title; label: string }[] = [
-  { value: "Mr", label: "Mr" },
-  { value: "Mrs", label: "Mrs" },
+  { value: "Mr", label: "Mr." },
+  { value: "Mrs", label: "Mrs." },
   { value: "Master", label: "Master" },
   { value: "Miss", label: "Miss" },
 ]
@@ -75,7 +74,9 @@ export function OrderQuickForm() {
 
   const [selectedServices, setSelectedServices] = useState<ServiceType[]>(["flight"])
   const [travelerCount, setTravelerCount] = useState(1)
-  const [travelers, setTravelers] = useState([{ title: "Mr" as Title, firstName: "", lastName: "" }])
+  const [travelers, setTravelers] = useState([
+    { title: "Mr" as Title, firstName: "", lastName: "" },
+  ])
   const [email, setEmail] = useState("")
   const [customerCountryCode, setCustomerCountryCode] = useState("")
   const [customerCountry, setCustomerCountry] = useState("")
@@ -91,7 +92,7 @@ export function OrderQuickForm() {
   }
 
   const handleTravelerCountChange = (delta: number) => {
-    const newCount = Math.max(1, Math.min(10, travelerCount + delta))
+    const newCount = Math.max(1, Math.min(5, travelerCount + delta))
     setTravelerCount(newCount)
 
     const newTravelers = [...travelers]
@@ -143,176 +144,152 @@ export function OrderQuickForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
-      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-red-600 px-5 py-4 sm:px-6">
-          <h2 className="text-lg font-semibold text-white sm:text-xl">
-            Complete the form below to get your visa documents
-          </h2>
-        </div>
+    <div className="rounded-[32px] bg-[#f7f5f4] p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] ring-1 ring-black/5 sm:p-6">
+      <div className="mb-6 h-1 w-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#f2c7d1]" />
 
-        <CardContent className="space-y-6 p-5 sm:p-6">
-          <section className="space-y-3">
-            <div>
-              <Label className="text-sm font-semibold text-slate-800">Select Services</Label>
-              <p className="mt-1 text-sm text-slate-500">
-                Choose the visa support services you need
-              </p>
-            </div>
+      <div className="space-y-6">
+        <section className="space-y-3">
+          <Label className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#5d4d4f]">
+            Select Services
+          </Label>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {SERVICES.map((service) => (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {SERVICES.map((service) => {
+              const active = selectedServices.includes(service.value)
+
+              return (
                 <button
                   key={service.value}
                   type="button"
                   onClick={() => toggleService(service.value)}
                   className={cn(
-                    "relative flex min-h-[84px] items-center gap-3 rounded-lg border px-3 py-3 text-left transition-all",
-                    selectedServices.includes(service.value)
-                      ? "border-red-500 bg-red-50"
-                      : "border-slate-300 bg-white hover:border-slate-400"
+                    "flex h-[52px] items-center justify-center gap-2 rounded-full border bg-[#e9edf5] px-4 text-sm font-semibold transition-all",
+                    active
+                      ? "border-[#c8143d] bg-white text-[#c8143d] shadow-[inset_0_0_0_1px_#c8143d]"
+                      : "border-transparent text-[#4f5b70] hover:bg-white"
                   )}
                 >
-                  {selectedServices.includes(service.value) && (
-                    <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  )}
+                  <service.icon className="h-4 w-4" />
+                  <span>{service.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
 
+        <section className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#5d4d4f]">
+              Contact Email
+            </Label>
+            <div className="relative">
+              <Input
+                type="email"
+                placeholder="traveller@voyager.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-[52px] rounded-full border-0 bg-[#e9edf5] pl-5 pr-12 text-[15px] text-slate-700 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#c8143d]"
+              />
+              <Mail className="pointer-events-none absolute right-5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#5d4d4f]">
+              Country of Residence
+            </Label>
+            <Select value={customerCountryCode} onValueChange={handleCountryChange}>
+              <SelectTrigger className="h-[52px] rounded-full border-0 bg-[#e9edf5] px-5 text-[15px] text-slate-700 focus:ring-2 focus:ring-[#c8143d]">
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {country.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
+
+        <section className="rounded-[30px] bg-[#e9edf5] px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-[26px] font-semibold leading-none text-slate-900 sm:text-[20px]">
+                Number of Travelers
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Add up to 5 passengers per quick order
+              </p>
+            </div>
+
+            <div className="inline-flex items-center self-start rounded-full bg-white p-1 shadow-sm sm:self-auto">
+              <button
+                type="button"
+                onClick={() => handleTravelerCountChange(-1)}
+                disabled={travelerCount <= 1}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#c8143d] disabled:opacity-40"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+
+              <div className="min-w-[64px] text-center text-[28px] font-semibold tracking-[0.08em] text-slate-900 sm:text-[24px]">
+                {String(travelerCount).padStart(2, "0")}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleTravelerCountChange(1)}
+                disabled={travelerCount >= 5}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#c8143d] text-white shadow-md disabled:opacity-40"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-5">
+          <div className="flex items-center gap-4">
+            <div className="h-px flex-1 bg-[#ead8dd]" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94a3b8]">
+              Traveler Information
+            </span>
+            <div className="h-px flex-1 bg-[#ead8dd]" />
+          </div>
+
+          <div className="space-y-5">
+            {travelers.map((traveler, index) => (
+              <div key={index} className="space-y-3">
+                <div className="flex items-center gap-2">
                   <div
                     className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-md",
-                      selectedServices.includes(service.value)
-                        ? "bg-red-100 text-red-600"
-                        : "bg-slate-100 text-slate-500"
+                      "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                      index === 0
+                        ? "bg-[#d61a47] text-white"
+                        : "bg-[#dde5ef] text-slate-600"
                     )}
                   >
-                    <service.icon className="h-4 w-4" />
-                  </div>
-
-                  <div className="min-w-0 leading-tight">
-                    <p
-                      className={cn(
-                        "text-sm font-semibold",
-                        selectedServices.includes(service.value)
-                          ? "text-red-700"
-                          : "text-slate-800"
-                      )}
-                    >
-                      {service.label}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-500">{service.price}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Users className="h-4 w-4 text-slate-500" />
-                <Label className="text-sm font-semibold text-slate-800">
-                  Number of Travelers
-                </Label>
-              </div>
-
-              <div className="flex items-center justify-between gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleTravelerCountChange(-1)}
-                  disabled={travelerCount <= 1}
-                  className="h-10 w-10 rounded-md border-slate-300 bg-white"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-
-                <div className="min-w-[70px] text-center">
-                  <div className="text-2xl font-semibold text-slate-900">{travelerCount}</div>
-                  <p className="text-sm text-slate-500">
-                    {travelerCount === 1 ? "Traveler" : "Travelers"}
-                  </p>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleTravelerCountChange(1)}
-                  disabled={travelerCount >= 10}
-                  className="h-10 w-10 rounded-md border-slate-300 bg-white"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="flex items-center gap-2 text-sm font-semibold text-slate-800"
-                >
-                  <Mail className="h-4 w-4 text-slate-400" />
-                  Email Address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Documents will be sent here"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 rounded-md border-slate-300 px-3"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="country"
-                  className="flex items-center gap-2 text-sm font-semibold text-slate-800"
-                >
-                  <Globe className="h-4 w-4 text-slate-400" />
-                  Country
-                </Label>
-                <Select value={customerCountryCode} onValueChange={handleCountryChange}>
-                  <SelectTrigger className="h-11 rounded-md border-slate-300">
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRIES.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        {country.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <Label className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-              <User className="h-4 w-4 text-slate-400" />
-              Traveler Names
-            </Label>
-
-            <div className="space-y-2.5">
-              {travelers.map((traveler, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-1 gap-2 sm:grid-cols-[44px_88px_1fr_1fr]"
-                >
-                  <div className="flex h-10 w-11 items-center justify-center rounded-md bg-slate-100 text-sm font-medium text-slate-700">
                     {index + 1}
                   </div>
+                  <span className="text-sm font-semibold text-slate-900">
+                    {index === 0
+                      ? "Primary Traveler"
+                      : index === 1
+                        ? "Second Traveler"
+                        : `Traveler ${index + 1}`}
+                  </span>
+                </div>
 
+                <div className="grid gap-3 md:grid-cols-[88px_1fr_1fr]">
                   <Select
                     value={traveler.title}
-                    onValueChange={(value) => handleTravelerChange(index, "title", value)}
+                    onValueChange={(value) =>
+                      handleTravelerChange(index, "title", value)
+                    }
                   >
-                    <SelectTrigger className="h-10 rounded-md border-slate-300">
+                    <SelectTrigger className="h-[44px] rounded-full border-0 bg-[#e9edf5] px-4 text-sm focus:ring-2 focus:ring-[#c8143d]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -325,32 +302,43 @@ export function OrderQuickForm() {
                   </Select>
 
                   <Input
-                    placeholder="First name"
+                    placeholder="First Name"
                     value={traveler.firstName}
-                    onChange={(e) => handleTravelerChange(index, "firstName", e.target.value)}
-                    className="h-10 rounded-md border-slate-300"
+                    onChange={(e) =>
+                      handleTravelerChange(index, "firstName", e.target.value)
+                    }
+                    className="h-[44px] rounded-full border-0 bg-[#e9edf5] px-5 text-sm placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-[#c8143d]"
                   />
 
                   <Input
-                    placeholder="Last name"
+                    placeholder="Last Name"
                     value={traveler.lastName}
-                    onChange={(e) => handleTravelerChange(index, "lastName", e.target.value)}
-                    className="h-10 rounded-md border-slate-300"
+                    onChange={(e) =>
+                      handleTravelerChange(index, "lastName", e.target.value)
+                    }
+                    className="h-[44px] rounded-full border-0 bg-[#e9edf5] px-5 text-sm placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-[#c8143d]"
                   />
                 </div>
-              ))}
-            </div>
-          </section>
+              </div>
+            ))}
+          </div>
+        </section>
 
+        <section className="pt-2">
           <Button
             onClick={handleSubmit}
             disabled={!isValid()}
-            className="h-11 w-full rounded-md bg-red-500 text-base font-semibold text-white hover:bg-red-600"
+            className="h-[56px] w-full rounded-full bg-[#c90039] text-base font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.22)] hover:bg-[#b50033]"
           >
-            Continue to Order
+            <span>Continue to Order</span>
+            <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
-        </CardContent>
-      </Card>
+
+          <p className="mt-4 text-center text-[12px] text-slate-500">
+            By continuing, you agree to our Travel Terms & Conditions and Privacy Policy.
+          </p>
+        </section>
+      </div>
     </div>
   )
 }
