@@ -2,8 +2,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plane, Mail, ArrowRight } from "lucide-react"
+import { useSiteSettings } from "@/lib/site-settings"
 
 export default function SignUpSuccessPage() {
+  const { settings } = useSiteSettings()
+  const siteName = settings?.site_name || "My Travel Services"
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/5 via-background to-background px-4">
       <div className="w-full max-w-md">
@@ -12,7 +15,7 @@ export default function SignUpSuccessPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <Plane className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">VerifyDummyTickets</span>
+          <span className="text-xl font-bold text-foreground">{siteName}</span>
         </Link>
 
         <Card className="text-center">

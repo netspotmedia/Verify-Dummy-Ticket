@@ -29,8 +29,9 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const siteName = settings?.site_name || "VerifyDummyTickets"
+  const siteName = settings?.site_name || "My Travel Services"
   const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
+  const sitePhone = settings?.site_phone || "+234 800 123 4567"
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -75,10 +76,12 @@ export function SiteHeader() {
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-3 lg:flex">
-            <Link href="https://wa.me/2348070076011" className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-red-700">
-              <Phone className="h-4 w-4" />
-              <span>+234 807 007 6011</span>
-            </Link>
+            {sitePhone && (
+              <Link href={`https://wa.me/${sitePhone.replace(/\D/g, '')}`} className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-red-700">
+                <Phone className="h-4 w-4" />
+                <span>{sitePhone}</span>
+              </Link>
+            )}
             <Link href="/auth/login">
               <Button variant="ghost" size="sm" className="text-slate-600 hover:text-red-700">
                 Sign In
@@ -132,10 +135,12 @@ export function SiteHeader() {
                 </nav>
 
                 <div className="p-6 border-t space-y-3">
-                  <Link href="https://wa.me/2348070076011" className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                    <Phone className="h-4 w-4" />
-                    +234 807 007 6011
-                  </Link>
+                  {sitePhone && (
+                    <Link href={`https://wa.me/${sitePhone.replace(/\D/g, '')}`} className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                      <Phone className="h-4 w-4" />
+                      {sitePhone}
+                    </Link>
+                  )}
                   <Link href="/auth/login" onClick={() => setIsOpen(false)}>
                     <Button variant="outline" className="w-full rounded-xl">
                       Sign In

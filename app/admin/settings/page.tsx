@@ -12,20 +12,32 @@ import { toast } from "sonner"
 
 interface SiteSettings {
   site_name: string
+  site_phone: string
   support_email: string
   support_phone: string
   whatsapp_number: string
   address: string
   logo_url: string
+  footer_company_name: string
+  footer_copyright: string
+  footer_facebook: string
+  footer_instagram: string
+  footer_twitter: string
 }
 
 const SETTINGS_KEYS = [
   "site_name",
+  "site_phone",
   "support_email",
   "support_phone",
   "whatsapp_number",
   "address",
   "logo_url",
+  "footer_company_name",
+  "footer_copyright",
+  "footer_facebook",
+  "footer_instagram",
+  "footer_twitter",
 ]
 
 export default function AdminSettingsPage() {
@@ -33,12 +45,18 @@ export default function AdminSettingsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [settings, setSettings] = useState<SiteSettings>({
-    site_name: "VerifyDummyTickets",
-    support_email: "support@verifydummytickets.com",
-    support_phone: "+234 807 007 6011",
-    whatsapp_number: "+234 807 007 6011",
+    site_name: "My Travel Services",
+    site_phone: "+234 800 123 4567",
+    support_email: "support@example.com",
+    support_phone: "+234 800 123 4567",
+    whatsapp_number: "+234 800 123 4567",
     address: "",
     logo_url: "",
+    footer_company_name: "My Travel Services",
+    footer_copyright: `© ${new Date().getFullYear()} My Travel Services. All rights reserved.`,
+    footer_facebook: "https://facebook.com",
+    footer_instagram: "https://instagram.com",
+    footer_twitter: "https://twitter.com",
   })
   const [previewLogo, setPreviewLogo] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -65,12 +83,18 @@ export default function AdminSettingsPage() {
       })
 
       setSettings({
-        site_name: settingsMap.site_name || "VerifyDummyTickets",
+        site_name: settingsMap.site_name || "My Travel Services",
+        site_phone: settingsMap.site_phone || "+234 800 123 4567",
         support_email: settingsMap.support_email || "",
         support_phone: settingsMap.support_phone || "",
         whatsapp_number: settingsMap.whatsapp_number || "",
         address: settingsMap.address || "",
         logo_url: settingsMap.logo_url || "",
+        footer_company_name: settingsMap.footer_company_name || "My Travel Services",
+        footer_copyright: settingsMap.footer_copyright || `© ${new Date().getFullYear()} My Travel Services. All rights reserved.`,
+        footer_facebook: settingsMap.footer_facebook || "https://facebook.com",
+        footer_instagram: settingsMap.footer_instagram || "https://instagram.com",
+        footer_twitter: settingsMap.footer_twitter || "https://twitter.com",
       })
       if (settingsMap.logo_url) {
         setPreviewLogo(settingsMap.logo_url)
@@ -146,11 +170,17 @@ export default function AdminSettingsPage() {
     try {
       const settingsToSave = [
         { category: "general", key: "site_name", value: settings.site_name },
+        { category: "general", key: "site_phone", value: settings.site_phone },
         { category: "general", key: "support_email", value: settings.support_email },
         { category: "general", key: "support_phone", value: settings.support_phone },
         { category: "general", key: "whatsapp_number", value: settings.whatsapp_number },
         { category: "general", key: "address", value: settings.address },
         { category: "general", key: "logo_url", value: settings.logo_url },
+        { category: "footer", key: "footer_company_name", value: settings.footer_company_name },
+        { category: "footer", key: "footer_copyright", value: settings.footer_copyright },
+        { category: "footer", key: "footer_facebook", value: settings.footer_facebook },
+        { category: "footer", key: "footer_instagram", value: settings.footer_instagram },
+        { category: "footer", key: "footer_twitter", value: settings.footer_twitter },
       ]
 
       for (const setting of settingsToSave) {
@@ -265,7 +295,7 @@ export default function AdminSettingsPage() {
                 id="siteName"
                 value={settings.site_name}
                 onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
-                placeholder="VerifyDummyTickets"
+                placeholder="My Travel Services"
               />
             </div>
 
@@ -322,6 +352,69 @@ export default function AdminSettingsPage() {
                   value={settings.whatsapp_number}
                   onChange={(e) => setSettings({ ...settings, whatsapp_number: e.target.value })}
                   placeholder="+234 800 000 0000"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Footer Settings
+            </CardTitle>
+            <CardDescription>Customize footer content</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="footerCompanyName">Company Name</Label>
+              <Input
+                id="footerCompanyName"
+                value={settings.footer_company_name}
+                onChange={(e) => setSettings({ ...settings, footer_company_name: e.target.value })}
+                placeholder="My Travel Services"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="footerCopyright">Copyright Text</Label>
+              <Input
+                id="footerCopyright"
+                value={settings.footer_copyright}
+                onChange={(e) => setSettings({ ...settings, footer_copyright: e.target.value })}
+                placeholder="© {year} My Travel Services. All rights reserved."
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="footerFacebook">Facebook URL</Label>
+                <Input
+                  id="footerFacebook"
+                  value={settings.footer_facebook}
+                  onChange={(e) => setSettings({ ...settings, footer_facebook: e.target.value })}
+                  placeholder="https://facebook.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="footerInstagram">Instagram URL</Label>
+                <Input
+                  id="footerInstagram"
+                  value={settings.footer_instagram}
+                  onChange={(e) => setSettings({ ...settings, footer_instagram: e.target.value })}
+                  placeholder="https://instagram.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="footerTwitter">Twitter URL</Label>
+                <Input
+                  id="footerTwitter"
+                  value={settings.footer_twitter}
+                  onChange={(e) => setSettings({ ...settings, footer_twitter: e.target.value })}
+                  placeholder="https://twitter.com"
                 />
               </div>
             </div>

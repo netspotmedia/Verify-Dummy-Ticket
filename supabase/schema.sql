@@ -71,8 +71,14 @@ ON CONFLICT DO NOTHING;
 INSERT INTO site_settings (category, key, value, description, is_public)
 VALUES 
   ('general', 'site_logo', '{"light": "/logo-light.svg", "dark": "/logo-dark.svg", "favicon": "/favicon.ico"}', 'Site logo URLs', true),
-  ('general', 'site_name', '"VerifyDummyTickets"', 'Site display name', true),
-  ('general', 'site_tagline', '"Flight, Hotel & Travel Insurance for Visa Applications"', 'Site tagline', true)
+  ('general', 'site_name', '"My Travel Services"', 'Site display name', true),
+  ('general', 'site_tagline', '"Flight, Hotel & Travel Insurance for Visa Applications"', 'Site tagline', true),
+  ('general', 'site_phone', '"+234 800 123 4567"', 'Site contact phone number', true),
+  ('footer', 'footer_company_name', '"My Travel Services"', 'Footer company name', true),
+  ('footer', 'footer_copyright', '"© {year} My Travel Services. All rights reserved."', 'Footer copyright text', true),
+  ('footer', 'footer_facebook', '"https://facebook.com"', 'Facebook URL', true),
+  ('footer', 'footer_instagram', '"https://instagram.com"', 'Instagram URL', true),
+  ('footer', 'footer_twitter', '"https://twitter.com"', 'Twitter URL', true)
 ON CONFLICT DO NOTHING;
 
 -- Airlines for Carousel

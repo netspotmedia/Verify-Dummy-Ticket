@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { useSiteSettings } from "@/lib/site-settings"
 import { Plane, Home, ShoppingBag, User, Settings, LogOut, Plus } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { toast } from "sonner"
@@ -38,6 +39,7 @@ const navItems = [
 export function DashboardNav({ user, profile }: DashboardNavProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { settings } = useSiteSettings()
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -64,7 +66,7 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             <Plane className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="hidden font-bold text-foreground sm:inline-block">
-            VerifyDummyTickets
+            {settings?.site_name || "My Travel Services"}
           </span>
         </Link>
 

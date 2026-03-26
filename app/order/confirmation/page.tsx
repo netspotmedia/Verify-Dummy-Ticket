@@ -1,16 +1,21 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
+import { useSiteSettings } from "@/lib/site-settings"
 import { CheckCircle2, ArrowRight, Mail, Phone } from "lucide-react"
 
-export default async function OrderConfirmationPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>
-}) {
-  const { id: orderId } = await searchParams
+export default function OrderConfirmationPage() {
+  const searchParams = useSearchParams()
+  const { settings } = useSiteSettings()
+  const sitePhone = settings?.site_phone || "+234 800 123 4567"
+  const supportEmail = settings?.support_email || "support@example.com"
+  const orderId = searchParams.get("id")
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -70,11 +75,11 @@ export default async function OrderConfirmationPage({
               <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground mb-3">Need help?</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Link href="mailto:support@verifydummytickets.com" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Link href={`mailto:${supportEmail}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
                     <Mail className="h-4 w-4" />
-                    support@verifydummytickets.com
+                    {supportEmail}
                   </Link>
-                  <Link href="https://wa.me/2348070076011" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Link href={`https://wa.me/${sitePhone.replace(/\D/g, '')}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
                     <Phone className="h-4 w-4" />
                     WhatsApp Support
                   </Link>

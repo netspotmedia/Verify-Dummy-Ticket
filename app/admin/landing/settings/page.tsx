@@ -17,6 +17,12 @@ interface SiteSettings {
   }
   site_name?: string
   site_tagline?: string
+  site_phone?: string
+  footer_company_name?: string
+  footer_copyright?: string
+  footer_facebook?: string
+  footer_instagram?: string
+  footer_twitter?: string
 }
 
 export default function SettingsPage() {
@@ -24,6 +30,12 @@ export default function SettingsPage() {
     site_logo: { light: '', dark: '', favicon: '' },
     site_name: '',
     site_tagline: '',
+    site_phone: '',
+    footer_company_name: '',
+    footer_copyright: '',
+    footer_facebook: '',
+    footer_instagram: '',
+    footer_twitter: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -190,7 +202,7 @@ export default function SettingsPage() {
                 <Input
                   value={settings.site_name || ''}
                   onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
-                  placeholder="VerifyDummyTickets"
+                  placeholder="My Travel Services"
                 />
               </div>
               <div className="space-y-2">
@@ -199,6 +211,14 @@ export default function SettingsPage() {
                   value={settings.site_tagline || ''}
                   onChange={(e) => setSettings({ ...settings, site_tagline: e.target.value })}
                   placeholder="Flight, Hotel & Travel Insurance for Visa Applications"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Contact Phone</Label>
+                <Input
+                  value={settings.site_phone || ''}
+                  onChange={(e) => setSettings({ ...settings, site_phone: e.target.value })}
+                  placeholder="+234 800 123 4567"
                 />
               </div>
             </div>

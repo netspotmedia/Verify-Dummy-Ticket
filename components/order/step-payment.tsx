@@ -72,10 +72,50 @@ export function StepPayment() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
+      let userId = user?.id
+
+      if (!userId) {
+        const tempPassword = Math.random().toString(36).slice(-12) + "Aa1!"
+        
+        const { data: existingUser } = await supabase
+          .from("users")
+          .select("id")
+          .eq("email", email)
+          .single()
+
+        if (!existingUser) {
+          const { data: newUser, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password: tempPassword,
+            options: {
+              data: {
+                full_name: email.split("@")[0],
+              },
+            },
+          })
+
+          if (signUpError) {
+            console.error("Sign up error:", signUpError)
+          } else if (newUser?.user) {
+            userId = newUser.user.id
+            
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: `${window.location.origin}/auth/reset-password`,
+            })
+            
+            if (resetError) {
+              console.error("Password reset email error:", resetError)
+            }
+          }
+        } else {
+          userId = existingUser.id
+        }
+      }
+
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
-          user_id: user?.id || null,
+          user_id: userId,
           email: email,
           status: "pending",
           payment_status: "unpaid",
@@ -90,7 +130,7 @@ export function StepPayment() {
       if (orderError) throw orderError
 
       resetForm()
-      toast.success("Order created successfully!")
+      toast.success("Order created successfully! Check your email for login details.")
       router.push(`/order/confirmation?id=${order.id}`)
 
     } catch (error) {

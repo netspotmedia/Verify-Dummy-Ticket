@@ -10,9 +10,12 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plane, Loader2, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
+import { useSiteSettings } from "@/lib/site-settings"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { settings } = useSiteSettings()
+  const siteName = settings?.site_name || "My Travel Services"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -56,7 +59,7 @@ export default function LoginPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <Plane className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">VerifyDummyTickets</span>
+          <span className="text-xl font-bold text-foreground">{siteName}</span>
         </Link>
 
         <Card>

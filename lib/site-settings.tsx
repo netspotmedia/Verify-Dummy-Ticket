@@ -12,6 +12,13 @@ interface SiteSettings {
   site_logo?: SiteLogo
   site_name?: string
   site_tagline?: string
+  site_phone?: string
+  support_email?: string
+  footer_company_name?: string
+  footer_copyright?: string
+  footer_facebook?: string
+  footer_instagram?: string
+  footer_twitter?: string
 }
 
 interface SiteSettingsContextType {
@@ -26,8 +33,15 @@ const defaultSettings: SiteSettings = {
     dark: undefined,
     favicon: undefined,
   },
-  site_name: "VerifyDummyTickets",
+  site_name: "My Travel Services",
   site_tagline: "Flight, Hotel & Travel Insurance for Visa Applications",
+  site_phone: "+234 800 123 4567",
+  support_email: "support@example.com",
+  footer_company_name: "My Travel Services",
+  footer_copyright: `© ${new Date().getFullYear()} My Travel Services. All rights reserved.`,
+  footer_facebook: "https://facebook.com",
+  footer_instagram: "https://instagram.com",
+  footer_twitter: "https://twitter.com",
 }
 
 const SiteSettingsContext = createContext<SiteSettingsContextType>({
@@ -51,6 +65,13 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             site_logo: data.site_logo || defaultSettings.site_logo,
             site_name: data.site_name || defaultSettings.site_name,
             site_tagline: data.site_tagline || defaultSettings.site_tagline,
+            site_phone: data.site_phone || defaultSettings.site_phone,
+            support_email: data.support_email || defaultSettings.support_email,
+            footer_company_name: data.footer_company_name || defaultSettings.footer_company_name,
+            footer_copyright: data.footer_copyright?.replace('{year}', new Date().getFullYear().toString()) || defaultSettings.footer_copyright,
+            footer_facebook: data.footer_facebook || defaultSettings.footer_facebook,
+            footer_instagram: data.footer_instagram || defaultSettings.footer_instagram,
+            footer_twitter: data.footer_twitter || defaultSettings.footer_twitter,
           })
         } else {
           setSettings(defaultSettings)

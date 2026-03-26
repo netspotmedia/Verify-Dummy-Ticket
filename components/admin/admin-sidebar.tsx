@@ -79,7 +79,7 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
             <Plane className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
-            <span className="font-bold text-sm">VerifyDummyTickets</span>
+            <span className="font-bold text-sm">My Travel Services</span>
             <p className="text-xs text-muted-foreground">Admin Panel</p>
           </div>
         </Link>
