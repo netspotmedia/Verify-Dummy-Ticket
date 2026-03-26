@@ -25,115 +25,88 @@ export function StepTravelers() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+    <div className="space-y-5">
+      <div className="space-y-1">
+        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
           Traveler Details
         </Label>
-        <p className="text-sm text-slate-500">
-          Please enter the details for {numberOfTravelers === 1 ? "the traveler" : `all ${numberOfTravelers} travelers`}.
-          Names should match passport/ID exactly.
+        <p className="text-sm text-slate-600">
+          Enter details for {numberOfTravelers === 1 ? "the traveler" : `all ${numberOfTravelers} travelers`}. Names must match passport exactly.
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {travelers.map((traveler, index) => (
           <div
             key={index}
-            className="group relative w-full overflow-hidden rounded-[26px] p-[1px] bg-[#e9edf5] hover:bg-transparent transition-all"
+            className={cn(
+              "rounded-xl p-4 transition-all",
+              index === 0 ? "bg-slate-50" : "bg-slate-50/50"
+            )}
           >
-            <div className="rounded-[25px] bg-[#e9edf5] hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.05)] p-5 transition-all">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#64748b] shadow-sm">
-                  <User className="h-5 w-5" />
-                </div>
-                <div>
-                  <span className="font-semibold text-slate-900">Traveler {index + 1}</span>
-                  {index === 0 && <span className="ml-2 text-xs text-[#c8143d] font-medium">(Primary)</span>}
-                </div>
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className={cn(
+                  "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold",
+                  index === 0
+                    ? "bg-[#c8143d] text-white"
+                    : "bg-slate-300 text-slate-600"
+                )}
+              >
+                {index + 1}
               </div>
+              <span className="text-sm font-medium text-slate-700">
+                {index === 0 ? "Primary" : `Traveler ${index + 1}`}
+              </span>
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`firstName-${index}`} className="text-xs font-medium text-slate-600">First Name *</Label>
-                  <Input
-                    id={`firstName-${index}`}
-                    placeholder="As shown on passport"
-                    value={traveler.firstName}
-                    onChange={(e) => updateTraveler(index, "firstName", e.target.value)}
-                    className="rounded-xl border-slate-200 bg-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`lastName-${index}`} className="text-xs font-medium text-slate-600">Last Name *</Label>
-                  <Input
-                    id={`lastName-${index}`}
-                    placeholder="As shown on passport"
-                    value={traveler.lastName}
-                    onChange={(e) => updateTraveler(index, "lastName", e.target.value)}
-                    className="rounded-xl border-slate-200 bg-white"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor={`email-${index}`} className="text-xs font-medium text-slate-600">Email Address *</Label>
-                  <Input
-                    id={`email-${index}`}
-                    type="email"
-                    placeholder="traveler@example.com"
-                    value={traveler.email}
-                    onChange={(e) => updateTraveler(index, "email", e.target.value)}
-                    className="rounded-xl border-slate-200 bg-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`dob-${index}`} className="text-xs font-medium text-slate-600">Date of Birth (Optional)</Label>
-                  <Input
-                    id={`dob-${index}`}
-                    type="date"
-                    value={traveler.dateOfBirth || ""}
-                    onChange={(e) => updateTraveler(index, "dateOfBirth", e.target.value)}
-                    className="rounded-xl border-slate-200 bg-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`nationality-${index}`} className="text-xs font-medium text-slate-600">Nationality (Optional)</Label>
-                  <Input
-                    id={`nationality-${index}`}
-                    placeholder="e.g., Nigerian, British"
-                    value={traveler.nationality || ""}
-                    onChange={(e) => updateTraveler(index, "nationality", e.target.value)}
-                    className="rounded-xl border-slate-200 bg-white"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor={`passport-${index}`} className="text-xs font-medium text-slate-600">Passport Number (Optional)</Label>
-                  <Input
-                    id={`passport-${index}`}
-                    placeholder="Passport number"
-                    value={traveler.passportNumber || ""}
-                    onChange={(e) => updateTraveler(index, "passportNumber", e.target.value)}
-                    className="rounded-xl border-slate-200 bg-white"
-                  />
-                </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-500">First Name *</Label>
+                <Input
+                  placeholder="As on passport"
+                  value={traveler.firstName}
+                  onChange={(e) => updateTraveler(index, "firstName", e.target.value)}
+                  className="h-9 rounded-lg border-slate-200 bg-white text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-500">Last Name *</Label>
+                <Input
+                  placeholder="As on passport"
+                  value={traveler.lastName}
+                  onChange={(e) => updateTraveler(index, "lastName", e.target.value)}
+                  className="h-9 rounded-lg border-slate-200 bg-white text-sm"
+                />
+              </div>
+              <div className="md:col-span-2 space-y-1.5">
+                <Label className="text-xs text-slate-500">Email Address *</Label>
+                <Input
+                  type="email"
+                  placeholder="traveler@example.com"
+                  value={traveler.email}
+                  onChange={(e) => updateTraveler(index, "email", e.target.value)}
+                  className="h-9 rounded-lg border-slate-200 bg-white text-sm"
+                />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-start gap-3 rounded-[18px] bg-[#f7f5f4] p-3">
-        <Info className="h-4 w-4 mt-0.5 shrink-0 text-slate-500" />
-        <p className="text-sm text-slate-500">Make sure names match your passport/ID exactly for visa applications.</p>
+      <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
+        <Info className="h-3.5 w-3.5" />
+        <span>Names must match passport/ID exactly for visa applications.</span>
       </div>
 
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-full px-6">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex gap-3 pt-1">
+        <Button variant="outline" onClick={prevStep} className="h-10 px-4 rounded-lg">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="gap-2 rounded-full bg-gradient-to-r from-[#c8143d] to-[#d94a6d] hover:from-[#d94a6d] hover:to-[#c8143d] text-white shadow-lg shadow-red-200/50 px-6">
+        <Button onClick={nextStep} disabled={!isValid()} className="flex-1 h-10 rounded-lg bg-[#c8143d] hover:bg-[#b01030] font-medium">
           Continue
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
