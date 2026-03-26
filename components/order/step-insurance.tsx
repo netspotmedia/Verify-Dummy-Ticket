@@ -3,7 +3,7 @@
 import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, Shield, Info, Globe } from "lucide-react"
+import { ArrowLeft, ArrowRight, Shield, Info, Globe, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { InsuranceArea, InsuranceDuration } from "@/lib/types"
 
@@ -12,7 +12,8 @@ const INSURANCE_AREAS: { value: InsuranceArea; title: string; description: strin
     value: "schengen",
     title: "Schengen Area",
     description: "Covers all 26 Schengen member states",
-    countries: "Austria, Belgium, Czech Republic, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Iceland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Norway, Poland, Portugal, Slovenia, Slovakia, Spain, Sweden, Switzerland, Liechtenstein",
+    countries:
+      "Austria, Belgium, Czech Republic, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Iceland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Norway, Poland, Portugal, Slovenia, Slovakia, Spain, Sweden, Switzerland, Liechtenstein",
   },
   {
     value: "worldwide_area_1",
@@ -48,13 +49,15 @@ export function StepInsurance() {
   const selectedArea = insuranceDetails?.area || null
   const selectedDuration = insuranceDetails?.duration || null
 
-  const insuranceCost = selectedArea && selectedDuration
-    ? PRICING_TABLE[selectedArea][selectedDuration] * travelerCount
-    : 0
+  const insuranceCost =
+    selectedArea && selectedDuration
+      ? PRICING_TABLE[selectedArea][selectedDuration] * travelerCount
+      : 0
 
-  const unitPrice = selectedArea && selectedDuration
-    ? PRICING_TABLE[selectedArea][selectedDuration]
-    : 0
+  const unitPrice =
+    selectedArea && selectedDuration
+      ? PRICING_TABLE[selectedArea][selectedDuration]
+      : 0
 
   const isValid = () => {
     return selectedArea && selectedDuration
@@ -62,170 +65,248 @@ export function StepInsurance() {
 
   return (
     <div className="space-y-8">
-      {/* Coverage Area Selection */}
-      <div className="space-y-4">
+      <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <Globe className="h-5 w-5 text-primary" />
-          <Label className="text-lg font-semibold">Coverage Area</Label>
+          <Globe className="h-4 w-4 text-slate-500" />
+          <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+            Coverage Area
+          </Label>
         </div>
-        
-        <div className="grid gap-4">
+
+        <p className="text-sm text-slate-500">
+          Select where the insurance should be valid
+        </p>
+
+        <div className="grid gap-3">
           {INSURANCE_AREAS.map((area) => {
             const isSelected = selectedArea === area.value
-            
+
             return (
-              <div
+              <button
                 key={area.value}
-                onClick={() => setInsuranceDetails({
-                  area: area.value,
-                  duration: formData.insuranceDetails?.duration || "21d",
-                } as any)}
+                type="button"
+                onClick={() =>
+                  setInsuranceDetails({
+                    area: area.value,
+                    duration: formData.insuranceDetails?.duration || "21d",
+                  } as any)
+                }
                 className={cn(
-                  "group relative rounded-2xl border-2 p-5 cursor-pointer transition-all duration-200",
+                  "group relative w-full overflow-hidden rounded-[26px] p-[1px] text-left transition-all",
                   isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-border/50 hover:border-primary/30"
+                    ? "bg-gradient-to-r from-[#c8143d] via-[#d94a6d] to-[#efc5d0] shadow-[0_16px_30px_rgba(200,20,61,0.12)]"
+                    : "bg-transparent"
                 )}
               >
-                <div className="flex items-start gap-4">
-                  <div className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-xl transition-colors shrink-0",
-                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
-                  )}>
+                <div
+                  className={cn(
+                    "relative flex min-h-[118px] items-center gap-4 rounded-[25px] px-5 py-5 transition-all",
+                    isSelected
+                      ? "bg-white"
+                      : "bg-[#e9edf5] hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.05)]"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-all",
+                      isSelected
+                        ? "bg-[#c8143d] text-white"
+                        : "bg-white text-slate-500 shadow-sm"
+                    )}
+                  >
                     <Shield className="h-6 w-6" />
                   </div>
-                  
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{area.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{area.description}</p>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {area.title}
+                    </h3>
+                    <p className="mt-1 max-w-xl text-sm leading-6 text-slate-500">
+                      {area.description}
+                    </p>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "absolute right-5 top-5 flex h-6 w-6 items-center justify-center rounded-full transition-all",
+                      isSelected
+                        ? "bg-[#c8143d] text-white"
+                        : "border border-slate-300 bg-white text-transparent"
+                    )}
+                  >
+                    <Check className="h-3.5 w-3.5" />
                   </div>
                 </div>
-
-                {/* Selection indicator */}
-                <div className={cn(
-                  "absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full transition-all",
-                  isSelected ? "bg-primary" : "border-2 border-muted-foreground/30"
-                )}>
-                  {isSelected && (
-                    <svg className="h-3.5 w-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-              </div>
+              </button>
             )
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Area Info */}
       {selectedArea && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 shrink-0">
-            <Info className="h-5 w-5 text-blue-600" />
+        <section className="rounded-[28px] bg-[#eef5ff] p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <Info className="h-5 w-5 text-[#2563eb]" />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#4a6aa3]">
+                Selected Coverage
+              </p>
+              <p className="mt-1 text-base font-semibold text-slate-900">
+                {INSURANCE_AREAS.find((a) => a.value === selectedArea)?.title}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {INSURANCE_AREAS.find((a) => a.value === selectedArea)?.countries}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold text-blue-900">
-              {INSURANCE_AREAS.find(a => a.value === selectedArea)?.title}
-            </p>
-            <p className="text-sm text-blue-800 mt-1">
-              {INSURANCE_AREAS.find(a => a.value === selectedArea)?.countries}
-            </p>
-          </div>
-        </div>
+        </section>
       )}
 
-      {/* Duration Selection */}
       {selectedArea && (
-        <div className="space-y-4">
-          <Label className="text-lg font-semibold">Coverage Duration</Label>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <section className="space-y-3">
+          <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+            Coverage Duration
+          </Label>
+
+          <p className="text-sm text-slate-500">
+            Pick how long the policy should remain valid
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {DURATION_OPTIONS.map((duration) => {
               const price = PRICING_TABLE[selectedArea][duration.value]
               const isSelected = selectedDuration === duration.value
-              
+
               return (
-                <div
+                <button
                   key={duration.value}
-                  onClick={() => setInsuranceDetails({
-                    area: formData.insuranceDetails?.area || "schengen",
-                    duration: duration.value,
-                  } as any)}
+                  type="button"
+                  onClick={() =>
+                    setInsuranceDetails({
+                      area: formData.insuranceDetails?.area || "schengen",
+                      duration: duration.value,
+                    } as any)
+                  }
                   className={cn(
-                    "rounded-xl border-2 p-4 cursor-pointer transition-all text-center",
+                    "rounded-[22px] px-4 py-4 text-center transition-all",
                     isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 hover:border-primary/30"
+                      ? "bg-white shadow-[0_12px_24px_rgba(15,23,42,0.07)] ring-1 ring-[#f0ccd5]"
+                      : "bg-[#e9edf5] hover:bg-white"
                   )}
                 >
-                  <div className="font-semibold">{duration.label}</div>
-                  <div className="text-primary font-bold mt-1">${price}/person</div>
-                </div>
+                  <div
+                    className={cn(
+                      "text-sm font-semibold",
+                      isSelected ? "text-[#c8143d]" : "text-slate-800"
+                    )}
+                  >
+                    {duration.label}
+                  </div>
+                  <div
+                    className={cn(
+                      "mt-1 text-xs font-medium",
+                      isSelected ? "text-[#c8143d]" : "text-slate-500"
+                    )}
+                  >
+                    ${price}/person
+                  </div>
+                </button>
               )
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Pricing Table */}
       {selectedArea && (
-        <div className="bg-muted/50 rounded-2xl p-6 space-y-4">
-          <Label className="font-semibold">Pricing by Number of Travelers</Label>
-          
-          <div className="space-y-2 text-sm">
-            <div className="grid grid-cols-5 gap-2 font-medium border-b pb-2 text-muted-foreground">
-              <span>Duration</span>
-              <span>1 person</span>
-              <span>2 persons</span>
-              <span>3 persons</span>
-              <span>4 persons</span>
-            </div>
-            {DURATION_OPTIONS.map((duration) => {
-              const price = PRICING_TABLE[selectedArea][duration.value]
-              return (
-                <div key={duration.value} className="grid grid-cols-5 gap-2">
-                  <span className="font-medium">{duration.label}</span>
-                  <span>${price}</span>
-                  <span>${price * 2}</span>
-                  <span>${price * 3}</span>
-                  <span>${price * 4}</span>
-                </div>
-              )
-            })}
+        <section className="rounded-[30px] bg-[#eef2fa] p-5">
+          <div className="mb-4">
+            <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+              Pricing by Number of Travelers
+            </Label>
           </div>
-        </div>
+
+          <div className="overflow-x-auto">
+            <div className="min-w-[560px] rounded-[24px] bg-white p-4 shadow-sm">
+              <div className="grid grid-cols-5 gap-3 border-b border-slate-200 pb-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                <span>Duration</span>
+                <span>1 person</span>
+                <span>2 persons</span>
+                <span>3 persons</span>
+                <span>4 persons</span>
+              </div>
+
+              <div className="mt-3 space-y-3 text-sm text-slate-700">
+                {DURATION_OPTIONS.map((duration) => {
+                  const price = PRICING_TABLE[selectedArea][duration.value]
+
+                  return (
+                    <div key={duration.value} className="grid grid-cols-5 gap-3">
+                      <span className="font-semibold text-slate-900">
+                        {duration.label}
+                      </span>
+                      <span>${price}</span>
+                      <span>${price * 2}</span>
+                      <span>${price * 3}</span>
+                      <span>${price * 4}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* Cost Summary */}
       {selectedArea && selectedDuration && (
-        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
+        <section className="rounded-[30px] bg-[#eef2fa] p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                <Shield className="h-6 w-6 text-primary" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#c8143d] shadow-sm">
+                <Shield className="h-5 w-5" />
               </div>
+
               <div>
-                <p className="font-semibold">Insurance Cost</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
+                  Insurance Cost
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
                   ${unitPrice} × {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
                 </p>
               </div>
             </div>
-            <span className="text-3xl font-bold text-primary">${insuranceCost}</span>
+
+            <div className="text-left sm:text-right">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
+                Total
+              </p>
+              <p className="mt-1 text-3xl font-semibold text-[#c8143d]">
+                ${insuranceCost}
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-xl px-6">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          variant="outline"
+          onClick={prevStep}
+          className="h-12 rounded-full border-[#ead8dd] bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-[#fff7f9]"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="gap-2 rounded-xl px-8">
+
+        <Button
+          onClick={nextStep}
+          disabled={!isValid()}
+          className="h-12 rounded-full bg-[#c90039] px-7 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.2)] hover:bg-[#b50033]"
+        >
           Continue
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>

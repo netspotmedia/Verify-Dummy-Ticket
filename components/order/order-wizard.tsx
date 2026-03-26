@@ -1,10 +1,8 @@
 "use client"
 
 import { useOrderStore } from "@/lib/order-store"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
-import { Check, ChevronRight } from "lucide-react"
+import { Check } from "lucide-react"
 
 import { StepServices } from "./step-services"
 import { StepCommon } from "./step-common"
@@ -44,7 +42,11 @@ export function OrderWizard() {
         )
       case "flight":
         if (!formData.services.includes("flight")) return true
-        return !!(formData.flightDetails?.tripType && formData.flightDetails?.flightDetails && formData.flightDetails?.validity)
+        return !!(
+          formData.flightDetails?.tripType &&
+          formData.flightDetails?.flightDetails &&
+          formData.flightDetails?.validity
+        )
       case "hotel":
         if (!formData.services.includes("hotel")) return true
         return !!formData.hotelDetails?.type
@@ -90,77 +92,87 @@ export function OrderWizard() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Modern Progress Header */}
+    <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#ead8dd]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#e85d7d] transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              Step {currentStepIndex + 1}
-              <span className="text-muted-foreground font-normal"> of {activeSteps.length}</span>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a27f88]">
+              Step {currentStepIndex + 1} of {activeSteps.length}
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+              {stepInfo.title}
             </h2>
-            <p className="text-muted-foreground">{stepInfo.title}</p>
+            <p className="mt-1 text-sm text-slate-500">{stepInfo.description}</p>
           </div>
         </div>
-        <Progress value={progress} className="h-1.5 rounded-full" />
       </div>
 
-      {/* Step Indicators - Modern Breadcrumb Style */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-1">
         {activeSteps.map((step, index) => {
           const isComplete = isStepComplete(step)
           const isCurrent = currentStepIndex === index
           const canNav = canNavigateToStep(index)
 
           return (
-            <div key={step} className="flex items-center gap-2">
-              <button
-                onClick={() => canNav && goToStep(index)}
-                disabled={!canNav}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap",
-                  isCurrent && "bg-primary text-primary-foreground shadow-sm",
-                  !isCurrent && isComplete && "bg-green-100 text-green-700 hover:bg-green-200",
-                  !isCurrent && !isComplete && "bg-muted text-muted-foreground hover:bg-muted/80",
-                  !canNav && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                {isComplete && !isCurrent ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <span className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full text-xs",
-                    isCurrent ? "bg-primary-foreground/20" : "bg-current/10"
-                  )}>
-                    {index + 1}
-                  </span>
-                )}
-                <span className="hidden sm:inline">{STEP_TITLES[step]?.title || step}</span>
-              </button>
-              {index < activeSteps.length - 1 && (
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+            <button
+              key={step}
+              onClick={() => canNav && goToStep(index)}
+              disabled={!canNav}
+              className={cn(
+                "inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-all",
+                isCurrent && "bg-[#c8143d] text-white shadow-[0_10px_24px_rgba(200,20,61,0.18)]",
+                !isCurrent &&
+                  isComplete &&
+                  "bg-white text-[#c8143d] ring-1 ring-[#f0ccd5] hover:bg-[#fff7f9]",
+                !isCurrent &&
+                  !isComplete &&
+                  "bg-[#eef2fa] text-slate-500 hover:bg-[#e8edf7]",
+                !canNav && "cursor-not-allowed opacity-50"
               )}
-            </div>
+            >
+              {isComplete && !isCurrent ? (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8143d] text-white">
+                  <Check className="h-3 w-3" />
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold",
+                    isCurrent ? "bg-white/20 text-white" : "bg-white/70 text-slate-600"
+                  )}
+                >
+                  {index + 1}
+                </span>
+              )}
+              <span>{STEP_TITLES[step]?.title || step}</span>
+            </button>
           )
         })}
       </div>
 
-      {/* Step Content - Modern Card */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/80 overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20" />
-        <CardHeader className="space-y-1 pb-4">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-bold">
-              {currentStepIndex + 1}
-            </span>
-            {stepInfo.title}
-          </CardTitle>
-          <CardDescription className="text-base">{stepInfo.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {renderStep()}
-        </CardContent>
-      </Card>
+      <div className="overflow-hidden rounded-[30px] bg-[#f7f5f4] p-5 shadow-[0_20px_55px_rgba(15,23,42,0.06)] ring-1 ring-black/5 sm:p-6">
+        <div className="mb-5 h-1 w-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#f2c7d1]" />
+
+        <div className="mb-5 flex items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-sm font-bold text-[#c8143d] shadow-sm">
+            {currentStepIndex + 1}
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">{stepInfo.title}</h3>
+            <p className="mt-1 text-sm text-slate-500">{stepInfo.description}</p>
+          </div>
+        </div>
+
+        {renderStep()}
+      </div>
     </div>
   )
 }

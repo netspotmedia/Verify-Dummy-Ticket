@@ -3,7 +3,7 @@
 import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, Building2, Info } from "lucide-react"
+import { ArrowLeft, ArrowRight, Building2, Info, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { HotelType } from "@/lib/types"
 
@@ -44,148 +44,211 @@ export function StepHotel() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Building2 className="h-5 w-5 text-primary" />
-          <Label className="text-lg font-semibold">Hotel Confirmation Type</Label>
-        </div>
-        <p className="text-sm text-muted-foreground">
+      <section className="space-y-3">
+        <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+          Hotel Confirmation Type
+        </Label>
+
+        <p className="text-sm text-slate-500">
           Choose how you want the hotel confirmation to be issued
         </p>
-        
-        <div className="grid gap-4">
+
+        <div className="grid gap-3">
           {HOTEL_OPTIONS.map((option) => {
             const cost = calculateHotelCost(option.value)
             const isSelected = selectedType === option.value
-            
+
             return (
-              <div
+              <button
                 key={option.value}
+                type="button"
                 onClick={() => setHotelDetails({ type: option.value } as any)}
                 className={cn(
-                  "group relative rounded-2xl border-2 p-6 cursor-pointer transition-all duration-200",
+                  "group relative w-full overflow-hidden rounded-[26px] p-[1px] text-left transition-all",
                   isSelected
-                    ? "border-primary bg-primary/5 shadow-md"
-                    : "border-border/50 hover:border-primary/30"
+                    ? "bg-gradient-to-r from-[#c8143d] via-[#d94a6d] to-[#efc5d0] shadow-[0_16px_30px_rgba(200,20,61,0.12)]"
+                    : "bg-transparent"
                 )}
               >
-                <div className="flex items-start gap-5">
-                  <div className={cn(
-                    "flex h-14 w-14 items-center justify-center rounded-2xl text-2xl transition-colors",
-                    isSelected ? "bg-primary" : "bg-muted group-hover:bg-primary/10"
-                  )}>
-                    {option.icon}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-semibold text-lg">{option.title}</h3>
-                      <span className="text-lg font-bold text-primary">${cost}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
-                  </div>
-                </div>
-
-                {/* Selection indicator */}
-                <div className={cn(
-                  "absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full transition-all",
-                  isSelected ? "bg-primary" : "border-2 border-muted-foreground/30"
-                )}>
-                  {isSelected && (
-                    <svg className="h-3.5 w-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                <div
+                  className={cn(
+                    "relative flex min-h-[118px] items-center gap-4 rounded-[25px] px-5 py-5 transition-all",
+                    isSelected
+                      ? "bg-white"
+                      : "bg-[#e9edf5] hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.05)]"
                   )}
+                >
+                  <div
+                    className={cn(
+                      "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl transition-all",
+                      isSelected
+                        ? "bg-[#c8143d] text-white"
+                        : "bg-white text-slate-600 shadow-sm"
+                    )}
+                  >
+                    <span>{option.icon}</span>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          {option.title}
+                        </h3>
+                        <p className="mt-1 max-w-xl text-sm leading-6 text-slate-500">
+                          {option.description}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 text-left sm:text-right">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
+                          Total
+                        </p>
+                        <p className="mt-1 text-2xl font-semibold text-[#c8143d]">
+                          ${cost}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "absolute right-5 top-5 flex h-6 w-6 items-center justify-center rounded-full transition-all",
+                      isSelected
+                        ? "bg-[#c8143d] text-white"
+                        : "border border-slate-300 bg-white text-transparent"
+                    )}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </div>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Pricing Guide */}
-      <div className="bg-muted/50 rounded-2xl p-6 space-y-4">
-        <div className="flex items-center gap-2">
-          <Info className="h-5 w-5 text-muted-foreground" />
-          <Label className="font-semibold">Pricing Guide</Label>
+      <section className="rounded-[30px] bg-[#eef2fa] p-5">
+        <div className="mb-5 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+            <Info className="h-4 w-4 text-slate-500" />
+          </div>
+          <div>
+            <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+              Pricing Guide
+            </Label>
+            <p className="mt-1 text-sm text-slate-500">
+              Compare how pricing changes with traveler count
+            </p>
+          </div>
         </div>
-        
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Separate Pricing */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">Separate Confirmation</p>
-            <div className="space-y-1 text-sm">
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-[24px] bg-white p-4 shadow-sm">
+            <p className="text-sm font-semibold text-slate-900">
+              Separate Confirmation
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[#a27f88]">
+              $5 per traveler
+            </p>
+
+            <div className="mt-4 space-y-2 text-sm text-slate-600">
               <div className="flex justify-between">
                 <span>1 traveler</span>
-                <span className="font-medium">$5</span>
+                <span className="font-semibold text-slate-900">$5</span>
               </div>
               <div className="flex justify-between">
                 <span>2 travelers</span>
-                <span className="font-medium">$10</span>
+                <span className="font-semibold text-slate-900">$10</span>
               </div>
               <div className="flex justify-between">
                 <span>3 travelers</span>
-                <span className="font-medium">$15</span>
+                <span className="font-semibold text-slate-900">$15</span>
               </div>
               <div className="flex justify-between">
                 <span>4 travelers</span>
-                <span className="font-medium">$20</span>
+                <span className="font-semibold text-slate-900">$20</span>
               </div>
             </div>
           </div>
 
-          {/* Shared Pricing */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">Shared Confirmation</p>
-            <div className="space-y-1 text-sm">
+          <div className="rounded-[24px] bg-white p-4 shadow-sm">
+            <p className="text-sm font-semibold text-slate-900">
+              Shared Confirmation
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[#a27f88]">
+              $5 base + $1 extra traveler
+            </p>
+
+            <div className="mt-4 space-y-2 text-sm text-slate-600">
               <div className="flex justify-between">
                 <span>1 traveler</span>
-                <span className="font-medium">$5</span>
+                <span className="font-semibold text-slate-900">$5</span>
               </div>
               <div className="flex justify-between">
                 <span>2 travelers</span>
-                <span className="font-medium">$6</span>
+                <span className="font-semibold text-slate-900">$6</span>
               </div>
               <div className="flex justify-between">
                 <span>3 travelers</span>
-                <span className="font-medium">$7</span>
+                <span className="font-semibold text-slate-900">$7</span>
               </div>
               <div className="flex justify-between">
                 <span>4 travelers</span>
-                <span className="font-medium">$8</span>
+                <span className="font-semibold text-slate-900">$8</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Selected Cost */}
       {selectedType && (
-        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
+        <section className="rounded-[30px] bg-[#eef2fa] p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                <Building2 className="h-6 w-6 text-primary" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#c8143d] shadow-sm">
+                <Building2 className="h-5 w-5" />
               </div>
+
               <div>
-                <p className="font-semibold">Hotel Cost</p>
-                <p className="text-sm text-muted-foreground">For {travelerCount} traveler{travelerCount > 1 ? "s" : ""}</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
+                  Hotel Cost
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  For {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
+                </p>
               </div>
             </div>
-            <span className="text-3xl font-bold text-primary">${hotelCost}</span>
+
+            <div className="text-left sm:text-right">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
+                Total
+              </p>
+              <p className="mt-1 text-3xl font-semibold text-[#c8143d]">
+                ${hotelCost}
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-xl px-6">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          variant="outline"
+          onClick={prevStep}
+          className="h-12 rounded-full border-[#ead8dd] bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-[#fff7f9]"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="gap-2 rounded-xl px-8">
+
+        <Button
+          onClick={nextStep}
+          disabled={!isValid()}
+          className="h-12 rounded-full bg-[#c90039] px-7 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.2)] hover:bg-[#b50033]"
+        >
           Continue
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>
