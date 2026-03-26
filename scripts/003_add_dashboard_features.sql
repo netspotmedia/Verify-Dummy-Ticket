@@ -45,20 +45,14 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS suspend_reason TEXT;
 
 -- Enhanced Site Settings with categories
--- Drop existing and recreate with better structure
-DROP TABLE IF EXISTS public.site_settings CASCADE;
+-- Update existing table to add 'footer' and 'landing' categories
+ALTER TABLE public.site_settings DROP CONSTRAINT IF EXISTS site_settings_category_check;
 
-CREATE TABLE IF NOT EXISTS public.site_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  category TEXT NOT NULL CHECK (category IN ('general', 'pricing', 'payment', 'delivery', 'notifications', 'footer', 'landing')),
-  key TEXT NOT NULL,
-  value JSONB NOT NULL,
-  description TEXT,
-  is_public BOOLEAN DEFAULT false,
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-  UNIQUE(category, key)
-);
+ALTER TABLE public.site_settings ADD CONSTRAINT site_settings_category_check 
+CHECK (category IN ('general', 'pricing', 'payment', 'delivery', 'notifications', 'landing', 'footer'));
+
+-- Add unique constraint on category + key if not exists
+ALTER TABLE public.site_settings ADD CONSTRAINT site_settings_category_key_unique UNIQUE (category, key);
 
 -- Insert default settings by category
 -- General Settings

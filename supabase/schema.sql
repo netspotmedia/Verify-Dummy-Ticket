@@ -67,6 +67,9 @@ INSERT INTO testimonial (name, location, rating, comment, is_active) VALUES
   ('Emma Wilson', 'Germany', 5, 'Perfect for my Schengen visa application. Professional service and great communication.', true)
 ON CONFLICT DO NOTHING;
 
+-- Add unique constraint for upsert to work (run this in Supabase SQL Editor first if not exists)
+-- ALTER TABLE site_settings ADD CONSTRAINT site_settings_category_key_unique UNIQUE (category, key);
+
 -- Site Settings for Logo
 INSERT INTO site_settings (category, key, value, description, is_public)
 VALUES 
