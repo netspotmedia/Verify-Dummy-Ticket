@@ -444,25 +444,15 @@ export function StepPayment() {
         <span>Your payment is secure and encrypted</span>
       </div>
 
-      <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <Button
-          variant="outline"
-          onClick={prevStep}
-          disabled={isSubmitting}
-          className="h-12 rounded-full border-[#ead8dd] bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-[#fff7f9]"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="flex justify-between pt-4">
+        <Button variant="outline" onClick={prevStep} disabled={isSubmitting} className="gap-2 rounded-full px-6">
+          <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-
-        <Button
-          onClick={handleSubmitOrder}
-          disabled={!captchaVerified || isSubmitting}
-          className="h-12 rounded-full bg-[#c90039] px-7 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.2)] hover:bg-[#b50033]"
-        >
+        <Button onClick={handleSubmitOrder} disabled={!captchaVerified || isSubmitting} className="gap-2 rounded-full bg-gradient-to-r from-[#c8143d] to-[#d94a6d] hover:from-[#d94a6d] hover:to-[#c8143d] text-white shadow-lg shadow-red-200/50 px-6">
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Processing...
             </>
           ) : (
