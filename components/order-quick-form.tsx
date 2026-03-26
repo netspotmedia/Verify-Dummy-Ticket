@@ -158,7 +158,7 @@ export function OrderQuickForm() {
 
       <CardContent className="space-y-6 p-6 pt-2">
         <div className="space-y-3">
-          <Label className="text-xs font-semibold text-[#5c3f40] uppercase tracking-wider block" style={{ fontFamily: 'var(--font-inter)' }}>
+          <Label className="text-xs font-semibold text-[#5c3f40] uppercase tracking-wider block" style={{ fontFamily: 'var(--font-outfit)' }}>
             Select Services
           </Label>
 
@@ -188,7 +188,7 @@ export function OrderQuickForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-[#5c3f40] uppercase tracking-wider block" style={{ fontFamily: 'var(--font-inter)' }}>
+            <Label className="text-xs font-semibold text-[#5c3f40] uppercase tracking-wider block" style={{ fontFamily: 'var(--font-outfit)' }}>
               Contact Email
             </Label>
             <div className="relative">
@@ -204,7 +204,7 @@ export function OrderQuickForm() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-[#5c3f40] uppercase tracking-wider block" style={{ fontFamily: 'var(--font-inter)' }}>
+            <Label className="text-xs font-semibold text-[#5c3f40] uppercase tracking-wider block" style={{ fontFamily: 'var(--font-outfit)' }}>
               Country of Residence
             </Label>
             <Select value={customerCountryCode} onValueChange={handleCountryChange}>
@@ -253,7 +253,7 @@ export function OrderQuickForm() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="h-[1px] flex-grow bg-[#e5bdbe]/30" />
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-inter)' }}>Traveler Information</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-outfit)' }}>Traveler Information</span>
             <div className="h-[1px] flex-grow bg-[#e5bdbe]/30" />
           </div>
 
@@ -322,7 +322,7 @@ export function OrderQuickForm() {
           </svg>
         </Button>
 
-        <p className="text-center text-xs text-[#5c3f40]/70 italic" style={{ fontFamily: 'var(--font-inter)' }}>
+        <p className="text-center text-xs text-[#5c3f40]/70 italic" style={{ fontFamily: 'var(--font-outfit)' }}>
           By continuing, you agree to our Travel Terms & Conditions and Privacy Policy.
         </p>
       </CardContent>

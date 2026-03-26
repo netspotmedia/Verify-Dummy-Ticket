@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 const outfit = Outfit({ 
   subsets: ["latin"],
   variable: '--font-outfit',
-  weight: ['600']
+  weight: ['400', '500', '600', '700', '800']
 })
 
 const openSans = Open_Sans({ 
@@ -105,7 +105,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${geistMono.variable} ${outfit.variable} ${openSans.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${geistMono.variable} ${outfit.variable} ${openSans.variable} font-outfit antialiased`}>
         {children}
         <Toaster position="top-right" richColors />
         <Analytics />
