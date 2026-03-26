@@ -53,8 +53,13 @@ export function HeroSection() {
             </h1>
 
             {/* Subheading */}
-            <p className="text-lg md:text-xl text-slate-600 mb-8 leading-relaxed max-w-lg" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600, color: 'rgb(0, 0, 0)', fontSize: '20px', lineHeight: '20px' }}>
+            <p className="text-lg md:text-xl text-slate-600 mb-4 leading-relaxed max-w-lg" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600, color: 'rgb(0, 0, 0)', fontSize: '20px', lineHeight: '20px' }}>
               Get Verify Dummy Ticket & Hotel for visa application and Airport proof of return with valid PNR. Our tickets are receive instantly within 24 hours.
+            </p>
+
+            {/* Embassy Notice */}
+            <p className="text-base mb-8 leading-relaxed max-w-lg italic" style={{ fontFamily: 'var(--font-open-sans)', fontWeight: 700, fontStyle: 'italic', color: 'rgb(221, 24, 59)', fontSize: '16px', lineHeight: '26px' }}>
+              Embassy recommends not to purchase tickets until visa is approved. So don't risk your money, time and effort by buying actual tickets. We provide you confirmed flight reservations, hotel bookings and travel medical insurance that are perfect for visa application. Once you get your visa, make your own travel plans!
             </p>
 
             {/* CTA Buttons */}
