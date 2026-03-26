@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Plane, Hotel, Shield, Check, Plus, Minus, User, Globe, Mail, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Title, ServiceType } from "@/lib/types"
@@ -71,8 +71,8 @@ const COUNTRIES = [
 
 export function OrderQuickForm() {
   const router = useRouter()
-  const { setServices, setCustomerInfo, syncTravelers, updateTraveler, formData } = useOrderStore()
-  
+  const { setServices, setCustomerInfo, syncTravelers, updateTraveler } = useOrderStore()
+
   const [selectedServices, setSelectedServices] = useState<ServiceType[]>(["flight"])
   const [travelerCount, setTravelerCount] = useState(1)
   const [travelers, setTravelers] = useState([{ title: "Mr" as Title, firstName: "", lastName: "" }])
@@ -93,7 +93,7 @@ export function OrderQuickForm() {
   const handleTravelerCountChange = (delta: number) => {
     const newCount = Math.max(1, Math.min(10, travelerCount + delta))
     setTravelerCount(newCount)
-    
+
     const newTravelers = [...travelers]
     while (newTravelers.length < newCount) {
       newTravelers.push({ title: "Mr" as Title, firstName: "", lastName: "" })
@@ -101,7 +101,11 @@ export function OrderQuickForm() {
     setTravelers(newTravelers.slice(0, newCount))
   }
 
-  const handleTravelerChange = (index: number, field: keyof typeof travelers[0], value: string) => {
+  const handleTravelerChange = (
+    index: number,
+    field: keyof (typeof travelers)[0],
+    value: string
+  ) => {
     const newTravelers = [...travelers]
     newTravelers[index] = { ...newTravelers[index], [field]: value }
     setTravelers(newTravelers)
@@ -134,168 +138,231 @@ export function OrderQuickForm() {
     travelers.forEach((traveler, index) => {
       updateTraveler(index, traveler)
     })
-    
+
     router.push("/order")
   }
 
   return (
-    <Card className="border-0 shadow-2xl bg-white rounded-3xl overflow-hidden">
-      <div className="h-1 bg-gradient-to-r from-red-600 to-red-700" />
-      <CardHeader className="pb-4">
-        <CardTitle className="text-xl flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100 text-red-700 text-sm font-bold">
-            <Users className="h-4 w-4" />
-          </span>
-          Quick Order
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold text-slate-700">Select Services</Label>
-          <div className="grid grid-cols-3 gap-3">
-            {SERVICES.map((service) => (
-              <button
-                key={service.value}
-                onClick={() => toggleService(service.value)}
-                className={cn(
-                  "relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                  selectedServices.includes(service.value)
-                    ? "border-red-600 bg-red-50"
-                    : "border-slate-200 hover:border-slate-300 bg-white"
-                )}
-              >
-                {selectedServices.includes(service.value) && (
-                  <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-600 flex items-center justify-center">
-                    <Check className="h-3 w-3 text-white" />
-                  </div>
-                )}
-                <service.icon className={cn("h-5 w-5", selectedServices.includes(service.value) ? "text-red-600" : "text-slate-400")} />
-                <span className={cn("text-xs font-medium", selectedServices.includes(service.value) ? "text-red-700" : "text-slate-600")}>
-                  {service.label}
-                </span>
-                <span className="text-[10px] text-slate-400">{service.price}</span>
-              </button>
-            ))}
-          </div>
+    <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-5 py-4 sm:px-6">
+          <h2 className="text-base font-semibold text-white sm:text-lg">
+            Complete the form below to get your visa documents
+          </h2>
         </div>
 
-        <div className="bg-slate-50 rounded-xl p-4 space-y-4">
-          <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-slate-500" />
-            <Label className="text-sm font-semibold">Travelers</Label>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleTravelerCountChange(-1)}
-              disabled={travelerCount <= 1}
-              className="h-10 w-10 rounded-lg border-slate-300"
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <div className="flex-1 text-center">
-              <span className="text-2xl font-bold text-slate-900">{travelerCount}</span>
-              <p className="text-xs text-slate-500">{travelerCount === 1 ? "Traveler" : "Travelers"}</p>
+        <CardContent className="space-y-5 p-5 sm:space-y-6 sm:p-6">
+          <section className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-sm font-semibold text-slate-800">
+                Select Services
+              </Label>
+              <p className="text-xs text-slate-500">
+                Choose the visa support services you need
+              </p>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleTravelerCountChange(1)}
-              disabled={travelerCount >= 10}
-              className="h-10 w-10 rounded-lg border-slate-300"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
 
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Mail className="h-4 w-4 text-slate-400" />
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-11 rounded-xl border-slate-300"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="country" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Globe className="h-4 w-4 text-slate-400" />
-              Country
-            </Label>
-            <Select value={customerCountryCode} onValueChange={handleCountryChange}>
-              <SelectTrigger className="h-11 rounded-xl border-slate-300">
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <Label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <User className="h-4 w-4 text-slate-400" />
-            Traveler Names
-          </Label>
-          <div className="space-y-3 max-h-[200px] overflow-y-auto">
-            {travelers.map((traveler, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 text-xs font-bold shrink-0">
-                  {index + 1}
-                </div>
-                <Select
-                  value={traveler.title}
-                  onValueChange={(value) => handleTravelerChange(index, "title", value)}
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              {SERVICES.map((service) => (
+                <button
+                  key={service.value}
+                  type="button"
+                  onClick={() => toggleService(service.value)}
+                  className={cn(
+                    "relative flex min-h-[88px] items-center gap-3 rounded-lg border px-3 py-3 text-left transition-all",
+                    selectedServices.includes(service.value)
+                      ? "border-red-600 bg-red-50"
+                      : "border-slate-300 bg-white hover:border-slate-400"
+                  )}
                 >
-                  <SelectTrigger className="w-20 h-9 rounded-lg">
-                    <SelectValue />
+                  {selectedServices.includes(service.value) && (
+                    <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600">
+                      <Check className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+
+                  <div
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
+                      selectedServices.includes(service.value)
+                        ? "bg-red-100 text-red-600"
+                        : "bg-slate-100 text-slate-500"
+                    )}
+                  >
+                    <service.icon className="h-4 w-4" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p
+                      className={cn(
+                        "text-sm font-medium leading-tight",
+                        selectedServices.includes(service.value)
+                          ? "text-red-700"
+                          : "text-slate-800"
+                      )}
+                    >
+                      {service.label}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">{service.price}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4 text-slate-500" />
+                <Label className="text-sm font-semibold text-slate-800">
+                  Number of Travelers
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleTravelerCountChange(-1)}
+                  disabled={travelerCount <= 1}
+                  className="h-9 w-9 rounded-md border-slate-300"
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+
+                <div className="flex-1 text-center">
+                  <div className="text-xl font-semibold text-slate-900">
+                    {travelerCount}
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {travelerCount === 1 ? "Traveler" : "Travelers"}
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleTravelerCountChange(1)}
+                  disabled={travelerCount >= 10}
+                  className="h-9 w-9 rounded-md border-slate-300"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="email"
+                  className="flex items-center gap-2 text-sm font-semibold text-slate-800"
+                >
+                  <Mail className="h-4 w-4 text-slate-400" />
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Documents will be sent here"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-10 rounded-md border-slate-300 px-3"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="country"
+                  className="flex items-center gap-2 text-sm font-semibold text-slate-800"
+                >
+                  <Globe className="h-4 w-4 text-slate-400" />
+                  Country
+                </Label>
+                <Select value={customerCountryCode} onValueChange={handleCountryChange}>
+                  <SelectTrigger className="h-10 rounded-md border-slate-300">
+                    <SelectValue placeholder="Select country" />
                   </SelectTrigger>
                   <SelectContent>
-                    {TITLES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Input
-                  placeholder="First"
-                  value={traveler.firstName}
-                  onChange={(e) => handleTravelerChange(index, "firstName", e.target.value)}
-                  className="flex-1 h-9 rounded-lg"
-                />
-                <Input
-                  placeholder="Last"
-                  value={traveler.lastName}
-                  onChange={(e) => handleTravelerChange(index, "lastName", e.target.value)}
-                  className="flex-1 h-9 rounded-lg"
-                />
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          </section>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={!isValid()}
-          className="w-full h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-xl shadow-lg shadow-red-200/50"
-        >
-          Continue to Order
-        </Button>
-      </CardContent>
-    </Card>
+          <section className="space-y-3">
+            <Label className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+              <User className="h-4 w-4 text-slate-400" />
+              Traveler Names
+            </Label>
+
+            <div className="space-y-2.5">
+              {travelers.map((traveler, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 gap-2 sm:grid-cols-[40px_90px_1fr_1fr]"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">
+                    {index + 1}
+                  </div>
+
+                  <Select
+                    value={traveler.title}
+                    onValueChange={(value) =>
+                      handleTravelerChange(index, "title", value)
+                    }
+                  >
+                    <SelectTrigger className="h-10 rounded-md border-slate-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TITLES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Input
+                    placeholder="First name"
+                    value={traveler.firstName}
+                    onChange={(e) =>
+                      handleTravelerChange(index, "firstName", e.target.value)
+                    }
+                    className="h-10 rounded-md border-slate-300"
+                  />
+
+                  <Input
+                    placeholder="Last name"
+                    value={traveler.lastName}
+                    onChange={(e) =>
+                      handleTravelerChange(index, "lastName", e.target.value)
+                    }
+                    className="h-10 rounded-md border-slate-300"
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <div className="pt-1">
+            <Button
+              onClick={handleSubmit}
+              disabled={!isValid()}
+              className="h-11 w-full rounded-md bg-red-600 font-semibold text-white hover:bg-red-700"
+            >
+              Continue to Order
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
