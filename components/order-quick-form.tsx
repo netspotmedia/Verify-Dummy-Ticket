@@ -147,16 +147,6 @@ export function OrderQuickForm() {
     <div className="rounded-[32px] bg-[#f7f5f4] p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] ring-1 ring-black/5 sm:p-6">
       <div className="mb-6 h-1 w-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#f2c7d1]" />
 
-      <div className="flex items-center gap-3 px-2 pb-4">
-        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e11d48] text-white">
-          <Users className="h-5 w-5" />
-        </span>
-        <div>
-          <h3 className="text-lg font-bold text-[#0b1c30]" style={{ fontFamily: 'var(--font-outfit)' }}>Get Started</h3>
-          <p className="text-xs text-[#5c3f40]">Fill in your details below</p>
-        </div>
-      </div>
-
       <div className="space-y-6 px-2 sm:px-0">
         <div className="space-y-3">
           <Label className="text-xs font-semibold uppercase tracking-wider text-[#5c3f40] block" style={{ fontFamily: 'var(--font-outfit)' }}>
