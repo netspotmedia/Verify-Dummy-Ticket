@@ -58,7 +58,7 @@ export function HeroSection() {
             </p>
 
             {/* Embassy Notice */}
-            <p className="text-base mb-8 leading-relaxed max-w-lg italic" style={{ fontFamily: 'var(--font-open-sans)', fontWeight: 700, fontStyle: 'italic', color: 'rgb(221, 24, 59)', fontSize: '16px', lineHeight: '26px' }}>
+            <p className="text-base mb-8 leading-relaxed max-w-lg italic" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 700, fontStyle: 'italic', color: 'rgb(221, 24, 59)', fontSize: '16px', lineHeight: '26px' }}>
               Embassy recommends not to purchase tickets until visa is approved. So don't risk your money, time and effort by buying actual tickets. We provide you confirmed flight reservations, hotel bookings and travel medical insurance that are perfect for visa application. Once you get your visa, make your own travel plans!
             </p>
 
