@@ -87,8 +87,11 @@ export type GuaranteeItem = {
 
 export type SiteSettings = {
   id: string
+  category: string
   key: string
-  value: string | null
-  created_at: string
+  value: any
+  description: string | null
+  is_public: boolean | null
   updated_at: string
+  updated_by: string | null
 }
