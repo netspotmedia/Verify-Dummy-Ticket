@@ -40,7 +40,7 @@ export function HeroSection() {
           {/* Left Content */}
           <div className="relative z-10">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-red-100 px-4 py-1.5 rounded-full text-red-800 text-xs font-bold tracking-widest uppercase mb-6">
+            <div className="inline-flex items-center gap-2 bg-red-100 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-6" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600, color: 'rgb(204, 25, 57)', fontSize: '12px', lineHeight: '12px' }}>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
