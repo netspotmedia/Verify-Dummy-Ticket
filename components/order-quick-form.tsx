@@ -339,7 +339,7 @@ export function OrderQuickForm() {
             className="h-[56px] w-full rounded-full bg-[#c90039] text-base font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.22)] hover:bg-[#b50033]"
             style={{ fontFamily: 'var(--font-outfit)' }}
           >
-            <span>Continue to Order</span>
+            <span>Continue</span>
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
 
