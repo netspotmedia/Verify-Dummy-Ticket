@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface Airline {
   id: string
@@ -16,8 +15,8 @@ export function AirlineCarousel() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [airlines, setAirlines] = useState<Airline[]>([])
   const [loading, setLoading] = useState(true)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(true)
+  const animationRef = useRef<number | null>(null)
+  const isPausedRef = useRef(false)
 
   useEffect(() => {
     fetchAirlines()
@@ -37,46 +36,64 @@ export function AirlineCarousel() {
     }
   }
 
-  const checkScroll = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
-      setCanScrollLeft(scrollLeft > 0)
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
-    }
-  }
-
   useEffect(() => {
-    checkScroll()
     const container = scrollContainerRef.current
-    if (container) {
-      container.addEventListener("scroll", checkScroll)
-      return () => container.removeEventListener("scroll", checkScroll)
+    if (!container || airlines.length === 0) return
+
+    let lastTime = 0
+    const speed = 0.5
+
+    const animate = (currentTime: number) => {
+      if (!container) return
+      
+      if (!lastTime) lastTime = currentTime
+      const delta = currentTime - lastTime
+      lastTime = currentTime
+
+      if (!isPausedRef.current) {
+        container.scrollLeft += speed * (delta / 16)
+
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft = 0
+        }
+      }
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    const handleMouseEnter = () => {
+      isPausedRef.current = true
+    }
+
+    const handleMouseLeave = () => {
+      isPausedRef.current = false
+      lastTime = 0
+    }
+
+    container.addEventListener('mouseenter', handleMouseEnter)
+    container.addEventListener('mouseleave', handleMouseLeave)
+
+    animationRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      container.removeEventListener('mouseenter', handleMouseEnter)
+      container.removeEventListener('mouseleave', handleMouseLeave)
     }
   }, [airlines])
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 200
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      })
-    }
-  }
-
   if (loading) {
     return (
-      <section className="py-8 md:py-12 bg-slate-50 border-y border-slate-200">
+      <section className="py-12 md:py-16 bg-slate-50 border-y border-slate-200 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 flex items-center gap-6 overflow-hidden">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="flex-shrink-0 flex flex-col items-center gap-1">
-                  <div className="h-10 w-10 rounded-full bg-slate-200 animate-pulse" />
-                  <div className="h-3 w-16 bg-slate-200 rounded animate-pulse" />
-                </div>
-              ))}
-            </div>
+          <div className="flex items-center gap-6 md:gap-10">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="flex-shrink-0">
+                <div className="h-14 w-14 md:h-20 md:w-20 rounded-xl bg-slate-200 animate-pulse" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -87,62 +104,33 @@ export function AirlineCarousel() {
     return null
   }
 
+  const duplicatedAirlines = [...airlines, ...airlines]
+
   return (
-    <section className="py-8 md:py-12 bg-slate-50 border-y border-slate-200">
+    <section className="py-12 md:py-16 bg-slate-50 border-y border-slate-200 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center gap-2 md:gap-4">
-          {/* Left Button */}
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className={`hidden md:flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border bg-white shadow-sm transition-all shrink-0 ${
-              canScrollLeft
-                ? "hover:bg-slate-50 cursor-pointer"
-                : "opacity-50 cursor-not-allowed"
-            }`}
-          >
-            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-slate-600" />
-          </button>
-
-          {/* Scrollable Container */}
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 overflow-x-auto scrollbar-hide scroll-smooth"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            <div className="flex items-center gap-4 md:gap-6 lg:gap-8 pb-2">
-              {airlines.map((airline) => (
-                <div
-                  key={airline.id}
-                  className="flex-shrink-0 flex flex-col items-center gap-1 md:gap-1.5 opacity-60 hover:opacity-100 transition-opacity cursor-default"
-                >
-                  <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white border shadow-sm flex items-center justify-center overflow-hidden p-1">
-                    {airline.logo_url ? (
-                      <img src={airline.logo_url} alt={airline.name} className="h-full w-full object-contain" />
-                    ) : (
-                      <span className="text-xs font-bold text-slate-700">{airline.code}</span>
-                    )}
-                  </div>
-                  <span className="text-xs md:text-xs font-medium text-slate-600 whitespace-nowrap">
-                    {airline.name}
-                  </span>
-                </div>
-              ))}
+        <div
+          ref={scrollContainerRef}
+          className="flex items-center gap-6 md:gap-10 overflow-hidden"
+        >
+          {duplicatedAirlines.map((airline, index) => (
+            <div
+              key={`${airline.id}-${index}`}
+              className="flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity duration-300"
+            >
+              <div className="h-14 w-14 md:h-20 md:w-20 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center overflow-hidden p-2 hover:shadow-md transition-shadow duration-300">
+                {airline.logo_url ? (
+                  <img 
+                    src={airline.logo_url} 
+                    alt={airline.name} 
+                    className="h-full w-full object-contain" 
+                  />
+                ) : (
+                  <span className="text-sm md:text-base font-bold text-slate-500">{airline.code}</span>
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Right Button */}
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className={`hidden md:flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border bg-white shadow-sm transition-all shrink-0 ${
-              canScrollRight
-                ? "hover:bg-slate-50 cursor-pointer"
-                : "opacity-50 cursor-not-allowed"
-            }`}
-          >
-            <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-slate-600" />
-          </button>
+          ))}
         </div>
       </div>
     </section>
