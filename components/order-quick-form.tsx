@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plane, Hotel, Shield, Minus, Plus, Mail, ChevronRight, Users } from "lucide-react"
+import { Plane, Hotel, Shield, Minus, Plus, Mail, ChevronRight, Users, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Title, ServiceType } from "@/lib/types"
 
@@ -149,7 +149,7 @@ export function OrderQuickForm() {
 
       <div className="space-y-6 px-2 sm:px-0">
         <div className="space-y-3">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-[#5c3f40] block" style={{ fontFamily: 'var(--font-outfit)' }}>
+          <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
             Select Services
           </Label>
 
@@ -163,10 +163,10 @@ export function OrderQuickForm() {
                   type="button"
                   onClick={() => toggleService(service.value)}
                   className={cn(
-                    "flex h-[52px] items-center justify-center gap-2 rounded-full border bg-[#e9edf5] px-4 text-sm font-semibold transition-all",
+                    "flex h-[52px] items-center justify-center gap-2 rounded-full border-2 text-sm font-semibold transition-all",
                     active
-                      ? "border-[#c8143d] bg-white text-[#c8143d] shadow-[inset_0_0_0_1px_#c8143d]"
-                      : "border-transparent text-[#4f5b70] hover:bg-white"
+                      ? "border-[#c8143d] bg-[#c8143d] text-white shadow-[0_8px_16px_rgba(200,20,61,0.2)]"
+                      : "border-transparent bg-[#e9edf5] text-slate-600 hover:bg-[#e9edf5]/80"
                   )}
                 >
                   <service.icon className="h-4 w-4" />
@@ -178,48 +178,52 @@ export function OrderQuickForm() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-[#5c3f40] block" style={{ fontFamily: 'var(--font-outfit)' }}>
-              Contact Email
-            </Label>
-            <div className="relative">
-              <Input
-                type="email"
-                placeholder="traveller@voyager.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-[52px] rounded-full border-0 bg-[#e9edf5] pl-5 pr-12 text-[15px] text-slate-700 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#c8143d]"
-              />
-              <Mail className="pointer-events-none absolute right-5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <div className="rounded-[24px] bg-[#e9edf5] p-5">
+            <div className="space-y-3">
+              <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+                Contact Email
+              </Label>
+              <div className="relative">
+                <Input
+                  type="email"
+                  placeholder="traveller@voyager.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11 rounded-xl border-slate-200 bg-white pl-4 pr-10 text-sm"
+                />
+                <Mail className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-[#5c3f40] block" style={{ fontFamily: 'var(--font-outfit)' }}>
-              Country of Residence
-            </Label>
-            <Select value={customerCountryCode} onValueChange={handleCountryChange}>
-              <SelectTrigger className="h-[52px] rounded-full border-0 bg-[#e9edf5] px-5 text-[15px] text-slate-700 focus:ring-2 focus:ring-[#c8143d]">
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="rounded-[24px] bg-[#e9edf5] p-5">
+            <div className="space-y-3">
+              <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+                Country of Residence
+              </Label>
+              <Select value={customerCountryCode} onValueChange={handleCountryChange}>
+                <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-[30px] bg-[#e9edf5] px-4 py-4 sm:px-5">
+        <div className="rounded-[24px] bg-[#e9edf5] p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-[26px] font-semibold leading-none text-slate-900 sm:text-[20px]" style={{ fontFamily: 'var(--font-outfit)' }}>
+              <h3 className="text-lg font-semibold text-slate-900">
                 Number of Travelers
               </h3>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-500">
                 Add up to 5 passengers per quick order
               </p>
             </div>
@@ -234,7 +238,7 @@ export function OrderQuickForm() {
                 <Minus className="h-4 w-4" />
               </button>
 
-              <div className="min-w-[64px] text-center text-[28px] font-semibold tracking-[0.08em] text-slate-900 sm:text-[24px]" style={{ fontFamily: 'var(--font-outfit)' }}>
+              <div className="min-w-[64px] text-center text-2xl font-semibold tracking-[0.08em] text-slate-900">
                 {String(travelerCount).padStart(2, "0")}
               </div>
 
@@ -250,28 +254,28 @@ export function OrderQuickForm() {
           </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="h-[1px] flex-grow bg-[#e5bdbe]/30" />
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400" style={{ fontFamily: 'var(--font-outfit)' }}>Traveler Information</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Traveler Information</span>
             <div className="h-[1px] flex-grow bg-[#e5bdbe]/30" />
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {travelers.map((traveler, index) => (
-              <div key={index} className="space-y-3">
-                <div className="flex items-center gap-2">
+              <div key={index} className="rounded-[24px] bg-[#e9edf5] p-5">
+                <div className="flex items-center gap-3 mb-4">
                   <div
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                      "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold",
                       index === 0
-                        ? "bg-[#d61a47] text-white"
-                        : "bg-[#dde5ef] text-slate-600"
+                        ? "bg-[#c8143d] text-white"
+                        : "bg-white text-slate-600"
                     )}
                   >
                     {index + 1}
                   </div>
-                  <span className="text-sm font-semibold text-slate-900" style={{ fontFamily: 'var(--font-outfit)' }}>
+                  <span className="text-sm font-semibold text-slate-900">
                     {index === 0
                       ? "Primary Traveler"
                       : index === 1
@@ -287,7 +291,7 @@ export function OrderQuickForm() {
                       handleTravelerChange(index, "title", value)
                     }
                   >
-                    <SelectTrigger className="h-[44px] rounded-full border-0 bg-[#e9edf5] px-4 text-sm focus:ring-2 focus:ring-[#c8143d]">
+                    <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -305,7 +309,7 @@ export function OrderQuickForm() {
                     onChange={(e) =>
                       handleTravelerChange(index, "firstName", e.target.value)
                     }
-                    className="h-[44px] rounded-full border-0 bg-[#e9edf5] px-5 text-sm placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-[#c8143d]"
+                    className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm"
                   />
 
                   <Input
@@ -314,7 +318,7 @@ export function OrderQuickForm() {
                     onChange={(e) =>
                       handleTravelerChange(index, "lastName", e.target.value)
                     }
-                    className="h-[44px] rounded-full border-0 bg-[#e9edf5] px-5 text-sm placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-[#c8143d]"
+                    className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm"
                   />
                 </div>
               </div>
@@ -322,21 +326,19 @@ export function OrderQuickForm() {
           </div>
         </div>
 
-        <div className="pt-2">
-          <Button
-            onClick={handleSubmit}
-            disabled={!isValid()}
-            className="h-[56px] w-full rounded-full bg-[#c90039] text-base font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.22)] hover:bg-[#b50033]"
-            style={{ fontFamily: 'var(--font-outfit)' }}
-          >
-            <span>Continue</span>
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-
-          <p className="mt-4 text-center text-xs text-[#5c3f40]/70 italic" style={{ fontFamily: 'var(--font-outfit)' }}>
-            By continuing, you agree to our Travel Terms & Conditions and Privacy Policy.
-          </p>
+        <div className="flex items-start gap-3 rounded-[18px] bg-[#f7f5f4] p-3">
+          <Info className="h-4 w-4 mt-0.5 shrink-0 text-slate-500" />
+          <p className="text-sm text-slate-500">By continuing, you agree to our Travel Terms & Conditions and Privacy Policy.</p>
         </div>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={!isValid()}
+          className="h-12 w-full rounded-full bg-gradient-to-r from-[#c8143d] to-[#d94a6d] text-base font-semibold text-white shadow-lg shadow-red-200/50 hover:from-[#d94a6d] hover:to-[#c8143d]"
+        >
+          Continue
+          <ChevronRight className="ml-2 h-4 w-4" />
+        </Button>
       </div>
     </div>
   )
