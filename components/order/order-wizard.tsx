@@ -72,49 +72,32 @@ export function OrderWizard() {
 
   const renderStep = () => {
     switch (currentStep) {
-      case "services":
-        return <StepServices />
-      case "common":
-        return <StepCommon />
-      case "flight":
-        return <StepFlight />
-      case "hotel":
-        return <StepHotel />
-      case "insurance":
-        return <StepInsurance />
-      case "review":
-        return <StepReview />
-      case "payment":
-        return <StepPayment />
-      default:
-        return <StepServices />
+      case "services": return <StepServices />
+      case "common": return <StepCommon />
+      case "flight": return <StepFlight />
+      case "hotel": return <StepHotel />
+      case "insurance": return <StepInsurance />
+      case "review": return <StepReview />
+      case "payment": return <StepPayment />
+      default: return <StepServices />
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#ead8dd]">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#e85d7d] transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a27f88]">
-              Step {currentStepIndex + 1} of {activeSteps.length}
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
-              {stepInfo.title}
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">{stepInfo.description}</p>
-          </div>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Step {currentStepIndex + 1} of {activeSteps.length}</p>
+          <h2 className="text-xl font-semibold text-slate-900 mt-0.5">{stepInfo.title}</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{stepInfo.description}</p>
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+        <div className="h-full rounded-full bg-[#c8143d] transition-all duration-300" style={{ width: `${progress}%` }} />
+      </div>
+
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
         {activeSteps.map((step, index) => {
           const isComplete = isStepComplete(step)
           const isCurrent = currentStepIndex === index
@@ -126,51 +109,27 @@ export function OrderWizard() {
               onClick={() => canNav && goToStep(index)}
               disabled={!canNav}
               className={cn(
-                "inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-all",
-                isCurrent && "bg-[#c8143d] text-white shadow-[0_10px_24px_rgba(200,20,61,0.18)]",
-                !isCurrent &&
-                  isComplete &&
-                  "bg-white text-[#c8143d] ring-1 ring-[#f0ccd5] hover:bg-[#fff7f9]",
-                !isCurrent &&
-                  !isComplete &&
-                  "bg-[#eef2fa] text-slate-500 hover:bg-[#e8edf7]",
+                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all",
+                isCurrent && "bg-[#c8143d] text-white",
+                !isCurrent && isComplete && "bg-[#c8143d]/10 text-[#c8143d] ring-1 ring-[#c8143d]/20",
+                !isCurrent && !isComplete && "bg-slate-100 text-slate-500 hover:bg-slate-200",
                 !canNav && "cursor-not-allowed opacity-50"
               )}
             >
               {isComplete && !isCurrent ? (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#c8143d] text-white">
-                  <Check className="h-3 w-3" />
-                </span>
+                <Check className="h-3 w-3" />
               ) : (
-                <span
-                  className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold",
-                    isCurrent ? "bg-white/20 text-white" : "bg-white/70 text-slate-600"
-                  )}
-                >
+                <span className={cn("h-4 w-4 flex items-center justify-center rounded-full text-[10px]", isCurrent ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600")}>
                   {index + 1}
                 </span>
               )}
-              <span>{STEP_TITLES[step]?.title || step}</span>
+              <span className="hidden sm:inline">{stepInfo.title}</span>
             </button>
           )
         })}
       </div>
 
-      <div className="overflow-hidden rounded-[30px] bg-[#f7f5f4] p-5 shadow-[0_20px_55px_rgba(15,23,42,0.06)] ring-1 ring-black/5 sm:p-6">
-        <div className="mb-5 h-1 w-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#f2c7d1]" />
-
-        <div className="mb-5 flex items-start gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-sm font-bold text-[#c8143d] shadow-sm">
-            {currentStepIndex + 1}
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">{stepInfo.title}</h3>
-            <p className="mt-1 text-sm text-slate-500">{stepInfo.description}</p>
-          </div>
-        </div>
-
+      <div className="rounded-xl bg-slate-50 p-4">
         {renderStep()}
       </div>
     </div>
