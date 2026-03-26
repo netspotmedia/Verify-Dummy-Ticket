@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, Trash2, GripVertical, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { RichTextEditor } from '@/components/rich-text-editor'
 import type { HowItWorksItem } from '@/lib/supabase'
 
 export default function HowItWorksPage() {
@@ -185,11 +185,10 @@ export default function HowItWorksPage() {
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
-                <Textarea
+                <RichTextEditor
                   value={item.description || ''}
-                  onChange={(e) => setItems(items.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i)))}
+                  onChange={(value) => setItems(items.map((i) => (i.id === item.id ? { ...i, description: value } : i)))}
                   onBlur={() => handleUpdate(item)}
-                  rows={3}
                 />
               </div>
               <div className="space-y-2">

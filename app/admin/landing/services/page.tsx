@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { ArrowLeft, Save, Plus, Trash2, Plane, Hotel, Shield, GripVertical } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Plane, Hotel, Shield, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import type { ServiceItem } from '@/lib/supabase'
+import { RichTextEditor, renderRichText } from '@/components/rich-text-editor'
 
 const iconOptions = [
   { value: 'Plane', label: 'Flight', icon: Plane },
@@ -20,8 +20,6 @@ const iconOptions = [
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchServices()
@@ -120,7 +118,7 @@ export default function ServicesPage() {
             Back to Landing Pages
           </Link>
           <h1 className="text-3xl font-bold tracking-tight">Services</h1>
-          <p className="text-muted-foreground">Manage the services displayed on your landing page</p>
+          <p className="text-muted-foreground">Manage services with rich text descriptions</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="h-4 w-4 mr-2" />
@@ -129,94 +127,104 @@ export default function ServicesPage() {
       </div>
 
       <div className="space-y-4">
-        {services.map((service) => (
-          <Card key={service.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
-                  <div>
-                    <CardTitle>{service.title}</CardTitle>
-                    <CardDescription>{service.price_from}</CardDescription>
+        {services.map((service) => {
+          const IconComponent = iconOptions.find(i => i.value === service.icon)?.icon || Plane
+          return (
+            <Card key={service.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
+                      <IconComponent className="h-5 w-5 text-red-700" />
+                    </div>
+                    <div>
+                      <CardTitle dangerouslySetInnerHTML={{ __html: renderRichText(service.title) }} />
+                      <CardDescription>{service.price_from}</CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={service.is_active ?? false}
+                        onChange={(e) => handleUpdate({ ...service, is_active: e.target.checked })}
+                        className="rounded border-gray-300"
+                      />
+                      Active
+                    </label>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(service.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={service.is_active ?? false}
-                      onChange={(e) => handleUpdate({ ...service, is_active: e.target.checked || false })}
-                      className="rounded border-gray-300"
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Title</Label>
+                    <RichTextEditor
+                      value={service.title}
+                      onChange={(value) => setServices(services.map((s) => (s.id === service.id ? { ...s, title: value } : s)))}
+                      onBlur={() => handleUpdate(service)}
+                      placeholder="Service title..."
+                      className="rounded-lg"
+                      minHeight="60px"
                     />
-                    Active
-                  </label>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(service.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Price From</Label>
+                    <Input
+                      value={service.price_from || ''}
+                      onChange={(e) => setServices(services.map((s) => (s.id === service.id ? { ...s, price_from: e.target.value } : s)))}
+                      onBlur={() => handleUpdate(service)}
+                      placeholder="From $5"
+                    />
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input
-                    value={service.title}
-                    onChange={(e) => setServices(services.map((s) => (s.id === service.id ? { ...s, title: e.target.value } : s)))}
+                  <Label>Description</Label>
+                  <RichTextEditor
+                    value={service.description || ''}
+                    onChange={(value) => setServices(services.map((s) => (s.id === service.id ? { ...s, description: value } : s)))}
                     onBlur={() => handleUpdate(service)}
+                    placeholder="Service description with formatting..."
+                    className="rounded-lg"
+                    minHeight="150px"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Price From</Label>
-                  <Input
-                    value={service.price_from || ''}
-                    onChange={(e) => setServices(services.map((s) => (s.id === service.id ? { ...s, price_from: e.target.value } : s)))}
-                    onBlur={() => handleUpdate(service)}
-                    placeholder="From $5"
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Icon</Label>
+                    <select
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                      value={service.icon || 'Plane'}
+                      onChange={(e) => {
+                        setServices(services.map((s) => (s.id === service.id ? { ...s, icon: e.target.value } : s)))
+                        handleUpdate({ ...service, icon: e.target.value })
+                      }}
+                    >
+                      {iconOptions.map((icon) => (
+                        <option key={icon.value} value={icon.value}>
+                          {icon.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sort Order</Label>
+                    <Input
+                      type="number"
+                      value={service.sort_order || 0}
+                      onChange={(e) => setServices(services.map((s) => (s.id === service.id ? { ...s, sort_order: parseInt(e.target.value) } : s)))}
+                      onBlur={() => handleUpdate(service)}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea
-                  value={service.description || ''}
-                  onChange={(e) => setServices(services.map((s) => (s.id === service.id ? { ...s, description: e.target.value } : s)))}
-                  onBlur={() => handleUpdate(service)}
-                  placeholder="Service description..."
-                  rows={3}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Icon</Label>
-                  <select
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                    value={service.icon || 'Plane'}
-                    onChange={(e) => {
-                      setServices(services.map((s) => (s.id === service.id ? { ...s, icon: e.target.value } : s)))
-                      handleUpdate({ ...service, icon: e.target.value })
-                    }}
-                  >
-                    {iconOptions.map((icon) => (
-                      <option key={icon.value} value={icon.value}>
-                        {icon.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Sort Order</Label>
-                  <Input
-                    type="number"
-                    value={service.sort_order || 0}
-                    onChange={(e) => setServices(services.map((s) => (s.id === service.id ? { ...s, sort_order: parseInt(e.target.value) } : s)))}
-                    onBlur={() => handleUpdate(service)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          )
+        })}
 
         {services.length === 0 && (
           <Card>

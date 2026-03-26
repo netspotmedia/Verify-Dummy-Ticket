@@ -15,10 +15,17 @@ const sections = [
     color: 'bg-red-100 text-red-700',
   },
   {
+    title: 'Airlines',
+    description: 'Manage airline logos for the carousel',
+    href: '/admin/landing/airlines',
+    icon: Plane,
+    color: 'bg-sky-100 text-sky-700',
+  },
+  {
     title: 'Services',
     description: 'Flight tickets, hotel bookings, insurance',
     href: '/admin/landing/services',
-    icon: Plane,
+    icon: Hotel,
     color: 'bg-blue-100 text-blue-700',
   },
   {
