@@ -69,6 +69,12 @@ export default function SettingsPage() {
         { key: 'site_logo', value: settings.site_logo, category: 'general' },
         { key: 'site_name', value: settings.site_name, category: 'general' },
         { key: 'site_tagline', value: settings.site_tagline, category: 'general' },
+        { key: 'site_phone', value: settings.site_phone, category: 'general' },
+        { key: 'footer_company_name', value: settings.footer_company_name, category: 'landing' },
+        { key: 'footer_copyright', value: settings.footer_copyright, category: 'landing' },
+        { key: 'footer_facebook', value: settings.footer_facebook, category: 'landing' },
+        { key: 'footer_instagram', value: settings.footer_instagram, category: 'landing' },
+        { key: 'footer_twitter', value: settings.footer_twitter, category: 'landing' },
       ]
 
       for (const update of updates) {

@@ -176,11 +176,11 @@ export default function AdminSettingsPage() {
         { category: "general", key: "whatsapp_number", value: settings.whatsapp_number },
         { category: "general", key: "address", value: settings.address },
         { category: "general", key: "logo_url", value: settings.logo_url },
-        { category: "footer", key: "footer_company_name", value: settings.footer_company_name },
-        { category: "footer", key: "footer_copyright", value: settings.footer_copyright },
-        { category: "footer", key: "footer_facebook", value: settings.footer_facebook },
-        { category: "footer", key: "footer_instagram", value: settings.footer_instagram },
-        { category: "footer", key: "footer_twitter", value: settings.footer_twitter },
+        { category: "landing", key: "footer_company_name", value: settings.footer_company_name },
+        { category: "landing", key: "footer_copyright", value: settings.footer_copyright },
+        { category: "landing", key: "footer_facebook", value: settings.footer_facebook },
+        { category: "landing", key: "footer_instagram", value: settings.footer_instagram },
+        { category: "landing", key: "footer_twitter", value: settings.footer_twitter },
       ]
 
       for (const setting of settingsToSave) {

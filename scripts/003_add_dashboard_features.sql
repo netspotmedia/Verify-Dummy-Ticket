@@ -50,7 +50,7 @@ DROP TABLE IF EXISTS public.site_settings CASCADE;
 
 CREATE TABLE IF NOT EXISTS public.site_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  category TEXT NOT NULL CHECK (category IN ('general', 'pricing', 'payment', 'delivery', 'notifications')),
+  category TEXT NOT NULL CHECK (category IN ('general', 'pricing', 'payment', 'delivery', 'notifications', 'footer', 'landing')),
   key TEXT NOT NULL,
   value JSONB NOT NULL,
   description TEXT,
