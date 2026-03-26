@@ -73,7 +73,6 @@ export default function AdminSettingsPage() {
       const { data, error } = await supabase
         .from("site_settings")
         .select("key, value")
-        .in("key", SETTINGS_KEYS)
 
       if (error) throw error
 
