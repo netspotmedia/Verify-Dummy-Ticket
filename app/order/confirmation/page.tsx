@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -8,9 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { useSiteSettings } from "@/lib/site-settings"
-import { CheckCircle2, ArrowRight, Mail, Phone } from "lucide-react"
+import { CheckCircle2, ArrowRight, Mail, Phone, Loader2 } from "lucide-react"
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const searchParams = useSearchParams()
   const { settings } = useSiteSettings()
   const sitePhone = settings?.site_phone || "+234 800 123 4567"
@@ -91,5 +91,27 @@ export default function OrderConfirmationPage() {
       </main>
       <SiteFooter />
     </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="flex-1 py-12 md:py-20">
+        <div className="container mx-auto max-w-2xl px-4 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
+  )
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <OrderConfirmationContent />
+    </Suspense>
   )
 }
