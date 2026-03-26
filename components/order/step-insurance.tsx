@@ -290,14 +290,14 @@ export function StepInsurance() {
         </section>
       )}
 
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-full px-6">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex gap-3 pt-1">
+        <Button variant="outline" onClick={prevStep} className="h-10 px-4 rounded-lg">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="gap-2 rounded-full bg-gradient-to-r from-[#c8143d] to-[#d94a6d] hover:from-[#d94a6d] hover:to-[#c8143d] text-white shadow-lg shadow-red-200/50 px-6">
+        <Button onClick={nextStep} disabled={!isValid()} className="flex-1 h-10 rounded-lg bg-[#c8143d] hover:bg-[#b01030] font-medium">
           Continue
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

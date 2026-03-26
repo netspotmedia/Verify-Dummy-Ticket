@@ -208,42 +208,29 @@ export function StepFlight() {
         </div>
       </section>
 
-      <section className="rounded-[30px] bg-[#eef2fa] p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="rounded-xl bg-slate-50 p-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#c8143d] shadow-sm">
-              <Plane className="h-5 w-5" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#c8143d]/10 text-[#c8143d]">
+              <Plane className="h-4 w-4" />
             </div>
-
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
-                Flight Cost
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                ${totalFlightCost} × {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
-              </p>
+              <p className="text-xs font-medium text-slate-500">Flight Cost</p>
+              <p className="text-sm text-slate-600">${totalFlightCost} × {travelerCount}</p>
             </div>
           </div>
-
-          <div className="text-left sm:text-right">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
-              Total
-            </p>
-            <p className="mt-1 text-3xl font-semibold text-[#c8143d]">
-              ${totalFlightCost * travelerCount}
-            </p>
-          </div>
+          <p className="text-xl font-semibold text-[#c8143d]">${totalFlightCost * travelerCount}</p>
         </div>
       </section>
 
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={prevStep} className="gap-2 rounded-full px-6">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex gap-3 pt-1">
+        <Button variant="outline" onClick={prevStep} className="h-10 px-4 rounded-lg">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="gap-2 rounded-full bg-gradient-to-r from-[#c8143d] to-[#d94a6d] hover:from-[#d94a6d] hover:to-[#c8143d] text-white shadow-lg shadow-red-200/50 px-6">
+        <Button onClick={nextStep} disabled={!isValid()} className="flex-1 h-10 rounded-lg bg-[#c8143d] hover:bg-[#b01030] font-medium">
           Continue
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
