@@ -147,8 +147,6 @@ export function OrderQuickForm() {
     <div className="rounded-[32px] bg-[#f7f5f4] p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] ring-1 ring-black/5 sm:p-6">
       <div className="mb-6 h-1 w-full rounded-full bg-gradient-to-r from-[#b4002f] via-[#d0003a] to-[#f2c7d1]" />
 
-
-
       <div className="space-y-6 px-2 sm:px-0">
         <div className="space-y-3">
           <Label className="text-xs font-semibold uppercase tracking-wider text-[#5c3f40] block" style={{ fontFamily: 'var(--font-outfit)' }}>
@@ -331,7 +329,7 @@ export function OrderQuickForm() {
             className="h-[56px] w-full rounded-full bg-[#c90039] text-base font-semibold text-white shadow-[0_16px_30px_rgba(201,0,57,0.22)] hover:bg-[#b50033]"
             style={{ fontFamily: 'var(--font-outfit)' }}
           >
-            <span>Continue to Order</span>
+            <span>Continue</span>
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
 

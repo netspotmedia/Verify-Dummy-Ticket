@@ -34,18 +34,17 @@ export function SiteHeader() {
   const sitePhone = settings?.site_phone || "+234 800 123 4567"
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled 
-        ? "bg-white/80 backdrop-blur-xl shadow-sm border-b border-red-100/50" 
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+        ? "bg-white/80 backdrop-blur-xl shadow-sm border-b border-red-100/50"
         : "bg-transparent"
-    }`}>
+      }`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex h-16 md:h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             {logoUrl ? (
-              <img 
-                src={logoUrl} 
+              <img
+                src={logoUrl}
                 alt={siteName}
                 className="h-10 w-auto md:h-12 object-contain"
               />
@@ -107,8 +106,8 @@ export function SiteHeader() {
                 <div className="p-6 border-b">
                   <Link href="/" className="flex items-center gap-3" onClick={() => setIsOpen(false)}>
                     {logoUrl ? (
-                      <img 
-                        src={logoUrl} 
+                      <img
+                        src={logoUrl}
                         alt={siteName}
                         className="h-12 w-auto object-contain"
                       />
@@ -120,7 +119,7 @@ export function SiteHeader() {
                     <span className="font-bold text-lg text-slate-900">{siteName}</span>
                   </Link>
                 </div>
-                
+
                 <nav className="flex-1 p-6 space-y-1">
                   {navigation.map((item) => (
                     <Link
@@ -135,12 +134,7 @@ export function SiteHeader() {
                 </nav>
 
                 <div className="p-6 border-t space-y-3">
-                  {sitePhone && (
-                    <Link href={`https://wa.me/${sitePhone.replace(/\D/g, '')}`} className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                      <Phone className="h-4 w-4" />
-                      {sitePhone}
-                    </Link>
-                  )}
+
                   <Link href="/auth/login" onClick={() => setIsOpen(false)}>
                     <Button variant="outline" className="w-full rounded-xl">
                       Sign In
