@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Plane, Phone } from "lucide-react"
+import { Menu, Plane } from "lucide-react"
 import { useSiteSettings } from "@/lib/site-settings"
 
 const navigation = [
@@ -31,7 +31,6 @@ export function SiteHeader() {
 
   const siteName = settings?.site_name || "My Travel Services"
   const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
-  const sitePhone = settings?.site_phone || "+234 800 123 4567"
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
@@ -53,11 +52,6 @@ export function SiteHeader() {
                 <Plane className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
             )}
-            <div className="hidden sm:block">
-              <span className="font-bold text-lg text-slate-900">
-                {siteName}
-              </span>
-            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -75,12 +69,6 @@ export function SiteHeader() {
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-3 lg:flex">
-            {sitePhone && (
-              <Link href={`https://wa.me/${sitePhone.replace(/\D/g, '')}`} className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-red-700">
-                <Phone className="h-4 w-4" />
-                <span>{sitePhone}</span>
-              </Link>
-            )}
             <Link href="/auth/login">
               <Button variant="ghost" size="sm" className="text-slate-600 hover:text-red-700">
                 Sign In
@@ -116,7 +104,6 @@ export function SiteHeader() {
                         <Plane className="h-6 w-6 text-white" />
                       </div>
                     )}
-                    <span className="font-bold text-lg text-slate-900">{siteName}</span>
                   </Link>
                 </div>
 

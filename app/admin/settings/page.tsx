@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Save, Globe, Mail, Image, Upload, X } from "lucide-react"
+import { Loader2, Save, Globe, Mail, Image, Upload, X, Key } from "lucide-react"
 import { toast } from "sonner"
 
 interface SiteSettings {
@@ -23,6 +23,7 @@ interface SiteSettings {
   footer_facebook: string
   footer_instagram: string
   footer_twitter: string
+  resend_api_key: string
 }
 
 const SETTINGS_KEYS = [
@@ -38,6 +39,7 @@ const SETTINGS_KEYS = [
   "footer_facebook",
   "footer_instagram",
   "footer_twitter",
+  "resend_api_key",
 ]
 
 export default function AdminSettingsPage() {
@@ -45,18 +47,19 @@ export default function AdminSettingsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [settings, setSettings] = useState<SiteSettings>({
-    site_name: "My Travel Services",
-    site_phone: "+234 800 123 4567",
+    site_name: process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
+    site_phone: process.env.NEXT_PUBLIC_SITE_PHONE || "+234 800 123 4567",
     support_email: "support@example.com",
     support_phone: "+234 800 123 4567",
     whatsapp_number: "+234 800 123 4567",
     address: "",
     logo_url: "",
-    footer_company_name: "My Travel Services",
-    footer_copyright: `© ${new Date().getFullYear()} My Travel Services. All rights reserved.`,
+    footer_company_name: process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
+    footer_copyright: `© ${new Date().getFullYear()} ${process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services"}. All rights reserved.`,
     footer_facebook: "https://facebook.com",
     footer_instagram: "https://instagram.com",
     footer_twitter: "https://twitter.com",
+    resend_api_key: "",
   })
   const [previewLogo, setPreviewLogo] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -82,18 +85,19 @@ export default function AdminSettingsPage() {
       })
 
       setSettings({
-        site_name: settingsMap.site_name || "My Travel Services",
-        site_phone: settingsMap.site_phone || "+234 800 123 4567",
+        site_name: settingsMap.site_name || process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
+        site_phone: settingsMap.site_phone || process.env.NEXT_PUBLIC_SITE_PHONE || "+234 800 123 4567",
         support_email: settingsMap.support_email || "",
         support_phone: settingsMap.support_phone || "",
         whatsapp_number: settingsMap.whatsapp_number || "",
         address: settingsMap.address || "",
         logo_url: settingsMap.logo_url || "",
-        footer_company_name: settingsMap.footer_company_name || "My Travel Services",
-        footer_copyright: settingsMap.footer_copyright || `© ${new Date().getFullYear()} My Travel Services. All rights reserved.`,
+        footer_company_name: settingsMap.footer_company_name || process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
+        footer_copyright: settingsMap.footer_copyright || `© ${new Date().getFullYear()} ${process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services"}. All rights reserved.`,
         footer_facebook: settingsMap.footer_facebook || "https://facebook.com",
         footer_instagram: settingsMap.footer_instagram || "https://instagram.com",
         footer_twitter: settingsMap.footer_twitter || "https://twitter.com",
+        resend_api_key: settingsMap.resend_api_key || "",
       })
       if (settingsMap.logo_url) {
         setPreviewLogo(settingsMap.logo_url)
@@ -175,6 +179,7 @@ export default function AdminSettingsPage() {
         { category: "general", key: "whatsapp_number", value: settings.whatsapp_number },
         { category: "general", key: "address", value: settings.address },
         { category: "general", key: "logo_url", value: settings.logo_url },
+        { category: "general", key: "resend_api_key", value: settings.resend_api_key },
         { category: "landing", key: "footer_company_name", value: settings.footer_company_name },
         { category: "landing", key: "footer_copyright", value: settings.footer_copyright },
         { category: "landing", key: "footer_facebook", value: settings.footer_facebook },
@@ -191,7 +196,8 @@ export default function AdminSettingsPage() {
       }
 
       toast.success("Settings saved successfully")
-    } catch {
+    } catch (err) {
+      console.error("Save settings error:", err)
       toast.error("Failed to save settings")
     } finally {
       setIsSaving(false)
@@ -353,6 +359,31 @@ export default function AdminSettingsPage() {
                   placeholder="+234 800 000 0000"
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              Email API Settings
+            </CardTitle>
+            <CardDescription>Configure email delivery provider</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="resendApiKey">Resend API Key</Label>
+              <Input
+                id="resendApiKey"
+                type="password"
+                value={settings.resend_api_key}
+                onChange={(e) => setSettings({ ...settings, resend_api_key: e.target.value })}
+                placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              />
+              <p className="text-sm text-muted-foreground">
+                Get your API key from <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">resend.com</a>
+              </p>
             </div>
           </CardContent>
         </Card>
