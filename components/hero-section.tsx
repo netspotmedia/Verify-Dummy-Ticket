@@ -36,7 +36,7 @@ export function HeroSection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid items-start gap-10 lg:grid-cols-[1.18fr_0.82fr] xl:grid-cols-[1.22fr_0.78fr]">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
           {/* Left Content */}
           <div className="relative z-10">
             {/* Badge */}
@@ -94,7 +94,7 @@ export function HeroSection() {
           </div>
 
           {/* Right Content - Quick Order Form */}
-          <div className="mt-10 lg:mt-0 lg:justify-self-end w-full max-w-[360px] xl:max-w-[380px]">
+          <div className="mt-12 lg:mt-0">
             <OrderQuickForm />
           </div>
         </div>
