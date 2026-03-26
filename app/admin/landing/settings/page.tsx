@@ -1,14 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { ArrowLeft, Save, Image, Upload, X } from 'lucide-react'
+import { ArrowLeft, Save, Image, Upload } from 'lucide-react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 
 interface SiteSettings {
   site_logo?: {
@@ -28,10 +27,6 @@ export default function SettingsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState<string | null>(null)
-  const fileInputLight = useRef<HTMLInputElement>(null)
-  const fileInputDark = useRef<HTMLInputElement>(null)
-  const fileInputFavicon = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchSettings()
@@ -52,54 +47,6 @@ export default function SettingsPage() {
       console.error('Failed to fetch settings:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleFileUpload = async (file: File, type: 'light' | 'dark' | 'favicon') => {
-    setUploading(type)
-    try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${type}-logo-${Date.now()}.${fileExt}`
-      const filePath = `logos/${fileName}`
-
-      const { data, error } = await supabase.storage
-        .from('logos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        })
-
-      if (error) {
-        toast.error(`Failed to upload ${type} logo`)
-        console.error('Upload error:', error)
-        return null
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('logos')
-        .getPublicUrl(filePath)
-
-      return urlData.publicUrl
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Failed to upload file')
-      return null
-    } finally {
-      setUploading(null)
-    }
-  }
-
-  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'light' | 'dark' | 'favicon') => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const publicUrl = await handleFileUpload(file, type)
-    if (publicUrl) {
-      setSettings({
-        ...settings,
-        site_logo: { ...settings.site_logo!, [type]: publicUrl },
-      })
-      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} logo uploaded!`)
     }
   }
 
@@ -126,6 +73,13 @@ export default function SettingsPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleLogoChange = (type: 'light' | 'dark' | 'favicon', value: string) => {
+    setSettings({
+      ...settings,
+      site_logo: { ...settings.site_logo!, [type]: value },
+    })
   }
 
   if (loading) {
@@ -160,41 +114,25 @@ export default function SettingsPage() {
               <Image className="h-5 w-5" />
               Logo Settings
             </CardTitle>
-            <CardDescription>Upload your site logos (SVG, PNG, or JPG)</CardDescription>
+            <CardDescription>
+              Enter the URL for your logos. You can host images on Supabase Storage, Cloudinary, or any image hosting service.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Light Logo */}
             <div className="space-y-2">
-              <Label>Light Logo (Light Backgrounds)</Label>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <Input
-                    value={settings.site_logo?.light || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      site_logo: { ...settings.site_logo!, light: e.target.value }
-                    })}
-                    placeholder="https://... or upload below"
-                  />
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputLight}
-                  onChange={(e) => handleLogoChange(e, 'light')}
-                  accept="image/svg+xml,image/png,image/jpeg"
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => fileInputLight.current?.click()}
-                  disabled={uploading === 'light'}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploading === 'light' ? 'Uploading...' : 'Upload'}
-                </Button>
-              </div>
+              <Label>Light Logo URL (Light Backgrounds)</Label>
+              <Input
+                value={settings.site_logo?.light || ''}
+                onChange={(e) => handleLogoChange('light', e.target.value)}
+                placeholder="https://your-bucket.supabase.co/storage/v1/object/public/logos/logo-light.png"
+              />
+              <p className="text-xs text-muted-foreground">
+                Recommended size: 200x50px (SVG, PNG, or JPG)
+              </p>
               {settings.site_logo?.light && (
                 <div className="mt-2 p-4 bg-slate-50 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-2">Preview:</p>
                   <img src={settings.site_logo.light} alt="Light Logo" className="h-12 object-contain" />
                 </div>
               )}
@@ -202,36 +140,18 @@ export default function SettingsPage() {
 
             {/* Dark Logo */}
             <div className="space-y-2">
-              <Label>Dark Logo (Dark Backgrounds)</Label>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <Input
-                    value={settings.site_logo?.dark || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      site_logo: { ...settings.site_logo!, dark: e.target.value }
-                    })}
-                    placeholder="https://... or upload below"
-                  />
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputDark}
-                  onChange={(e) => handleLogoChange(e, 'dark')}
-                  accept="image/svg+xml,image/png,image/jpeg"
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => fileInputDark.current?.click()}
-                  disabled={uploading === 'dark'}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploading === 'dark' ? 'Uploading...' : 'Upload'}
-                </Button>
-              </div>
+              <Label>Dark Logo URL (Dark Backgrounds)</Label>
+              <Input
+                value={settings.site_logo?.dark || ''}
+                onChange={(e) => handleLogoChange('dark', e.target.value)}
+                placeholder="https://your-bucket.supabase.co/storage/v1/object/public/logos/logo-dark.png"
+              />
+              <p className="text-xs text-muted-foreground">
+                For use on dark backgrounds or navbar
+              </p>
               {settings.site_logo?.dark && (
                 <div className="mt-2 p-4 bg-slate-900 rounded-lg">
+                  <p className="text-xs text-slate-400 mb-2">Preview:</p>
                   <img src={settings.site_logo.dark} alt="Dark Logo" className="h-12 object-contain brightness-0 invert" />
                 </div>
               )}
@@ -239,38 +159,19 @@ export default function SettingsPage() {
 
             {/* Favicon */}
             <div className="space-y-2">
-              <Label>Favicon (Browser Tab Icon)</Label>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <Input
-                    value={settings.site_logo?.favicon || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      site_logo: { ...settings.site_logo!, favicon: e.target.value }
-                    })}
-                    placeholder="https://... or upload below"
-                  />
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputFavicon}
-                  onChange={(e) => handleLogoChange(e, 'favicon')}
-                  accept="image/svg+xml,image/png,image/x-icon"
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => fileInputFavicon.current?.click()}
-                  disabled={uploading === 'favicon'}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploading === 'favicon' ? 'Uploading...' : 'Upload'}
-                </Button>
-              </div>
+              <Label>Favicon URL (Browser Tab Icon)</Label>
+              <Input
+                value={settings.site_logo?.favicon || ''}
+                onChange={(e) => handleLogoChange('favicon', e.target.value)}
+                placeholder="https://your-bucket.supabase.co/storage/v1/object/public/logos/favicon.ico"
+              />
+              <p className="text-xs text-muted-foreground">
+                Recommended size: 32x32px or 64x64px (ICO, PNG, or SVG)
+              </p>
               {settings.site_logo?.favicon && (
-                <div className="mt-2 flex items-center gap-2 p-4 bg-slate-50 rounded-lg">
+                <div className="mt-2 flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
                   <img src={settings.site_logo.favicon} alt="Favicon" className="h-8 w-8" />
-                  <span className="text-sm text-muted-foreground">Current favicon</span>
+                  <span className="text-sm text-muted-foreground">Current favicon preview</span>
                 </div>
               )}
             </div>
@@ -297,9 +198,35 @@ export default function SettingsPage() {
                 <Input
                   value={settings.site_tagline || ''}
                   onChange={(e) => setSettings({ ...settings, site_tagline: e.target.value })}
-                  placeholder="Your tagline here"
+                  placeholder="Flight, Hotel & Travel Insurance for Visa Applications"
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Need to upload images?</CardTitle>
+            <CardDescription>How to get your logo URL</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <div className="space-y-2">
+              <p><strong>Option 1: Supabase Storage</strong></p>
+              <ol className="list-decimal list-inside space-y-1 ml-2">
+                <li>Go to Supabase Dashboard → Storage</li>
+                <li>Create a new bucket named "logos" (public)</li>
+                <li>Upload your logo files</li>
+                <li>Copy the public URL and paste above</li>
+              </ol>
+            </div>
+            <div className="space-y-2">
+              <p><strong>Option 2: Image Hosting (ImgBB, Cloudinary, etc.)</strong></p>
+              <ol className="list-decimal list-inside space-y-1 ml-2">
+                <li>Upload your logo to any image hosting service</li>
+                <li>Copy the direct image URL</li>
+                <li>Paste above</li>
+              </ol>
             </div>
           </CardContent>
         </Card>
