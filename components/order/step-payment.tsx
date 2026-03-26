@@ -88,26 +88,29 @@ export function StepPayment() {
       } = await supabase.auth.getUser()
 
       let userId = user?.id
+      let isNewUser = false
 
       if (!userId) {
         const tempPassword = Math.random().toString(36).slice(-12) + "Aa1!"
+        const fullName = email.split("@")[0]
         
         const { data: newUser, error: signUpError } = await supabase.auth.signUp({
           email,
           password: tempPassword,
           options: {
             data: {
-              full_name: email.split("@")[0],
+              full_name: fullName,
             },
           },
         })
 
         if (signUpError) {
-          console.log("User may already exist, checking...")
+          console.log("Sign up error:", signUpError.message)
         }
 
         if (newUser?.user) {
           userId = newUser.user.id
+          isNewUser = true
           
           await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/auth/reset-password`,
@@ -131,6 +134,43 @@ export function StepPayment() {
         .single()
 
       if (orderError) throw orderError
+
+      // Send emails
+      const customerName = email.split("@")[0]
+      
+      // Send welcome email for new users
+      if (isNewUser && userId) {
+        try {
+          await fetch('/api/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: email,
+              subject: 'Welcome! Your Account Has Been Created',
+              type: 'welcome',
+              data: { name: customerName }
+            })
+          })
+        } catch (emailErr) {
+          console.log('Welcome email error:', emailErr)
+        }
+      }
+
+      // Send order confirmation
+      try {
+        await fetch('/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: email,
+            subject: `Order Confirmed - ${order.id.slice(0, 8).toUpperCase()}`,
+            type: 'order_confirmation',
+            data: { name: customerName, orderId: order.id }
+          })
+        })
+      } catch (emailErr) {
+        console.log('Order confirmation email error:', emailErr)
+      }
 
       resetForm()
       toast.success("Order created successfully! Check your email for login details.")
