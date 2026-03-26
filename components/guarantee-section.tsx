@@ -1,8 +1,80 @@
 "use client"
 
-import { Shield } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Shield, Zap, CheckCircle, RefreshCw, Clock, Globe, Award } from "lucide-react"
+import type { GuaranteeItem } from "@/lib/supabase"
+
+const iconMap: Record<string, any> = {
+  Shield: Shield,
+  Zap: Zap,
+  CheckCircle: CheckCircle,
+  RefreshCw: RefreshCw,
+  Clock: Clock,
+  Globe: Globe,
+  Award: Award,
+}
+
+const defaultGuarantees: GuaranteeItem[] = [
+  {
+    id: '1',
+    title: 'Instant Delivery',
+    description: 'Receive your documents within 24 hours',
+    icon: 'Zap',
+    is_active: true,
+    created_at: '',
+    updated_at: '',
+  },
+  {
+    id: '2',
+    title: '100% Verifiable',
+    description: 'All documents can be verified online',
+    icon: 'CheckCircle',
+    is_active: true,
+    created_at: '',
+    updated_at: '',
+  },
+  {
+    id: '3',
+    title: 'Money-Back Guarantee',
+    description: 'Full refund if not satisfied',
+    icon: 'RefreshCw',
+    is_active: true,
+    created_at: '',
+    updated_at: '',
+  },
+]
 
 export function GuaranteeSection() {
+  const [guarantees, setGuarantees] = useState<GuaranteeItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchGuarantees()
+  }, [])
+
+  const fetchGuarantees = async () => {
+    try {
+      const res = await fetch('/api/landing/guarantees')
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.length > 0) {
+          setGuarantees(data)
+        } else {
+          setGuarantees(defaultGuarantees)
+        }
+      } else {
+        setGuarantees(defaultGuarantees)
+      }
+    } catch (error) {
+      console.error('Failed to fetch guarantees:', error)
+      setGuarantees(defaultGuarantees)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const displayGuarantees = guarantees.length > 0 ? guarantees : defaultGuarantees
+
   return (
     <section className="py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -27,16 +99,17 @@ export function GuaranteeSection() {
               Join over 100,000 travelers who trusted us for their visa journey. If your documents are not delivered as promised, we provide a full refund. No questions asked.
             </p>
 
-            {/* Stats */}
-            <div className="flex flex-wrap justify-center gap-12 pt-8 border-t border-white/20">
-              <div>
-                <p className="text-4xl font-black">12K+</p>
-                <p className="text-xs uppercase tracking-widest font-bold opacity-70">5-Star Reviews</p>
-              </div>
-              <div>
-                <p className="text-4xl font-black">5K+</p>
-                <p className="text-xs uppercase tracking-widest font-bold opacity-70">5-Star Rating</p>
-              </div>
+            {/* Guarantee Items */}
+            <div className="flex flex-wrap justify-center gap-8 pt-8 border-t border-white/20">
+              {displayGuarantees.map((item) => {
+                const IconComponent = iconMap[item.icon || 'CheckCircle'] || CheckCircle
+                return (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <IconComponent className="w-6 h-6 opacity-80" />
+                    <span className="font-semibold">{item.title}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
