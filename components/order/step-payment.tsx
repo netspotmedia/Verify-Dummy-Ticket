@@ -1,16 +1,46 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useOrderStore } from "@/lib/order-store"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info, Zap, Lock } from "lucide-react"
+import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info, Zap, Lock, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { calculatePriceBreakdown, formatCurrency, getAllowedPaymentMethods } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import type { PaymentMethod } from "@/lib/types"
+
+function generateSecurePassword(length: number = 12): string {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz'
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const numbers = '0123456789'
+  const special = '!@#$%^&*'
+  const allChars = lowercase + uppercase + numbers + special
+  
+  const randomValues = new Uint8Array(length)
+  crypto.getRandomValues(randomValues)
+  
+  let password = ''
+  password += lowercase[randomValues[0] % lowercase.length]
+  password += uppercase[randomValues[1] % uppercase.length]
+  password += numbers[randomValues[2] % numbers.length]
+  password += special[randomValues[3] % special.length]
+  
+  for (let i = 4; i < length; i++) {
+    password += allChars[randomValues[i] % allChars.length]
+  }
+  
+  const chars = password.split('')
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = randomValues[i] % (i + 1)
+    const temp = chars[i]
+    chars[i] = chars[j]
+    chars[j] = temp
+  }
+  return chars.join('')
+}
 
 const PAYMENT_METHODS_CONFIG: Record<
   PaymentMethod,
@@ -65,12 +95,40 @@ export function StepPayment() {
     deliverySpeed
   )
 
-  const handleCaptcha = () => {
-    setTimeout(() => {
+  const [captchaQuestion, setCaptchaQuestion] = useState<{ question: string; answer: number } | null>(null)
+  const [captchaInput, setCaptchaInput] = useState("")
+  const [isVerifying, setIsVerifying] = useState(false)
+
+  const generateCaptcha = useCallback(() => {
+    const a = Math.floor(Math.random() * 10) + 1
+    const b = Math.floor(Math.random() * 10) + 1
+    setCaptchaQuestion({ question: `${a} + ${b} = ?`, answer: a + b })
+    setCaptchaInput("")
+    setCaptchaVerified(false)
+  }, [])
+
+  useEffect(() => {
+    generateCaptcha()
+  }, [generateCaptcha])
+
+  const handleCaptcha = async () => {
+    if (!captchaQuestion) {
+      generateCaptcha()
+      return
+    }
+
+    setIsVerifying(true)
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    if (parseInt(captchaInput) === captchaQuestion.answer) {
       setCaptchaVerified(true)
-      setCaptchaToken("verified_token_" + Date.now())
+      setCaptchaToken("verified_" + Date.now())
       toast.success("Verification complete")
-    }, 500)
+    } else {
+      toast.error("Incorrect answer. Please try again.")
+      generateCaptcha()
+    }
+    setIsVerifying(false)
   }
 
   const handleSubmitOrder = async () => {
@@ -91,7 +149,7 @@ export function StepPayment() {
       let isNewUser = false
 
       if (!userId) {
-        const tempPassword = Math.random().toString(36).slice(-12) + "Aa1!"
+        const tempPassword = generateSecurePassword(12)
         const fullName = email.split("@")[0]
         
         const { data: newUser, error: signUpError } = await supabase.auth.signUp({
@@ -164,8 +222,8 @@ export function StepPayment() {
           body: JSON.stringify({
             to: email,
             subject: `Order Confirmed - ${order.id.slice(0, 8).toUpperCase()}`,
-            type: 'order_confirmation',
-            data: { name: customerName, orderId: order.id }
+            type: 'order_placed',
+            data: { name: customerName, orderId: order.id, services: formData.services }
           })
         })
       } catch (emailErr) {
@@ -225,24 +283,49 @@ export function StepPayment() {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 rounded-[22px] bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-600">
-              Click below to verify that you&apos;re human.
-            </p>
+            <div className="space-y-4 rounded-[22px] bg-white p-4 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 font-mono text-lg font-bold text-slate-700">
+                  {captchaQuestion?.question}
+                </div>
+                <input
+                  type="number"
+                  value={captchaInput}
+                  onChange={(e) => setCaptchaInput(e.target.value)}
+                  placeholder="?"
+                  className="h-10 w-20 rounded-lg border border-slate-200 px-3 text-center text-lg font-bold focus:border-[#c8143d] focus:outline-none"
+                />
+              </div>
 
-            <Button
-              onClick={handleCaptcha}
-              variant="outline"
-              className="h-11 rounded-full border-[#ead8dd] bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-[#fff7f9]"
-            >
-              Verify Now
-            </Button>
+              <Button
+                onClick={handleCaptcha}
+                disabled={!captchaInput || isVerifying}
+                variant="outline"
+                className="h-11 rounded-full border-[#ead8dd] bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-[#fff7f9]"
+              >
+                {isVerifying ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify"
+                )}
+              </Button>
 
-            <div className="flex items-start gap-3 rounded-[18px] bg-[#f7f5f4] p-3 text-sm text-slate-500">
-              <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>This helps prevent automated orders.</span>
+              <Button
+                variant="ghost"
+                onClick={generateCaptcha}
+                className="text-xs text-slate-500 hover:text-[#c8143d]"
+              >
+                Refresh Challenge
+              </Button>
+
+              <div className="flex items-start gap-3 rounded-[18px] bg-[#f7f5f4] p-3 text-sm text-slate-500">
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>Solve the math problem to verify you&apos;re human.</span>
+              </div>
             </div>
-          </div>
         )}
       </section>
 

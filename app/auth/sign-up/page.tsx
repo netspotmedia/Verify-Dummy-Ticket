@@ -51,7 +51,8 @@ export default function SignUpPage() {
       }
 
       router.push("/auth/sign-up-success")
-    } catch {
+    } catch (err) {
+      console.error("Sign up error:", err)
       toast.error("An unexpected error occurred")
     } finally {
       setIsLoading(false)

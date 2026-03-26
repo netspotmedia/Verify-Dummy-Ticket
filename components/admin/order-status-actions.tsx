@@ -61,7 +61,8 @@ export function OrderStatusActions({ order }: OrderStatusActionsProps) {
 
       toast.success("Order updated successfully")
       router.refresh()
-    } catch {
+    } catch (err) {
+      console.error("Update order error:", err)
       toast.error("Failed to update order")
     } finally {
       setIsUpdating(false)

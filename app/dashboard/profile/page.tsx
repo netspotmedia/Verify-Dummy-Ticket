@@ -74,7 +74,8 @@ export default function ProfilePage() {
       if (error) throw error
 
       toast.success("Profile updated successfully")
-    } catch {
+    } catch (err) {
+      console.error("Profile update error:", err)
       toast.error("Failed to update profile")
     } finally {
       setIsSaving(false)

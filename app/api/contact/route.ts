@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/auth-helpers'
 
 export async function GET() {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
   try {
-    const { data, error } = await supabase
+    const { user, error: authError } = await requireAdmin()
+    if (authError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data, error: dbError } = await supabase
       .from('contact_messages')
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })
     
     return NextResponse.json(data)
   } catch (error) {
@@ -17,6 +25,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
   try {
     const body = await request.json()
     const { name, email, subject, message } = body
@@ -25,9 +35,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name, email, and message are required' }, { status: 400 })
     }
     
+    // Sanitize inputs
+    const sanitizedName = name.toString().slice(0, 200)
+    const sanitizedEmail = email.toString().slice(0, 200)
+    const sanitizedSubject = subject?.toString().slice(0, 200) || ''
+    const sanitizedMessage = message.toString().slice(0, 5000)
+    
     const { data, error } = await supabase
       .from('contact_messages')
-      .insert([{ name, email, subject, message }])
+      .insert([{ name: sanitizedName, email: sanitizedEmail, subject: sanitizedSubject, message: sanitizedMessage }])
       .select()
       .single()
     
@@ -40,7 +56,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
   try {
+    const { user, error: authError } = await requireAdmin()
+    if (authError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { id, is_read } = body
     
@@ -52,7 +75,7 @@ export async function PATCH(request: NextRequest) {
       .single()
     
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    
+
     return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update message' }, { status: 500 })
@@ -60,7 +83,14 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
   try {
+    const { user, error: authError } = await requireAdmin()
+    if (authError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
     

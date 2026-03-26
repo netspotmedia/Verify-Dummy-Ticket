@@ -51,14 +51,14 @@ class PaymentService {
     })
 
     return {
-      paypalMode: settings.paypal_mode || "sandbox",
-      paypalClientId: settings.paypal_client_id || "",
-      paypalClientSecret: settings.paypal_client_secret || "",
-      paystackPublicKey: settings.paystack_public_key || "",
-      paystackSecretKey: settings.paystack_secret_key || "",
-      paystackMerchantEmail: settings.paystack_merchant_email || "",
-      paypalEnabled: settings.paypal_enabled !== false,
-      paystackEnabled: settings.paystack_enabled !== false,
+      paypalMode: process.env.PAYPAL_MODE || settings.paypal_mode || "sandbox",
+      paypalClientId: process.env.PAYPAL_CLIENT_ID || settings.paypal_client_id || "",
+      paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || settings.paypal_client_secret || "",
+      paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || settings.paystack_public_key || "",
+      paystackSecretKey: process.env.PAYSTACK_SECRET_KEY || settings.paystack_secret_key || "",
+      paystackMerchantEmail: process.env.PAYSTACK_MERCHANT_EMAIL || settings.paystack_merchant_email || "",
+      paypalEnabled: process.env.PAYPAL_CLIENT_ID ? (settings.paypal_enabled !== false) : false,
+      paystackEnabled: process.env.PAYSTACK_SECRET_KEY ? (settings.paystack_enabled !== false) : false,
       currencyRate: parseFloat(settings.currency_conversion_rate || "1650"),
     }
   }

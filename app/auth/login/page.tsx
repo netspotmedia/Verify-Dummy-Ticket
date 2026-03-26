@@ -44,7 +44,8 @@ export default function LoginPage() {
         router.push(isAdmin ? "/admin" : "/dashboard")
         router.refresh()
       }
-    } catch {
+    } catch (err) {
+      console.error("Login error:", err)
       toast.error("An unexpected error occurred")
     } finally {
       setIsLoading(false)

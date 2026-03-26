@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/auth-helpers'
 
 export async function GET() {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
   try {
     const { data, error } = await supabase
       .from('site_settings')
@@ -22,6 +25,13 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
+  const { user, error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { key, value, category = 'general' } = body

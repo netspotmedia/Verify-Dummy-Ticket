@@ -58,7 +58,8 @@ export default function SettingsPage() {
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
-    } catch {
+    } catch (err) {
+      console.error("Password update error:", err)
       toast.error("Failed to update password")
     } finally {
       setIsChangingPassword(false)
