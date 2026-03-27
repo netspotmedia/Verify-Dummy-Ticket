@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { requireAuth } from '@/lib/auth-helpers'
 
 export async function POST(request: NextRequest) {
-  if (!supabase) {
-    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
-  }
+  const supabase = await createClient()
 
   const { user, error: authError } = await requireAuth()
   if (authError) {

@@ -6,40 +6,17 @@ import { useOrderStore } from "@/lib/order-store"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2, Check, Info, RefreshCw, Lock } from "lucide-react"
+import { ArrowLeft, Loader2, Check, Info, RefreshCw, Shield } from "lucide-react"
 import { toast } from "sonner"
-import { calculatePriceBreakdown, formatCurrency, getAllowedPaymentMethods } from "@/lib/types"
+import { calculatePriceBreakdown, getAllowedPaymentMethods } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import type { PaymentMethod } from "@/lib/types"
+import type { PaymentMethod, Currency } from "@/lib/types"
 
-function generateSecurePassword(length: number = 12): string {
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz'
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  const numbers = '0123456789'
-  const special = '!@#$%^&*'
-  const allChars = lowercase + uppercase + numbers + special
-  
-  const randomValues = new Uint8Array(length)
-  crypto.getRandomValues(randomValues)
-  
-  let password = ''
-  password += lowercase[randomValues[0] % lowercase.length]
-  password += uppercase[randomValues[1] % uppercase.length]
-  password += numbers[randomValues[2] % numbers.length]
-  password += special[randomValues[3] % special.length]
-  
-  for (let i = 4; i < length; i++) {
-    password += allChars[randomValues[i] % allChars.length]
+function formatCurrency(amount: number, currency: Currency): string {
+  if (currency === "NGN") {
+    return `₦${amount.toLocaleString()}`
   }
-  
-  const chars = password.split('')
-  for (let i = chars.length - 1; i > 0; i--) {
-    const j = randomValues[i] % (i + 1)
-    const temp = chars[i]
-    chars[i] = chars[j]
-    chars[j] = temp
-  }
-  return chars.join('')
+  return `$${amount.toFixed(2)}`
 }
 
 const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description: string }> = {
@@ -168,29 +145,19 @@ export function StepPayment() {
       const { data: { user } } = await supabase.auth.getUser()
 
       let userId = user?.id
-      let isNewUser = false
+      let isNewUser = !userId
+      const customerName = email.split("@")[0]
 
       if (!userId) {
-        const tempPassword = generateSecurePassword(12)
-        const fullName = email.split("@")[0]
+        const existingUser = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email.toLowerCase())
+          .single()
         
-        const { data: newUser, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password: tempPassword,
-          options: { data: { full_name: fullName } },
-        })
-
-        if (signUpError) {
-          console.log("Sign up error:", signUpError.message)
-        }
-
-        if (newUser?.user) {
-          userId = newUser.user.id
-          isNewUser = true
-          
-          await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/auth/reset-password`,
-          })
+        if (existingUser.data) {
+          userId = existingUser.data.id
+          isNewUser = false
         }
       }
 
@@ -198,7 +165,7 @@ export function StepPayment() {
         .from("orders")
         .insert({
           user_id: userId,
-          email: email,
+          email: email.toLowerCase(),
           status: "pending",
           payment_status: "unpaid",
           payment_method: paymentMethod,
@@ -214,25 +181,6 @@ export function StepPayment() {
 
       if (orderError) throw orderError
 
-      const customerName = email.split("@")[0]
-      
-      if (isNewUser && userId) {
-        try {
-          await fetch('/api/email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: email,
-              subject: 'Welcome! Your Account Has Been Created',
-              type: 'welcome',
-              data: { name: customerName }
-            })
-          })
-        } catch (emailErr) {
-          console.log('Welcome email error:', emailErr)
-        }
-      }
-
       try {
         await fetch('/api/email', {
           method: 'POST',
@@ -241,15 +189,26 @@ export function StepPayment() {
             to: email,
             subject: `Order Confirmed - ${order.id.slice(0, 8).toUpperCase()}`,
             type: 'order_placed',
-            data: { name: customerName, orderId: order.id, services: formData.services }
+            data: { 
+              name: customerName, 
+              orderId: order.id, 
+              services: formData.services,
+              isNewUser: isNewUser
+            }
           })
         })
       } catch (emailErr) {
-        console.log('Order confirmation email error:', emailErr)
+        console.error('Order confirmation email error:', emailErr)
       }
 
       resetForm()
-      toast.success("Order created successfully! Check your email for login details.")
+      
+      if (isNewUser) {
+        toast.success("Order created! Check your email to set up your account.")
+      } else {
+        toast.success("Order created successfully!")
+      }
+      
       router.push(`/order/confirmation?id=${order.id}`)
     } catch (error) {
       console.error("Order error:", error)
@@ -363,7 +322,7 @@ export function StepPayment() {
       </section>
 
       <div className="flex items-center justify-center gap-1.5 text-sm text-slate-500">
-        <Lock className="h-3 w-3" />
+        <Shield className="h-3 w-3" />
         <span>Your payment is secure and encrypted</span>
       </div>
 

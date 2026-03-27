@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { logger } from "@/lib/logger"
 
 interface SiteLogo {
   light?: string
@@ -86,7 +87,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
           setSettings(defaultSettings)
         }
       } catch (err) {
-        console.error('Failed to fetch site settings:', err)
+        logger.error('Failed to fetch site settings', err as Error)
         setError('Failed to load settings')
         setSettings(defaultSettings)
       } finally {
