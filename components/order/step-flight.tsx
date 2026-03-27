@@ -4,7 +4,7 @@ import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, ArrowRight, Plane, Calendar, Route } from "lucide-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { TripType, FlightValidity } from "@/lib/types"
 
@@ -39,198 +39,150 @@ export function StepFlight() {
   }
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-3">
-        <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
+    <div className="space-y-4">
+      <section className="space-y-2">
+        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
           Trip Type
         </Label>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="space-y-1">
           {TRIP_TYPES.map((type) => {
             const active = tripType === type.value
 
             return (
-              <button
+              <label
                 key={type.value}
-                type="button"
-                onClick={() =>
-                  setFlightDetails({
-                    ...formData.flightDetails,
-                    tripType: type.value,
-                    validity: formData.flightDetails?.validity || "3d",
-                    flightDetails: formData.flightDetails?.flightDetails || "",
-                  } as any)
-                }
                 className={cn(
-                  "group relative overflow-hidden rounded-[26px] p-[1px] text-left transition-all",
+                  "flex items-center gap-3 p-2.5 rounded cursor-pointer border transition-all",
                   active
-                    ? "bg-gradient-to-r from-[#c8143d] via-[#d94a6d] to-[#efc5d0] shadow-[0_16px_30px_rgba(200,20,61,0.12)]"
-                    : "bg-transparent"
+                    ? "border-[#c8143d] bg-[#fff7f9]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
                 )}
               >
                 <div
                   className={cn(
-                    "h-full rounded-[25px] px-5 py-5 transition-all",
+                    "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
                     active
-                      ? "bg-white"
-                      : "bg-[#e9edf5] hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.05)]"
+                      ? "border-[#c8143d]"
+                      : "border-slate-300"
                   )}
                 >
-                  <div className="mb-4 flex items-center justify-between">
-                    <div
-                      className={cn(
-                        "flex h-11 w-11 items-center justify-center rounded-2xl transition-all",
-                        active
-                          ? "bg-[#c8143d] text-white"
-                          : "bg-white text-slate-500 shadow-sm"
-                      )}
-                    >
-                      <Route className="h-5 w-5" />
-                    </div>
-
-                    <span
-                      className={cn(
-                        "rounded-full px-3 py-1 text-xs font-semibold",
-                        type.price === 0
-                          ? "bg-[#dcfce7] text-[#15803d]"
-                          : active
-                          ? "bg-[#fff1f4] text-[#c8143d]"
-                          : "bg-white text-slate-600"
-                      )}
-                    >
-                      {type.price === 0 ? "Free" : `+$${type.price}`}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-semibold text-slate-900">{type.label}</h3>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">{type.description}</p>
+                  {active && <div className="h-2 w-2 rounded-full bg-[#c8143d]" />}
                 </div>
-              </button>
+                <input
+                  type="radio"
+                  name="tripType"
+                  checked={active}
+                  onChange={() =>
+                    setFlightDetails({
+                      ...formData.flightDetails,
+                      tripType: type.value,
+                      validity: formData.flightDetails?.validity || "3d",
+                      flightDetails: formData.flightDetails?.flightDetails || "",
+                    } as any)
+                  }
+                  className="sr-only"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-slate-900">{type.label}</span>
+                  <span className="text-xs text-slate-500 ml-2">{type.description}</span>
+                </div>
+                <span className={cn("text-sm font-semibold", type.price === 0 ? "text-green-600" : "text-[#c8143d]")}>
+                  {type.price === 0 ? "Free" : `+$${type.price}`}
+                </span>
+              </label>
             )
           })}
         </div>
       </section>
 
-      <section className="space-y-3">
-        <Label
-          htmlFor="flightDetails"
-          className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]"
-        >
+      <section className="space-y-2">
+        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
           Flight Itinerary Details
         </Label>
-
-        <div className="rounded-[28px] bg-[#e9edf5] p-3 sm:p-4">
-          <div className="mb-3 flex items-center gap-2 text-slate-600">
-            <Plane className="h-4 w-4" />
-            <span className="text-sm font-medium">Route and travel dates</span>
-          </div>
-
-          <Textarea
-            id="flightDetails"
-            placeholder="Example: Departing June 1, LOS to CDG. Returning June 10, CDG to LOS. Include airline if known."
-            value={flightDetailsText}
-            onChange={(e) =>
-              setFlightDetails({
-                ...formData.flightDetails,
-                tripType: formData.flightDetails?.tripType || "one_way",
-                validity: formData.flightDetails?.validity || "3d",
-                flightDetails: e.target.value,
-              } as any)
-            }
-            rows={5}
-            className="min-h-[140px] rounded-[24px] border-0 bg-white px-5 py-4 text-sm leading-6 text-slate-700 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#c8143d] resize-none"
-          />
-
-          <p className="mt-3 text-xs text-slate-500">
-            Provide your route and dates. Be detailed for accurate booking.
-          </p>
-        </div>
+        <Textarea
+          placeholder="Example: Departing June 1, LOS to CDG. Returning June 10, CDG to LOS. Include airline if known."
+          value={flightDetailsText}
+          onChange={(e) =>
+            setFlightDetails({
+              ...formData.flightDetails,
+              tripType: formData.flightDetails?.tripType || "one_way",
+              validity: formData.flightDetails?.validity || "3d",
+              flightDetails: e.target.value,
+            } as any)
+          }
+          rows={4}
+          className="rounded-md border-slate-200 bg-white text-sm placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#c8143d] resize-none"
+        />
+        <p className="text-xs text-slate-500">
+          Provide your route and dates. Be detailed for accurate booking.
+        </p>
       </section>
 
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-slate-500" />
-          <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
-            Flight Validity
-          </Label>
-        </div>
-
-        <p className="text-sm text-slate-500">
+      <section className="space-y-2">
+        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+          Flight Validity
+        </Label>
+        <p className="text-xs text-slate-500">
           How long should the reservation remain valid?
         </p>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-5 gap-2">
           {VALIDITY_OPTIONS.map((option) => {
             const active = validity === option.value
 
             return (
-              <button
+              <label
                 key={option.value}
-                type="button"
-                onClick={() =>
-                  setFlightDetails({
-                    ...formData.flightDetails,
-                    tripType: formData.flightDetails?.tripType || "one_way",
-                    validity: option.value,
-                    flightDetails: formData.flightDetails?.flightDetails || "",
-                  } as any)
-                }
                 className={cn(
-                  "rounded-[22px] px-4 py-4 text-center transition-all",
+                  "block p-2 rounded cursor-pointer text-center border transition-all",
                   active
-                    ? "bg-white shadow-[0_12px_24px_rgba(15,23,42,0.07)] ring-1 ring-[#f0ccd5]"
-                    : "bg-[#e9edf5] hover:bg-white"
+                    ? "border-[#c8143d] bg-[#fff7f9]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
                 )}
               >
-                <div
-                  className={cn(
-                    "text-sm font-semibold",
-                    active ? "text-[#c8143d]" : "text-slate-800"
-                  )}
-                >
+                <input
+                  type="radio"
+                  name="validity"
+                  checked={active}
+                  onChange={() =>
+                    setFlightDetails({
+                      ...formData.flightDetails,
+                      tripType: formData.flightDetails?.tripType || "one_way",
+                      validity: option.value,
+                      flightDetails: formData.flightDetails?.flightDetails || "",
+                    } as any)
+                  }
+                  className="sr-only"
+                />
+                <div className={cn("text-xs font-semibold", active ? "text-[#c8143d]" : "text-slate-800")}>
                   {option.label}
                 </div>
-                <div
-                  className={cn(
-                    "mt-1 text-xs font-medium",
-                    option.price === 0
-                      ? "text-[#15803d]"
-                      : active
-                      ? "text-[#c8143d]"
-                      : "text-slate-500"
-                  )}
-                >
+                <div className={cn("text-[10px] mt-0.5", option.price === 0 ? "text-green-600" : active ? "text-[#c8143d]" : "text-slate-500")}>
                   {option.price === 0 ? "Free" : `+$${option.price}`}
                 </div>
-              </button>
+              </label>
             )
           })}
         </div>
       </section>
 
-      <section className="rounded-xl bg-slate-50 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#c8143d]/10 text-[#c8143d]">
-              <Plane className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500">Flight Cost</p>
-              <p className="text-sm text-slate-600">${totalFlightCost} × {travelerCount}</p>
-            </div>
-          </div>
-          <p className="text-xl font-semibold text-[#c8143d]">${totalFlightCost * travelerCount}</p>
+      <section className="flex items-center justify-between p-3 border border-slate-200 rounded">
+        <div>
+          <p className="text-xs text-slate-500">Flight Cost</p>
+          <p className="text-xs text-slate-600">${totalFlightCost} × {travelerCount}</p>
         </div>
+        <p className="text-lg font-semibold text-[#c8143d]">${totalFlightCost * travelerCount}</p>
       </section>
 
-      <div className="flex gap-3 pt-1">
-        <Button variant="outline" onClick={prevStep} className="h-10 px-4 rounded-lg">
-          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+      <div className="flex gap-2 pt-1">
+        <Button variant="outline" onClick={prevStep} className="h-9 px-3 rounded-md text-xs">
+          <ArrowLeft className="mr-1 h-3 w-3" />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!isValid()} className="flex-1 h-10 rounded-lg bg-[#c8143d] hover:bg-[#b01030] font-medium">
+        <Button onClick={nextStep} disabled={!isValid()} className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] font-medium text-xs">
           Continue
-          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          <ArrowRight className="ml-1 h-3 w-3" />
         </Button>
       </div>
     </div>

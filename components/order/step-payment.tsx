@@ -6,7 +6,7 @@ import { useOrderStore } from "@/lib/order-store"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2, CreditCard, Shield, Check, Info, Zap, Lock, RefreshCw } from "lucide-react"
+import { ArrowLeft, Loader2, Check, Info, RefreshCw, Lock } from "lucide-react"
 import { toast } from "sonner"
 import { calculatePriceBreakdown, formatCurrency, getAllowedPaymentMethods } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -42,31 +42,15 @@ function generateSecurePassword(length: number = 12): string {
   return chars.join('')
 }
 
-const PAYMENT_METHODS_CONFIG: Record<
-  PaymentMethod,
-  { name: string; description: string; icon: string }
-> = {
-  card: {
-    name: "Credit/Debit Card",
-    description: "Visa, Mastercard, Verve",
-    icon: "💳",
-  },
-  paypal: {
-    name: "PayPal",
-    description: "PayPal account or card",
-    icon: "🅿️",
-  },
-  paystack: {
-    name: "PayStack",
-    description: "Cards, Bank, USSD, Mobile",
-    icon: "💰",
-  },
+const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description: string }> = {
+  card: { name: "Credit/Debit Card", description: "Visa, Mastercard, Verve" },
+  paypal: { name: "PayPal", description: "PayPal account or card" },
+  paystack: { name: "PayStack", description: "Cards, Bank, USSD, Mobile" },
 }
 
 export function StepPayment() {
   const router = useRouter()
-  const { formData, setPaymentMethod, setCaptchaToken, prevStep, resetForm } =
-    useOrderStore()
+  const { formData, setPaymentMethod, setCaptchaToken, prevStep, resetForm } = useOrderStore()
 
   const {
     services,
@@ -141,9 +125,7 @@ export function StepPayment() {
 
     try {
       const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
 
       let userId = user?.id
       let isNewUser = false
@@ -155,11 +137,7 @@ export function StepPayment() {
         const { data: newUser, error: signUpError } = await supabase.auth.signUp({
           email,
           password: tempPassword,
-          options: {
-            data: {
-              full_name: fullName,
-            },
-          },
+          options: { data: { full_name: fullName } },
         })
 
         if (signUpError) {
@@ -193,10 +171,8 @@ export function StepPayment() {
 
       if (orderError) throw orderError
 
-      // Send emails
       const customerName = email.split("@")[0]
       
-      // Send welcome email for new users
       if (isNewUser && userId) {
         try {
           await fetch('/api/email', {
@@ -214,7 +190,6 @@ export function StepPayment() {
         }
       }
 
-      // Send order confirmation
       try {
         await fetch('/api/email', {
           method: 'POST',
@@ -242,219 +217,121 @@ export function StepPayment() {
   }
 
   return (
-    <div className="space-y-8">
-      <section
-        className={cn(
-          "rounded-[30px] p-5 transition-all",
-          captchaVerified ? "bg-[#edf9f0]" : "bg-[#eef2fa]"
-        )}
-      >
-        <div className="mb-4 flex items-center gap-3">
-          <div
-            className={cn(
-              "flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm",
-              captchaVerified
-                ? "bg-[#16a34a] text-white"
-                : "bg-white text-[#c8143d]"
-            )}
-          >
-            {captchaVerified ? (
-              <Check className="h-5 w-5" />
-            ) : (
-              <Shield className="h-5 w-5" />
-            )}
+    <div className="space-y-4">
+      <section className="p-3 border rounded">
+        <div className="flex items-center gap-2 mb-2">
+          <div className={cn("flex h-7 w-7 items-center justify-center rounded text-white", captchaVerified ? "bg-green-600" : "bg-[#c8143d]")}>
+            {captchaVerified ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">!</span>}
           </div>
-
-          <div>
-            <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
-              Security Verification
-            </Label>
-            <p className="mt-1 text-sm text-slate-500">
-              Complete verification before payment
-            </p>
-          </div>
+          <Label className="text-xs font-medium uppercase tracking-wider text-slate-500">Security Verification</Label>
         </div>
 
         {captchaVerified ? (
-          <div className="rounded-[22px] bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3 text-[#15803d]">
-              <Check className="h-5 w-5" />
-              <span className="font-semibold">Verification complete</span>
-            </div>
+          <div className="p-2 bg-green-50 rounded text-xs text-green-700 font-medium">
+            Verification complete
           </div>
         ) : (
-            <div className="space-y-4 rounded-[22px] bg-white p-4 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 font-mono text-lg font-bold text-slate-700">
-                  {captchaQuestion?.question}
-                </div>
-                <input
-                  type="number"
-                  value={captchaInput}
-                  onChange={(e) => setCaptchaInput(e.target.value)}
-                  placeholder="?"
-                  className="h-10 w-20 rounded-lg border border-slate-200 px-3 text-center text-lg font-bold focus:border-[#c8143d] focus:outline-none"
-                />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1.5 bg-slate-100 rounded font-mono text-sm font-bold text-slate-700">
+                {captchaQuestion?.question}
               </div>
-
-              <Button
-                onClick={handleCaptcha}
-                disabled={!captchaInput || isVerifying}
-                variant="outline"
-                className="h-11 rounded-full border-[#ead8dd] bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-[#fff7f9]"
-              >
-                {isVerifying ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Verify"
-                )}
-              </Button>
-
-              <Button
-                variant="ghost"
-                onClick={generateCaptcha}
-                className="text-xs text-slate-500 hover:text-[#c8143d]"
-              >
-                Refresh Challenge
-              </Button>
-
-              <div className="flex items-start gap-3 rounded-[18px] bg-[#f7f5f4] p-3 text-sm text-slate-500">
-                <Info className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>Solve the math problem to verify you&apos;re human.</span>
-              </div>
+              <span className="text-slate-400">=</span>
+              <input
+                type="number"
+                value={captchaInput}
+                onChange={(e) => setCaptchaInput(e.target.value)}
+                placeholder="?"
+                className="h-8 w-14 rounded-md border border-slate-200 px-2 text-center text-sm font-bold focus:border-[#c8143d] focus:outline-none"
+              />
             </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleCaptcha} disabled={!captchaInput || isVerifying} variant="outline" className="h-8 px-3 rounded-md text-xs">
+                {isVerifying ? <RefreshCw className="h-3 w-3 animate-spin" /> : "Verify"}
+              </Button>
+              <button type="button" onClick={generateCaptcha} className="text-[10px] text-slate-500 hover:text-[#c8143d]">
+                Refresh
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500">Solve the math problem to verify you&apos;re human.</p>
+          </div>
         )}
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-2">
         <div>
-          <Label className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#7d6670]">
-            Payment Method
-          </Label>
-          <p className="mt-1 text-sm text-slate-500">
-            Choose a secure payment option
-          </p>
+          <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Payment Method</Label>
+          <p className="text-[10px] text-slate-500 mt-0.5">Choose a secure payment option</p>
         </div>
 
-        <div className="rounded-[24px] bg-[#eef2fa] p-4">
-          <div className="flex items-center gap-3 rounded-[20px] bg-white px-4 py-3 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#fff1f4] text-[#c8143d]">
-              <Zap className="h-4 w-4" />
-            </div>
-            <p className="text-sm text-slate-600">
-              Secure payment with 256-bit SSL encryption
-            </p>
-          </div>
+        <div className="space-y-1">
+          {allowedMethods.map((method) => {
+            const config = PAYMENT_METHODS_CONFIG[method]
+            const isSelected = paymentMethod === method
 
-          <div className="mt-4 space-y-3">
-            {allowedMethods.map((method) => {
-              const config = PAYMENT_METHODS_CONFIG[method]
-              const isSelected = paymentMethod === method
-
-              return (
-                <button
-                  key={method}
-                  type="button"
-                  onClick={() => setPaymentMethod(method)}
+            return (
+              <label
+                key={method}
+                className={cn(
+                  "flex items-center gap-3 p-2.5 rounded cursor-pointer border transition-all",
+                  isSelected
+                    ? "border-[#c8143d] bg-[#fff7f9]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                )}
+              >
+                <div
                   className={cn(
-                    "group relative w-full overflow-hidden rounded-[26px] p-[1px] text-left transition-all",
+                    "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
                     isSelected
-                      ? "bg-gradient-to-r from-[#c8143d] via-[#d94a6d] to-[#efc5d0] shadow-[0_16px_30px_rgba(200,20,61,0.12)]"
-                      : "bg-transparent"
+                      ? "border-[#c8143d]"
+                      : "border-slate-300"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "flex items-center gap-4 rounded-[25px] px-5 py-5 transition-all",
-                      isSelected
-                        ? "bg-white"
-                        : "bg-[#e9edf5] hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.05)]"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-12 w-12 items-center justify-center rounded-2xl text-2xl transition-all",
-                        isSelected
-                          ? "bg-[#c8143d] text-white"
-                          : "bg-white text-slate-600 shadow-sm"
-                      )}
-                    >
-                      {config.icon}
-                    </div>
-
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900">{config.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {config.description}
-                      </p>
-                    </div>
-
-                    <div
-                      className={cn(
-                        "flex h-6 w-6 items-center justify-center rounded-full transition-all",
-                        isSelected
-                          ? "bg-[#c8143d] text-white"
-                          : "border border-slate-300 bg-white text-transparent"
-                      )}
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+                  {isSelected && <div className="h-2 w-2 rounded-full bg-[#c8143d]" />}
+                </div>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  checked={isSelected}
+                  onChange={() => setPaymentMethod(method)}
+                  className="sr-only"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-900">{config.name}</p>
+                  <p className="text-xs text-slate-500">{config.description}</p>
+                </div>
+              </label>
+            )
+          })}
         </div>
       </section>
 
-      <section className="rounded-[30px] bg-[#eef2fa] p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#c8143d] shadow-sm">
-              <CreditCard className="h-5 w-5" />
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
-                Total Amount
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                {pricing.currency === "NGN" ? "Naira" : "USD"} •{" "}
-                {PAYMENT_METHODS_CONFIG[paymentMethod].name}
-              </p>
-            </div>
-          </div>
-
-          <div className="text-left sm:text-right">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#a27f88]">
-              Total
-            </p>
-            <p className="mt-1 text-3xl font-semibold text-[#c8143d]">
-              {formatCurrency(pricing.total, pricing.currency)}
-            </p>
-          </div>
+      <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Total Amount</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {pricing.currency === "NGN" ? "Naira" : "USD"} • {PAYMENT_METHODS_CONFIG[paymentMethod].name}
+          </p>
+        </div>
+        <div className="text-right">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Total</span>
+          <p className="text-xl font-semibold text-[#c8143d]">{formatCurrency(pricing.total, pricing.currency)}</p>
         </div>
       </section>
 
-      <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-        <Lock className="h-4 w-4" />
+      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+        <Lock className="h-3 w-3" />
         <span>Your payment is secure and encrypted</span>
       </div>
 
-      <div className="flex gap-3 pt-1">
-        <Button variant="outline" onClick={prevStep} disabled={isSubmitting} className="h-10 px-4 rounded-lg">
-          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={prevStep} disabled={isSubmitting} className="h-9 px-3 rounded-md text-xs">
+          <ArrowLeft className="mr-1 h-3 w-3" />
           Back
         </Button>
-        <Button onClick={handleSubmitOrder} disabled={!captchaVerified || isSubmitting} className="flex-1 h-10 rounded-lg bg-[#c8143d] hover:bg-[#b01030] font-medium">
+        <Button onClick={handleSubmitOrder} disabled={!captchaVerified || isSubmitting} className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] font-medium text-xs">
           {isSubmitting ? (
-            <>
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              Processing...
-            </>
+            <><Loader2 className="mr-1 h-3 w-3 animate-spin" />Processing...</>
           ) : (
             <>Pay {formatCurrency(pricing.total, pricing.currency)}</>
           )}
