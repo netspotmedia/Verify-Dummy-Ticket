@@ -217,7 +217,7 @@ export function StepPayment() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-outfit">
       <section className="p-3 border rounded">
         <div className="flex items-center gap-2 mb-2">
           <div className={cn("flex h-7 w-7 items-center justify-center rounded text-white", captchaVerified ? "bg-green-600" : "bg-[#c8143d]")}>

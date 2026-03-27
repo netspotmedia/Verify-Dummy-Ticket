@@ -41,7 +41,7 @@ export function StepReview() {
   const getTravelerLabel = (index: number) => index === 0 ? "Primary" : index === 1 ? "Traveler 2" : `Traveler ${index + 1}`
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 font-outfit">
       <div className="space-y-1">
         <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Services</Label>
         <div className="flex flex-wrap gap-1.5">

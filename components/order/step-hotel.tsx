@@ -41,7 +41,7 @@ export function StepHotel() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-outfit">
       <section className="space-y-2">
         <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
           Hotel Confirmation Type

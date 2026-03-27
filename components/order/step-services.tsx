@@ -41,7 +41,7 @@ export function StepServices() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-outfit">
       <div className="space-y-1">
         <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
           Select Services
