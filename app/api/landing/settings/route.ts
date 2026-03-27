@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-helpers'
 
 export async function GET() {
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  const supabase = await createClient()
   
   try {
     const { data, error } = await supabase
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  const supabase = await createClient()
   
   const { error: authError } = await requireAdmin()
   if (authError) {
@@ -34,53 +34,49 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json()
+    const now = new Date().toISOString()
     
-    // Handle bulk update
     if (body.settings && Array.isArray(body.settings)) {
-      const now = new Date().toISOString()
       const results = []
       
-      for (const setting of body.settings) {
-        const { key, value, category = 'general' } = setting
-        
-        const { data: existing } = await supabase
+      const existingSettings = await supabase
+        .from('site_settings')
+        .select('key')
+        .in('key', body.settings.map((s: { key: string }) => s.key))
+      
+      const existingKeys = new Set(existingSettings.data?.map(s => s.key) || [])
+      
+      const toUpdate = body.settings.filter((s: { key: string }) => existingKeys.has(s.key))
+      const toInsert = body.settings.filter((s: { key: string }) => !existingKeys.has(s.key))
+      
+      for (const setting of toUpdate) {
+        const { key, value } = setting
+        const { error } = await supabase
           .from('site_settings')
-          .select('id')
+          .update({ value, updated_at: now })
           .eq('key', key)
-          .single()
         
-        if (existing) {
-          const { data, error } = await supabase
-            .from('site_settings')
-            .update({ value, updated_at: now })
-            .eq('key', key)
-            .select()
-            .single()
-          
-          if (error) {
-            results.push({ key, error: error.message })
-          } else {
-            results.push({ key, success: true })
-          }
-        } else {
-          const { data, error } = await supabase
-            .from('site_settings')
-            .insert([{ key, value, category, is_public: true, updated_at: now }])
-            .select()
-            .single()
-          
-          if (error) {
-            results.push({ key, error: error.message })
-          } else {
-            results.push({ key, success: true })
-          }
+        results.push({ key, success: !error, error: error?.message })
+      }
+      
+      if (toInsert.length > 0) {
+        const insertRows = toInsert.map((s: { key: string; value: any; category?: string }) => ({
+          key: s.key,
+          value: s.value,
+          category: s.category || 'general',
+          is_public: true,
+          updated_at: now
+        }))
+        
+        const { error } = await supabase.from('site_settings').insert(insertRows)
+        for (const setting of toInsert) {
+          results.push({ key: setting.key, success: !error, error: error?.message })
         }
       }
       
       return NextResponse.json({ success: true, results })
     }
     
-    // Handle single update
     const { key, value, category = 'general' } = body
     
     const { data: existing } = await supabase
@@ -92,7 +88,7 @@ export async function PUT(request: NextRequest) {
     if (existing) {
       const { data, error } = await supabase
         .from('site_settings')
-        .update({ value, updated_at: new Date().toISOString() })
+        .update({ value, updated_at: now })
         .eq('key', key)
         .select()
         .single()
@@ -102,7 +98,7 @@ export async function PUT(request: NextRequest) {
     } else {
       const { data, error } = await supabase
         .from('site_settings')
-        .insert([{ key, value, category, is_public: true }])
+        .insert([{ key, value, category, is_public: true, updated_at: now }])
         .select()
         .single()
       

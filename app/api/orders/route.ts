@@ -2,6 +2,34 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import crypto from "crypto"
+
+const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "default-captcha-secret-change-me"
+const CAPTCHA_EXPIRY = 5 * 60 * 1000
+
+function verifyCaptchaToken(token: string): boolean {
+  if (!token) return false
+  
+  try {
+    const parts = token.split(".")
+    if (parts.length !== 2) return false
+    
+    const [payloadBase64, signature] = parts
+    const expectedSignature = crypto
+      .createHmac("sha256", CAPTCHA_SECRET)
+      .update(payloadBase64)
+      .digest("base64url")
+    
+    if (signature !== expectedSignature) return false
+    
+    const payload = JSON.parse(Buffer.from(payloadBase64, "base64url").toString())
+    if (Date.now() - payload.timestamp > CAPTCHA_EXPIRY) return false
+    
+    return true
+  } catch {
+    return false
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +38,7 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json()
     const {
+      captchaToken,
       services,
       travelers,
       flightDetails,
@@ -23,6 +52,10 @@ export async function POST(request: NextRequest) {
       customerCountryCode,
       deliveryMethod,
     } = body
+
+    if (!verifyCaptchaToken(captchaToken)) {
+      return NextResponse.json({ error: "Invalid or expired CAPTCHA" }, { status: 400 })
+    }
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
