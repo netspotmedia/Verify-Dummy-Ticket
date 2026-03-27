@@ -84,7 +84,7 @@ export function OrderWizard() {
   }
 
   return (
-    <div className="max-w-[560px] mx-auto space-y-4">
+    <div className="max-w-[560px] mx-auto space-y-4 font-outfit">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Step {currentStepIndex + 1} of {activeSteps.length}</p>

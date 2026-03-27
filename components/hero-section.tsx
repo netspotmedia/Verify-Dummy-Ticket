@@ -168,8 +168,13 @@ export function HeroSection() {
           </div>
 
           {/* Right Content - Quick Order Form */}
-          <div className="mt-12 lg:mt-0">
-            <OrderQuickForm />
+          <div className="mt-10 lg:mt-0">
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-200 via-pink-100 to-red-100 rounded-xl blur-lg opacity-60" />
+              <div className="relative">
+                <OrderQuickForm />
+              </div>
+            </div>
           </div>
         </div>
       </div>

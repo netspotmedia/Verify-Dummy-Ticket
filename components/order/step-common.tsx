@@ -43,7 +43,7 @@ export function StepCommon() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 font-outfit">
       <div className="space-y-1">
         <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Contact Details</Label>
       </div>
