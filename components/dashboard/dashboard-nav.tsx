@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { useSiteSettings } from "@/lib/site-settings"
-import { Plane, Home, ShoppingBag, User, Settings, LogOut, Plus } from "lucide-react"
+import { Plane, Home, ShoppingBag, User, Settings, LogOut, Plus, Headphones } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { toast } from "sonner"
 
@@ -32,6 +32,7 @@ interface DashboardNavProps {
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: Home },
   { href: "/dashboard/orders", label: "My Orders", icon: ShoppingBag },
+  { href: "/dashboard/support", label: "Support", icon: Headphones },
   { href: "/dashboard/profile", label: "Profile", icon: User },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ]

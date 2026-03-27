@@ -37,18 +37,41 @@ export interface PayStackVerifyResponse {
 }
 
 class PaymentService {
-  private supabase = createClient()
+  private async getSupabase() {
+    return createClient()
+  }
+
+  private async getSiteName(): Promise<string> {
+    try {
+      const supabase = await this.getSupabase()
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "site_name")
+        .single()
+      
+      if (data?.value) {
+        return data.value.replace(/"/g, "")
+      }
+    } catch (error) {
+      console.error("Failed to fetch site name:", error)
+    }
+    return "Verify Dummy Ticket"
+  }
 
   async getPaymentSettings() {
-    const { data } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data } = await supabase
       .from("site_settings")
       .select("key, value")
       .in("category", ["payment", "general"])
 
     const settings: Record<string, any> = {}
-    data?.forEach((item) => {
+    data?.forEach((item: { key: string; value: string }) => {
       settings[item.key] = item.value
     })
+
+    const siteName = await this.getSiteName()
 
     return {
       paypalMode: process.env.PAYPAL_MODE || settings.paypal_mode || "sandbox",
@@ -60,6 +83,7 @@ class PaymentService {
       paypalEnabled: process.env.PAYPAL_CLIENT_ID ? (settings.paypal_enabled !== false) : false,
       paystackEnabled: process.env.PAYSTACK_SECRET_KEY ? (settings.paystack_enabled !== false) : false,
       currencyRate: parseFloat(settings.currency_conversion_rate || "1650"),
+      brandName: siteName,
     }
   }
 
@@ -108,29 +132,29 @@ class PaymentService {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          intent: "CAPTURE",
-          purchase_units: [
-            {
-              reference_id: orderId,
-              description: `Verify Dummy Ticket Order ${orderId}`,
-              amount: {
-                currency_code: currency,
-                value: amount.toFixed(2),
+          body: JSON.stringify({
+            intent: "CAPTURE",
+            purchase_units: [
+              {
+                reference_id: orderId,
+                description: `${settings.brandName} Order ${orderId}`,
+                amount: {
+                  currency_code: currency,
+                  value: amount.toFixed(2),
+                },
+                payer: {
+                  email_address: customerEmail,
+                },
               },
-              payer: {
-                email_address: customerEmail,
-              },
+            ],
+            application_context: {
+              brand_name: settings.brandName,
+              landing_page: "BILLING",
+              user_action: "PAY_NOW",
+              return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order/confirmation?id=${orderId}`,
+              cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order?cancelled=true`,
             },
-          ],
-          application_context: {
-            brand_name: "Verify Dummy Ticket",
-            landing_page: "BILLING",
-            user_action: "PAY_NOW",
-            return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order/confirmation?id=${orderId}`,
-            cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order?cancelled=true`,
-          },
-        }),
+          }),
       })
 
       if (!orderResponse.ok) {
@@ -292,7 +316,8 @@ class PaymentService {
     paymentMethod: string,
     paymentReference?: string
   ) {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from("orders")
       .update({
         payment_status: paymentStatus,

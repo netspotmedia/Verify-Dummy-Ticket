@@ -10,6 +10,7 @@ import { ArrowLeft, Plus, Trash2, Plane, Hotel, Shield, GripVertical } from 'luc
 import Link from 'next/link'
 import type { ServiceItem } from '@/lib/supabase'
 import { RichTextEditor, renderRichText } from '@/components/rich-text-editor'
+import { sanitizeHtml } from '@/lib/utils'
 
 const iconOptions = [
   { value: 'Plane', label: 'Flight', icon: Plane },
@@ -139,7 +140,7 @@ export default function ServicesPage() {
                       <IconComponent className="h-5 w-5 text-red-700" />
                     </div>
                     <div>
-                      <CardTitle dangerouslySetInnerHTML={{ __html: renderRichText(service.title) }} />
+                      <CardTitle dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderRichText(service.title)) }} />
                       <CardDescription>{service.price_from}</CardDescription>
                     </div>
                   </div>

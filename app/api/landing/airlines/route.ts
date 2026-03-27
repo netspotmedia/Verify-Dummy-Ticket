@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/auth-helpers'
 
 export async function GET() {
   if (!supabase) {
@@ -26,6 +27,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
   }
 
+  const { error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { name, code, logo_url, sort_order, is_active } = body
@@ -47,6 +53,11 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   if (!supabase) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
+  const { error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
@@ -71,6 +82,11 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   if (!supabase) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
+  const { error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
