@@ -84,20 +84,20 @@ export function OrderWizard() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="max-w-[560px] mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Step {currentStepIndex + 1} of {activeSteps.length}</p>
-          <h2 className="text-xl font-semibold text-slate-900 mt-0.5">{stepInfo.title}</h2>
-          <p className="text-sm text-slate-500 mt-0.5">{stepInfo.description}</p>
+          <h2 className="text-lg font-semibold text-slate-900 mt-0.5">{stepInfo.title}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{stepInfo.description}</p>
         </div>
       </div>
 
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-        <div className="h-full rounded-full bg-[#c8143d] transition-all duration-300" style={{ width: `${progress}%` }} />
+      <div className="h-1 w-full overflow-hidden rounded bg-slate-200">
+        <div className="h-full rounded bg-[#c8143d] transition-all duration-300" style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+      <div className="flex gap-1 overflow-x-auto pb-1">
         {activeSteps.map((step, index) => {
           const isComplete = isStepComplete(step)
           const isCurrent = currentStepIndex === index
@@ -109,9 +109,9 @@ export function OrderWizard() {
               onClick={() => canNav && goToStep(index)}
               disabled={!canNav}
               className={cn(
-                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all",
+                "inline-flex items-center gap-1 whitespace-nowrap rounded px-2 py-1 text-xs font-medium transition-all",
                 isCurrent && "bg-[#c8143d] text-white",
-                !isCurrent && isComplete && "bg-[#c8143d]/10 text-[#c8143d] ring-1 ring-[#c8143d]/20",
+                !isCurrent && isComplete && "bg-[#c8143d]/10 text-[#c8143d]",
                 !isCurrent && !isComplete && "bg-slate-100 text-slate-500 hover:bg-slate-200",
                 !canNav && "cursor-not-allowed opacity-50"
               )}
@@ -119,19 +119,17 @@ export function OrderWizard() {
               {isComplete && !isCurrent ? (
                 <Check className="h-3 w-3" />
               ) : (
-                <span className={cn("h-4 w-4 flex items-center justify-center rounded-full text-[10px]", isCurrent ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600")}>
+                <span className={cn("h-4 w-4 flex items-center justify-center rounded text-[10px]", isCurrent ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600")}>
                   {index + 1}
                 </span>
               )}
-              <span className="hidden sm:inline">{stepInfo.title}</span>
+              <span className="hidden sm:inline text-[11px]">{STEP_TITLES[step]?.title}</span>
             </button>
           )
         })}
       </div>
 
-      <div className="rounded-xl bg-slate-50 p-4">
-        {renderStep()}
-      </div>
+      {renderStep()}
     </div>
   )
 }
