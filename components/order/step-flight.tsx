@@ -41,7 +41,7 @@ export function StepFlight() {
   return (
     <div className="space-y-4 font-outfit">
       <section className="space-y-2">
-        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-black">
           Trip Type
         </Label>
 
@@ -97,7 +97,7 @@ export function StepFlight() {
       </section>
 
       <section className="space-y-2">
-        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-black">
           Flight Itinerary Details
         </Label>
         <Textarea
@@ -120,7 +120,7 @@ export function StepFlight() {
       </section>
 
       <section className="space-y-2">
-        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-black">
           Flight Validity
         </Label>
         <p className="text-sm text-slate-500">
