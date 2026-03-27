@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MessageCircle, MapPin, Clock, Send, CheckCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useSiteSettings } from "@/lib/site-settings"
 
 export default function ContactPage() {
+  const { settings } = useSiteSettings()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [formData, setFormData] = useState({
@@ -71,7 +73,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold">Email</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    support@verifydummytickets.com
+                    {settings?.support_email || "support@example.com"}
                   </p>
                 </CardContent>
               </Card>
@@ -83,7 +85,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold">Phone</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    +27 48 707 6011
+                    {settings?.site_phone || "+234 800 123 4567"}
                   </p>
                 </CardContent>
               </Card>
@@ -95,7 +97,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold">WhatsApp</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    +27 48 707 6011
+                    {settings?.site_phone || "+234 800 123 4567"}
                   </p>
                 </CardContent>
               </Card>

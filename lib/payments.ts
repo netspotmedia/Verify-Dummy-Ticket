@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
 
 export interface PayPalOrderResponse {
   id: string
@@ -69,7 +70,7 @@ class PaymentService {
         return parsed.replace(/"/g, "") || "Verify Dummy Ticket"
       }
     } catch (error) {
-      console.error("Failed to fetch site name:", error)
+      logger.error("Failed to fetch site name", error as Error)
     }
     return "Verify Dummy Ticket"
   }
@@ -94,7 +95,7 @@ class PaymentService {
         paypalMode: flags.paypal_mode || "sandbox",
       }
     } catch (error) {
-      console.error("Failed to fetch payment flags:", error)
+      logger.error("Failed to fetch payment flags", error as Error)
       return { paypal: true, paystack: true, card: true, paypalMode: "sandbox" }
     }
   }
@@ -212,7 +213,7 @@ class PaymentService {
 
       return { success: true, approvalUrl, orderId: orderData.id }
     } catch (error) {
-      console.error("PayPal create order error:", error)
+      logger.error("PayPal create order error", error as Error)
       return { success: false, error: "Failed to create PayPal order" }
     }
   }
@@ -259,7 +260,7 @@ class PaymentService {
 
       return { success: true }
     } catch (error) {
-      console.error("PayPal capture error:", error)
+      logger.error("PayPal capture error", error as Error)
       return { success: false, error: "Failed to capture PayPal order" }
     }
   }
@@ -312,7 +313,7 @@ class PaymentService {
         reference: data.data.reference,
       }
     } catch (error) {
-      console.error("PayStack initialize error:", error)
+      logger.error("PayStack initialize error", error as Error)
       return { success: false, error: "Failed to initialize PayStack payment" }
     }
   }
@@ -341,7 +342,7 @@ class PaymentService {
       const data: PayStackVerifyResponse = await response.json()
       return data
     } catch (error) {
-      console.error("PayStack verify error:", error)
+      logger.error("PayStack verify error", error as Error)
       return {
         status: false,
         message: "Failed to verify payment",
