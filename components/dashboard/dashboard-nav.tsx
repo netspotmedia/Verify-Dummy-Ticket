@@ -57,14 +57,20 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
     ? `${profile.first_name[0]}${profile.last_name?.[0] || ""}`
     : user.email?.[0]?.toUpperCase() || "U"
 
+  const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Plane className="h-5 w-5 text-primary-foreground" />
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={settings?.site_name || "Logo"} className="h-9 w-auto object-contain" />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+              <Plane className="h-5 w-5 text-primary-foreground" />
+            </div>
+          )}
           <span className="hidden font-bold text-foreground sm:inline-block">
             {settings?.site_name || "My Travel Services"}
           </span>

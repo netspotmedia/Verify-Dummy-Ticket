@@ -41,7 +41,7 @@ export function StepFlight() {
   return (
     <div className="space-y-4 font-outfit">
       <section className="space-y-2">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Trip Type
         </Label>
 
@@ -85,7 +85,7 @@ export function StepFlight() {
                 />
                 <div className="flex-1">
                   <span className="text-sm font-medium text-slate-900">{type.label}</span>
-                  <span className="text-xs text-slate-500 ml-2">{type.description}</span>
+                  <span className="text-sm text-slate-500 ml-2">{type.description}</span>
                 </div>
                 <span className={cn("text-sm font-semibold", type.price === 0 ? "text-green-600" : "text-[#c8143d]")}>
                   {type.price === 0 ? "Free" : `+$${type.price}`}
@@ -97,7 +97,7 @@ export function StepFlight() {
       </section>
 
       <section className="space-y-2">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Flight Itinerary Details
         </Label>
         <Textarea
@@ -114,16 +114,16 @@ export function StepFlight() {
           rows={4}
           className="rounded-md border-slate-200 bg-white text-sm placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#c8143d] resize-none"
         />
-        <p className="text-xs text-slate-500">
+        <p className="text-sm text-slate-500">
           Provide your route and dates. Be detailed for accurate booking.
         </p>
       </section>
 
       <section className="space-y-2">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Flight Validity
         </Label>
-        <p className="text-xs text-slate-500">
+        <p className="text-sm text-slate-500">
           How long should the reservation remain valid?
         </p>
 
@@ -158,7 +158,7 @@ export function StepFlight() {
                 <div className={cn("text-xs font-semibold", active ? "text-[#c8143d]" : "text-slate-800")}>
                   {option.label}
                 </div>
-                <div className={cn("text-[10px] mt-0.5", option.price === 0 ? "text-green-600" : active ? "text-[#c8143d]" : "text-slate-500")}>
+                <div className={cn("text-sm mt-0.5", option.price === 0 ? "text-green-600" : active ? "text-[#c8143d]" : "text-slate-500")}>
                   {option.price === 0 ? "Free" : `+$${option.price}`}
                 </div>
               </label>
@@ -169,7 +169,7 @@ export function StepFlight() {
 
       <section className="flex items-center justify-between p-3 border border-slate-200 rounded">
         <div>
-          <p className="text-xs text-slate-500">Flight Cost</p>
+          <p className="text-sm text-slate-500">Flight Cost</p>
           <p className="text-xs text-slate-600">${totalFlightCost} × {travelerCount}</p>
         </div>
         <p className="text-lg font-semibold text-[#c8143d]">${totalFlightCost * travelerCount}</p>

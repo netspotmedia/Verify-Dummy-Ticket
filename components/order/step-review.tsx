@@ -43,10 +43,10 @@ export function StepReview() {
   return (
     <div className="space-y-3 font-outfit">
       <div className="space-y-1">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Services</Label>
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">Services</Label>
         <div className="flex flex-wrap gap-1.5">
           {services.map((service) => (
-            <span key={service} className="inline-flex items-center gap-1 rounded bg-[#c8143d]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#c8143d]">
+            <span key={service} className="inline-flex items-center gap-1 rounded bg-[#c8143d]/10 px-1.5 py-0.5 text-sm font-medium text-[#c8143d]">
               {getServiceName(service)}
             </span>
           ))}
@@ -55,15 +55,15 @@ export function StepReview() {
 
       <div className="grid gap-2 md:grid-cols-2">
         <div className="p-2 border border-slate-200 rounded">
-          <p className="text-[10px] font-medium text-slate-500 mb-1 uppercase tracking-wider">Contact</p>
+          <p className="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Contact</p>
           <div className="space-y-0.5">
-            <div className="flex justify-between text-xs"><span className="text-slate-500">Email</span><span className="font-medium text-slate-700 truncate ml-2">{email}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-slate-500">Country</span><span className="font-medium text-slate-700">{customerCountry}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-slate-500">Travelers</span><span className="font-medium text-slate-700">{travelerCount}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-slate-500">Email</span><span className="font-medium text-slate-700 truncate ml-2">{email}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-slate-500">Country</span><span className="font-medium text-slate-700">{customerCountry}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-slate-500">Travelers</span><span className="font-medium text-slate-700">{travelerCount}</span></div>
           </div>
         </div>
         <div className="p-2 border border-slate-200 rounded">
-          <p className="text-[10px] font-medium text-slate-500 mb-1 uppercase tracking-wider">Passengers</p>
+          <p className="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Passengers</p>
           <div className="space-y-0.5">
             {travelers.slice(0, 3).map((traveler, index) => (
               <div key={index} className="flex justify-between text-xs">
@@ -71,13 +71,13 @@ export function StepReview() {
                 <span className="font-medium text-slate-700">{traveler.firstName} {traveler.lastName}</span>
               </div>
             ))}
-            {travelers.length > 3 && <p className="text-[10px] text-slate-400">+{travelers.length - 3} more</p>}
+            {travelers.length > 3 && <p className="text-sm text-slate-400">+{travelers.length - 3} more</p>}
           </div>
         </div>
       </div>
 
       <div className="space-y-1">
-        <Label className="text-xs font-medium text-slate-500">Delivery Speed</Label>
+        <Label className="text-sm font-medium text-slate-500">Delivery Speed</Label>
         <div className="flex gap-1">
           {DELIVERY_OPTIONS.map((option) => {
             const active = deliverySpeed === option.value
@@ -85,7 +85,7 @@ export function StepReview() {
               <label
                 key={option.value}
                 className={cn(
-                  "flex-1 py-2 px-2 rounded text-center text-xs font-medium transition-all cursor-pointer border",
+                  "flex-1 py-2 px-2 rounded text-center text-sm font-medium transition-all cursor-pointer border",
                   active ? "border-[#c8143d] bg-[#fff7f9] text-[#c8143d]" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                 )}
               >
@@ -97,7 +97,7 @@ export function StepReview() {
                   className="sr-only"
                 />
                 <div className="font-medium">{option.title}</div>
-                <div className="text-[10px] opacity-70">+${option.price}</div>
+                <div className="text-sm opacity-70">+${option.price}</div>
               </label>
             )
           })}
@@ -105,14 +105,14 @@ export function StepReview() {
       </div>
 
       {customerCountryCode === "NG" && (
-        <div className="flex items-center gap-2 text-xs text-blue-700">
+        <div className="flex items-center gap-2 text-sm text-blue-700">
           <Clock className="h-3 w-3" />Delivery timelines apply to document processing.
         </div>
       )}
 
       <div className="p-2 border border-slate-200 rounded">
-        <div className="flex justify-between text-xs"><span className="text-slate-500">Services</span><span className="font-medium text-slate-700">${baseServiceCost}</span></div>
-        <div className="flex justify-between text-xs"><span className="text-slate-500">Delivery</span><span className="font-medium text-slate-700">${deliveryCost}</span></div>
+        <div className="flex justify-between text-sm"><span className="text-slate-500">Services</span><span className="font-medium text-slate-700">${baseServiceCost}</span></div>
+        <div className="flex justify-between text-sm"><span className="text-slate-500">Delivery</span><span className="font-medium text-slate-700">${deliveryCost}</span></div>
         <div className="border-t border-slate-200 mt-1 pt-1 flex justify-between">
           <span className="text-sm font-medium text-slate-900">Total</span>
           <span className="text-base font-semibold text-[#c8143d]">${totalCost}</span>

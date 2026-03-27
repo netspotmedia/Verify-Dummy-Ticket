@@ -59,14 +59,20 @@ export default function SignUpPage() {
     }
   }
 
+  const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/5 via-background to-background px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Plane className="h-6 w-6 text-primary-foreground" />
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={siteName} className="h-10 w-auto object-contain" />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+              <Plane className="h-6 w-6 text-primary-foreground" />
+            </div>
+          )}
           <span className="text-xl font-bold text-foreground">{siteName}</span>
         </Link>
 

@@ -18,14 +18,20 @@ export function SiteFooter() {
   const instagramUrl = settings?.footer_instagram || "https://instagram.com"
   const twitterUrl = settings?.footer_twitter || "https://twitter.com"
 
+  const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
+
   return (
     <footer className="w-full py-12 border-t border-slate-200 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex flex-col items-center md:items-start">
           <Link href="/" className="flex items-center gap-2 mb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-700 to-red-800">
-              <Plane className="h-4 w-4 text-white" />
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt={companyName} className="h-8 w-auto object-contain" />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-700 to-red-800">
+                <Plane className="h-4 w-4 text-white" />
+              </div>
+            )}
             <span className="font-bold text-slate-900">{companyName}</span>
           </Link>
           <p className="text-sm text-slate-500">{copyrightText}</p>

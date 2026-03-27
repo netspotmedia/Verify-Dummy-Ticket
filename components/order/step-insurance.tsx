@@ -62,7 +62,7 @@ export function StepInsurance() {
   return (
     <div className="space-y-4 font-outfit">
       <section className="space-y-2">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Coverage Area
         </Label>
 
@@ -104,7 +104,7 @@ export function StepInsurance() {
                 />
                 <div className="flex-1">
                   <span className="text-sm font-medium text-slate-900">{area.title}</span>
-                  <span className="text-xs text-slate-500 ml-2">{area.description}</span>
+                  <span className="text-sm text-slate-500 ml-2">{area.description}</span>
                 </div>
               </label>
             )
@@ -114,10 +114,10 @@ export function StepInsurance() {
 
       {selectedArea && (
         <section className="space-y-2">
-          <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+          <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
             Coverage Duration
           </Label>
-          <p className="text-xs text-slate-500">
+          <p className="text-sm text-slate-500">
             Pick how long the policy should remain valid
           </p>
 
@@ -151,7 +151,7 @@ export function StepInsurance() {
                   <div className={cn("text-xs font-semibold", isSelected ? "text-[#c8143d]" : "text-slate-800")}>
                     {duration.label}
                   </div>
-                  <div className={cn("text-[10px] mt-0.5", isSelected ? "text-[#c8143d]" : "text-slate-500")}>
+                  <div className={cn("text-sm mt-0.5", isSelected ? "text-[#c8143d]" : "text-slate-500")}>
                     ${price}/person
                   </div>
                 </label>
@@ -163,9 +163,9 @@ export function StepInsurance() {
 
       {selectedArea && (
         <section className="p-3 border border-slate-200 rounded">
-          <p className="text-xs font-medium text-slate-500 mb-2">Pricing by Travelers</p>
+          <p className="text-sm font-medium text-slate-500 mb-2">Pricing by Travelers</p>
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="text-left py-1.5 font-semibold text-slate-500">Duration</th>
@@ -197,13 +197,13 @@ export function StepInsurance() {
       {selectedArea && selectedDuration && (
         <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Insurance Cost</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Insurance Cost</p>
             <p className="text-xs text-slate-500 mt-0.5">
               ${unitPrice} × {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total</span>
+            <span className="text-sm font-semibold uppercase tracking-wider text-slate-500">Total</span>
             <p className="text-xl font-semibold text-[#c8143d]">${insuranceCost}</p>
           </div>
         </section>

@@ -31,7 +31,7 @@ export function StepContact() {
   return (
     <div className="space-y-5">
       <div className="space-y-1">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Contact Information
         </Label>
         <p className="text-sm text-slate-600">
@@ -41,7 +41,7 @@ export function StepContact() {
 
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="contactEmail" className="text-xs text-slate-500">Email Address *</Label>
+          <Label htmlFor="contactEmail" className="text-sm text-slate-500">Email Address *</Label>
           <Input
             id="contactEmail"
             type="email"
@@ -53,7 +53,7 @@ export function StepContact() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="contactPhone" className="text-xs text-slate-500">Phone Number *</Label>
+          <Label htmlFor="contactPhone" className="text-sm text-slate-500">Phone Number *</Label>
           <Input
             id="contactPhone"
             type="tel"
@@ -65,7 +65,7 @@ export function StepContact() {
         </div>
 
         <div className="space-y-2 pt-1">
-          <Label className="text-xs text-slate-500">Delivery Method *</Label>
+          <Label className="text-sm text-slate-500">Delivery Method *</Label>
           <div className="flex gap-2">
             {[
               { value: "email", label: "Email" },
@@ -90,7 +90,7 @@ export function StepContact() {
 
         {(deliveryMethod === "whatsapp" || deliveryMethod === "both") && (
           <div className="space-y-1.5 pt-1">
-            <Label htmlFor="whatsappNumber" className="text-xs text-slate-500">WhatsApp Number *</Label>
+            <Label htmlFor="whatsappNumber" className="text-sm text-slate-500">WhatsApp Number *</Label>
             <Input
               id="whatsappNumber"
               type="tel"
@@ -99,7 +99,7 @@ export function StepContact() {
               onChange={(e) => handleChange("whatsappNumber", e.target.value)}
               className="h-10 rounded-lg border-slate-200 bg-white text-sm"
             />
-            <p className="text-xs text-slate-400">Include country code (e.g., +234, +1)</p>
+            <p className="text-sm text-slate-400">Include country code (e.g., +234, +1)</p>
           </div>
         )}
       </div>
