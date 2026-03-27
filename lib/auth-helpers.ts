@@ -15,7 +15,14 @@ export async function requireAuth() {
     return { user: null, error: "Unauthorized" }
   }
   
-  const isAdmin = user.user_metadata?.is_admin === true
+  // Check admin status from database profiles table, not user metadata
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+  
+  const isAdmin = profile?.role === "admin"
   
   return { 
     user: { id: user.id, email: user.email || "", isAdmin }, 

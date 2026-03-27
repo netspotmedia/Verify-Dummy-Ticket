@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/auth-helpers'
 
 export async function GET() {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
   try {
     const { data, error } = await supabase
       .from('how_it_works_item')
@@ -18,6 +21,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
+  const { error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   try {
     const body = await request.json()
     
@@ -36,9 +46,20 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
+  const { error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   try {
     const body = await request.json()
     const { id, ...updates } = body
+    
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+    }
     
     const { data, error } = await supabase
       .from('how_it_works_item')
@@ -56,6 +77,13 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  
+  const { error: authError } = await requireAdmin()
+  if (authError) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
