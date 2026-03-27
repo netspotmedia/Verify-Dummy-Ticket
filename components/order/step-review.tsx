@@ -3,9 +3,10 @@
 import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, Clock } from "lucide-react"
+import { ArrowLeft, ArrowRight, Clock, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { DeliverySpeed } from "@/lib/types"
+import type { DeliverySpeed, Currency } from "@/lib/types"
+import { USD_TO_NGN_RATE } from "@/lib/types"
 
 const DELIVERY_OPTIONS: { value: DeliverySpeed; title: string; description: string; price: number }[] = [
   { value: "normal", title: "24 Hours", description: "Standard delivery", price: 10 },
@@ -13,9 +14,16 @@ const DELIVERY_OPTIONS: { value: DeliverySpeed; title: string; description: stri
   { value: "express", title: "8 Hours", description: "Priority express", price: 30 },
 ]
 
+const formatPrice = (amount: number, currency: Currency) => {
+  if (currency === "NGN") {
+    return `₦${Math.round(amount * USD_TO_NGN_RATE).toLocaleString()}`
+  }
+  return `$${amount.toFixed(2)}`
+}
+
 export function StepReview() {
-  const { formData, setDeliverySpeed, nextStep, prevStep } = useOrderStore()
-  const { services, travelerCount, email, customerCountry, customerCountryCode, travelers, flightDetails, hotelDetails, insuranceDetails, deliverySpeed } = formData
+  const { formData, setDeliverySpeed, nextStep, prevStep, isNigeria, ipCountry } = useOrderStore()
+  const { services, travelerCount, email, customerCountry, customerCountryCode, travelers, flightDetails, hotelDetails, insuranceDetails, deliverySpeed, currency } = formData
 
   const getFlightCostPerPerson = () => {
     const tripTypePrice = flightDetails?.tripType === "one_way" ? 5 : flightDetails?.tripType === "return_trip" ? 8 : 15
@@ -46,20 +54,20 @@ export function StepReview() {
 
   const orderItems = [
     ...(services.includes("flight") ? [{
-      item: `Flight (${getFlightCostPerPerson()}/person)`,
-      price: getFlightCostPerPerson(),
+      item: `Flight`,
+      pricePerPerson: getFlightCostPerPerson(),
       qty: travelerCount,
       total: getFlightCostPerPerson() * travelerCount
     }] : []),
     ...(services.includes("hotel") ? [{
       item: "Hotel",
-      price: getHotelCostPerPerson(),
+      pricePerPerson: getHotelCostPerPerson(),
       qty: 1,
       total: getHotelCostPerPerson()
     }] : []),
     ...(services.includes("insurance") ? [{
-      item: `Insurance (${getInsuranceCostPerPerson()}/person)`,
-      price: getInsuranceCostPerPerson(),
+      item: "Insurance",
+      pricePerPerson: getInsuranceCostPerPerson(),
       qty: travelerCount,
       total: getInsuranceCostPerPerson() * travelerCount
     }] : []),
@@ -101,6 +109,11 @@ export function StepReview() {
         </div>
       </div>
 
+      <div className="flex items-center gap-2 p-2 bg-blue-50 rounded text-sm text-blue-700">
+        <Globe className="h-4 w-4" />
+        <span>Detected location: {ipCountry || "Detecting..."} - Prices shown in {currency === "NGN" ? "Naira (₦)" : "USD ($)"}</span>
+      </div>
+
       <div className="space-y-1">
         <Label className="text-sm font-medium text-black">Delivery Speed</Label>
         <div className="flex gap-1">
@@ -122,7 +135,7 @@ export function StepReview() {
                   className="sr-only"
                 />
                 <div className="font-medium">{option.title}</div>
-                <div className="text-sm opacity-70">+${option.price}</div>
+                <div className="text-sm opacity-70">+{formatPrice(option.price, currency)}</div>
               </label>
             )
           })}
@@ -148,23 +161,26 @@ export function StepReview() {
           <tbody className="text-black">
             {orderItems.map((row, index) => (
               <tr key={index} className="border-b border-slate-100 last:border-0">
-                <td className="py-2 px-3">{row.item}</td>
-                <td className="text-right py-2 px-3">${row.price}</td>
+                <td className="py-2 px-3">
+                  {row.item}
+                  {row.qty > 1 && <span className="text-slate-500 text-xs ml-1">({formatPrice(row.pricePerPerson, currency)}/person)</span>}
+                </td>
+                <td className="text-right py-2 px-3">{formatPrice(row.pricePerPerson, currency)}</td>
                 <td className="text-right py-2 px-3">{row.qty}</td>
-                <td className="text-right py-2 px-3 font-medium">${row.total}</td>
+                <td className="text-right py-2 px-3 font-medium">{formatPrice(row.total, currency)}</td>
               </tr>
             ))}
             <tr className="border-t border-slate-200">
               <td className="py-2 px-3 font-medium">Delivery ({DELIVERY_OPTIONS.find(d => d.value === deliverySpeed)?.title})</td>
-              <td className="text-right py-2 px-3">${deliveryCost}</td>
+              <td className="text-right py-2 px-3">{formatPrice(deliveryCost, currency)}</td>
               <td className="text-right py-2 px-3">1</td>
-              <td className="text-right py-2 px-3 font-medium">${deliveryCost}</td>
+              <td className="text-right py-2 px-3 font-medium">{formatPrice(deliveryCost, currency)}</td>
             </tr>
           </tbody>
           <tfoot>
             <tr className="bg-[#c8143d]/5 border-t border-[#c8143d]/20">
               <td colSpan={3} className="py-2 px-3 font-semibold text-black">Total</td>
-              <td className="text-right py-2 px-3 font-bold text-[#c8143d]">${totalCost}</td>
+              <td className="text-right py-2 px-3 font-bold text-[#c8143d]">{formatPrice(totalCost, currency)}</td>
             </tr>
           </tfoot>
         </table>

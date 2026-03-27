@@ -24,6 +24,11 @@ interface OrderStore {
   currentStepIndex: number
   activeSteps: StepId[]
   
+  // IP-detected country
+  ipCountryCode: string
+  ipCountry: string
+  isNigeria: boolean
+  
   // Actions
   setServices: (services: ServiceType[]) => void
   setCustomerInfo: (info: { 
@@ -42,6 +47,7 @@ interface OrderStore {
   setCurrency: (currency: Currency) => void
   setPaymentMethod: (method: PaymentMethod) => void
   setCaptchaToken: (token: string) => void
+  setIpCountry: (country: string, countryCode: string, isNigeria: boolean) => void
   
   // Navigation
   nextStep: () => void
@@ -66,7 +72,7 @@ const initialFormData: OrderFormData = {
   separatePnrPerTraveler: false,
   deliverySpeed: "normal",
   currency: "USD",
-  paymentMethod: "paypal",
+  paymentMethod: "paystack",
 }
 
 function computeActiveSteps(formData: OrderFormData): StepId[] {
@@ -97,6 +103,9 @@ export const useOrderStore = create<OrderStore>()(
       formData: initialFormData,
       currentStepIndex: 0,
       activeSteps: ["services", "common", "review", "payment"],
+      ipCountryCode: "",
+      ipCountry: "",
+      isNigeria: false,
 
       setServices: (services) =>
         set((state) => {
@@ -111,18 +120,23 @@ export const useOrderStore = create<OrderStore>()(
       setCustomerInfo: (info) =>
         set((state) => {
           const newFormData = { ...state.formData, ...info }
-          
-          // Auto-update payment method when country changes
-          if (info.customerCountryCode) {
-            if (info.customerCountryCode === "NG") {
-              newFormData.currency = "NGN"
-              newFormData.paymentMethod = "paystack"
-            } else {
-              newFormData.currency = "USD"
+          return { formData: newFormData }
+        }),
+
+      setIpCountry: (country, countryCode, isNigeriaUser) =>
+        set((state) => {
+          const currency: Currency = isNigeriaUser ? "NGN" : "USD"
+          const paymentMethod: PaymentMethod = isNigeriaUser ? "paystack" : "paystack"
+          return {
+            ipCountry: country,
+            ipCountryCode: countryCode,
+            isNigeria: isNigeriaUser,
+            formData: {
+              ...state.formData,
+              currency,
+              paymentMethod
             }
           }
-          
-          return { formData: newFormData }
         }),
 
       setTravelers: (travelers) =>
@@ -164,7 +178,6 @@ export const useOrderStore = create<OrderStore>()(
           formData: { 
             ...state.formData, 
             currency,
-            paymentMethod: currency === "NGN" ? "paystack" : "paypal",
           },
         })),
 
@@ -197,8 +210,12 @@ export const useOrderStore = create<OrderStore>()(
         })),
 
       resetForm: () =>
-        set(() => ({
-          formData: initialFormData,
+        set((state) => ({
+          formData: {
+            ...initialFormData,
+            currency: state.isNigeria ? "NGN" : "USD",
+            paymentMethod: state.isNigeria ? "paystack" : "paystack"
+          },
           currentStepIndex: 0,
           activeSteps: ["services", "common", "review", "payment"],
         })),
