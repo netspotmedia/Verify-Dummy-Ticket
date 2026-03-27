@@ -45,16 +45,16 @@ export function StepCommon() {
   return (
     <div className="space-y-3 font-outfit">
       <div className="space-y-1">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Contact Details</Label>
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">Contact Details</Label>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1">
-          <Label className="text-xs text-slate-500">Email Address</Label>
+          <Label className="text-sm text-slate-500">Email Address</Label>
           <Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setCustomerInfo({ email: e.target.value })} className="h-9 rounded-md border-slate-200 bg-white text-sm" />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs text-slate-500">Country</Label>
+          <Label className="text-sm text-slate-500">Country</Label>
           <Select value={customerCountryCode} onValueChange={(code) => { const c = COUNTRIES.find(c => c.code === code); setCustomerInfo({ customerCountryCode: code, customerCountry: c?.name || "" }) }}>
             <SelectTrigger className="h-9 rounded-md border-slate-200 bg-white text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>{COUNTRIES.map(c => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}</SelectContent>
@@ -94,7 +94,7 @@ export function StepCommon() {
 
       <div className="flex items-center gap-2">
         <div className="h-px flex-1 bg-slate-200" />
-        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Travelers</span>
+        <span className="text-sm font-medium text-slate-400 uppercase tracking-wider">Travelers</span>
         <div className="h-px flex-1 bg-slate-200" />
       </div>
 
@@ -102,17 +102,17 @@ export function StepCommon() {
         {travelers.map((traveler, index) => (
           <div key={index} className="p-2 border border-slate-100 rounded">
             <div className="flex items-center gap-2 mb-2">
-              <span className={cn("text-[10px] font-medium uppercase tracking-wider", index === 0 ? "text-[#c8143d]" : "text-slate-500")}>
+              <span className={cn("text-sm font-medium uppercase tracking-wider", index === 0 ? "text-[#c8143d]" : "text-slate-500")}>
                 {index === 0 ? "Primary" : `Traveler ${index + 1}`}
               </span>
             </div>
             <div className="grid gap-2 md:grid-cols-[60px_1fr_1fr]">
               <Select value={traveler.title} onValueChange={(v) => updateTraveler(index, { title: v as Title })}>
-                <SelectTrigger className="h-8 rounded-md bg-white text-xs"><SelectValue placeholder="Title" /></SelectTrigger>
+                <SelectTrigger className="h-9 rounded-md bg-white text-sm"><SelectValue placeholder="Title" /></SelectTrigger>
                 <SelectContent>{TITLES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
               </Select>
-              <Input placeholder="First name" value={traveler.firstName} onChange={(e) => updateTraveler(index, { firstName: e.target.value })} className="h-8 rounded-md bg-white text-xs" />
-              <Input placeholder="Last name" value={traveler.lastName} onChange={(e) => updateTraveler(index, { lastName: e.target.value })} className="h-8 rounded-md bg-white text-xs" />
+              <Input placeholder="First name" value={traveler.firstName} onChange={(e) => updateTraveler(index, { firstName: e.target.value })} className="h-9 rounded-md bg-white text-sm" />
+              <Input placeholder="Last name" value={traveler.lastName} onChange={(e) => updateTraveler(index, { lastName: e.target.value })} className="h-9 rounded-md bg-white text-sm" />
             </div>
           </div>
         ))}

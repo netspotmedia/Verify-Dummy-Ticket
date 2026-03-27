@@ -43,7 +43,7 @@ export function StepHotel() {
   return (
     <div className="space-y-4 font-outfit">
       <section className="space-y-2">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Hotel Confirmation Type
         </Label>
 
@@ -81,10 +81,10 @@ export function StepHotel() {
                 />
                 <div className="flex-1">
                   <span className="text-sm font-medium text-slate-900">{option.title}</span>
-                  <p className="text-xs text-slate-500 mt-0.5">{option.description}</p>
+                  <p className="text-sm text-slate-500 mt-0.5">{option.description}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Total</span>
+                  <span className="text-sm text-slate-400 uppercase tracking-wider">Total</span>
                   <p className={cn("text-sm font-semibold", isSelected ? "text-[#c8143d]" : "text-slate-700")}>
                     ${cost}
                   </p>
@@ -96,12 +96,12 @@ export function StepHotel() {
       </section>
 
       <section className="p-3 border border-slate-200 rounded">
-        <p className="text-xs font-medium text-slate-500 mb-2">Pricing Guide</p>
+        <p className="text-sm font-medium text-slate-500 mb-2">Pricing Guide</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs font-semibold text-slate-700">Separate Confirmation</p>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">$5 per traveler</p>
-            <div className="mt-2 space-y-1 text-xs text-slate-600">
+            <p className="text-sm font-semibold text-slate-700">Separate Confirmation</p>
+            <p className="text-sm text-slate-400 uppercase tracking-wider">$5 per traveler</p>
+            <div className="mt-2 space-y-1 text-sm text-slate-600">
               <div className="flex justify-between"><span>1 traveler</span><span className="font-semibold">$5</span></div>
               <div className="flex justify-between"><span>2 travelers</span><span className="font-semibold">$10</span></div>
               <div className="flex justify-between"><span>3 travelers</span><span className="font-semibold">$15</span></div>
@@ -109,9 +109,9 @@ export function StepHotel() {
             </div>
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-700">Shared Confirmation</p>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">$5 base + $1/traveler</p>
-            <div className="mt-2 space-y-1 text-xs text-slate-600">
+            <p className="text-sm font-semibold text-slate-700">Shared Confirmation</p>
+            <p className="text-sm text-slate-400 uppercase tracking-wider">$5 base + $1/traveler</p>
+            <div className="mt-2 space-y-1 text-sm text-slate-600">
               <div className="flex justify-between"><span>1 traveler</span><span className="font-semibold">$5</span></div>
               <div className="flex justify-between"><span>2 travelers</span><span className="font-semibold">$6</span></div>
               <div className="flex justify-between"><span>3 travelers</span><span className="font-semibold">$7</span></div>
@@ -124,13 +124,13 @@ export function StepHotel() {
       {selectedType && (
         <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Hotel Cost</p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Hotel Cost</p>
+            <p className="text-sm text-slate-500 mt-0.5">
               For {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total</span>
+            <span className="text-sm font-semibold uppercase tracking-wider text-slate-500">Total</span>
             <p className="text-xl font-semibold text-[#c8143d]">${hotelCost}</p>
           </div>
         </section>

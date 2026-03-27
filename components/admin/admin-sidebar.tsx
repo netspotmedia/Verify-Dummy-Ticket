@@ -29,6 +29,7 @@ import {
   BookOpen,
 } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { useSiteSettings } from "@/lib/site-settings"
 
 interface AdminSidebarProps {
   user: SupabaseUser
@@ -62,6 +63,7 @@ const settingsNavItems = [
 
 export function AdminSidebar({ user, profile }: AdminSidebarProps) {
   const pathname = usePathname()
+  const { settings } = useSiteSettings()
 
   const displayName = profile?.first_name
     ? `${profile.first_name} ${profile.last_name || ""}`
@@ -71,15 +73,22 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
     ? `${profile.first_name[0]}${profile.last_name?.[0] || ""}`
     : "A"
 
+  const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
+  const siteName = settings?.site_name || "My Travel Services"
+
   return (
     <Sidebar>
       <SidebarHeader className="border-b">
         <Link href="/admin" className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Plane className="h-4 w-4 text-primary-foreground" />
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt={siteName} className="h-8 w-auto object-contain" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Plane className="h-4 w-4 text-primary-foreground" />
+            </div>
+          )}
           <div>
-            <span className="font-bold text-sm">My Travel Services</span>
+            <span className="font-bold text-sm">{siteName}</span>
             <p className="text-xs text-muted-foreground">Admin Panel</p>
           </div>
         </Link>

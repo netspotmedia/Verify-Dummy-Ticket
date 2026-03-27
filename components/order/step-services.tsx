@@ -43,10 +43,10 @@ export function StepServices() {
   return (
     <div className="space-y-4 font-outfit">
       <div className="space-y-1">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
           Select Services
         </Label>
-        <p className="text-xs text-slate-500">
+        <p className="text-sm text-slate-500">
           Choose one or more services for your visa application
         </p>
       </div>
@@ -88,13 +88,13 @@ export function StepServices() {
                     {service.title}
                   </h3>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-sm text-slate-500 mt-0.5">
                   {service.description}
                 </p>
               </div>
 
               <div className="text-right shrink-0">
-                <p className="text-xs text-slate-400">From</p>
+                <p className="text-sm text-slate-400">From</p>
                 <p className={cn("font-semibold", isSelected ? "text-[#c8143d]" : "text-slate-700")}>
                   ${service.startingFrom}
                 </p>

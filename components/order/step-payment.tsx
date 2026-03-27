@@ -223,7 +223,7 @@ export function StepPayment() {
           <div className={cn("flex h-7 w-7 items-center justify-center rounded text-white", captchaVerified ? "bg-green-600" : "bg-[#c8143d]")}>
             {captchaVerified ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">!</span>}
           </div>
-          <Label className="text-xs font-medium uppercase tracking-wider text-slate-500">Security Verification</Label>
+          <Label className="text-sm font-medium uppercase tracking-wider text-slate-500">Security Verification</Label>
         </div>
 
         {captchaVerified ? (
@@ -249,19 +249,19 @@ export function StepPayment() {
               <Button onClick={handleCaptcha} disabled={!captchaInput || isVerifying} variant="outline" className="h-8 px-3 rounded-md text-xs">
                 {isVerifying ? <RefreshCw className="h-3 w-3 animate-spin" /> : "Verify"}
               </Button>
-              <button type="button" onClick={generateCaptcha} className="text-[10px] text-slate-500 hover:text-[#c8143d]">
+              <button type="button" onClick={generateCaptcha} className="text-sm text-slate-500 hover:text-[#c8143d]">
                 Refresh
               </button>
             </div>
-            <p className="text-[10px] text-slate-500">Solve the math problem to verify you&apos;re human.</p>
+            <p className="text-sm text-slate-500">Solve the math problem to verify you&apos;re human.</p>
           </div>
         )}
       </section>
 
       <section className="space-y-2">
         <div>
-          <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Payment Method</Label>
-          <p className="text-[10px] text-slate-500 mt-0.5">Choose a secure payment option</p>
+          <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">Payment Method</Label>
+          <p className="text-sm text-slate-500 mt-0.5">Choose a secure payment option</p>
         </div>
 
         <div className="space-y-1">
@@ -298,7 +298,7 @@ export function StepPayment() {
                 />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-slate-900">{config.name}</p>
-                  <p className="text-xs text-slate-500">{config.description}</p>
+                  <p className="text-sm text-slate-500">{config.description}</p>
                 </div>
               </label>
             )
@@ -308,18 +308,18 @@ export function StepPayment() {
 
       <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Total Amount</p>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-sm font-medium uppercase tracking-wider text-slate-500">Total Amount</p>
+          <p className="text-sm text-slate-500 mt-0.5">
             {pricing.currency === "NGN" ? "Naira" : "USD"} • {PAYMENT_METHODS_CONFIG[paymentMethod].name}
           </p>
         </div>
         <div className="text-right">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Total</span>
+          <span className="text-sm font-medium uppercase tracking-wider text-slate-500">Total</span>
           <p className="text-xl font-semibold text-[#c8143d]">{formatCurrency(pricing.total, pricing.currency)}</p>
         </div>
       </section>
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+      <div className="flex items-center justify-center gap-1.5 text-sm text-slate-500">
         <Lock className="h-3 w-3" />
         <span>Your payment is secure and encrypted</span>
       </div>

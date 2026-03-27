@@ -72,7 +72,7 @@ export function StepTripDetails() {
   return (
     <div className="space-y-5">
       <div className="space-y-1">
-        <Label className="text-xs font-medium uppercase tracking-wider text-slate-400">Number of Travelers</Label>
+        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">Number of Travelers</Label>
         <Select value={numberOfTravelers.toString()} onValueChange={(v) => setNumberOfTravelers(parseInt(v))}>
           <SelectTrigger className="w-32 h-10 rounded-lg border-slate-200">
             <SelectValue />
@@ -113,25 +113,25 @@ export function StepTripDetails() {
           {tripType !== "multi_city" ? (
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-500">Departure City</Label>
+                <Label className="text-sm text-slate-500">Departure City</Label>
                 <Input placeholder="e.g., New York (JFK)" value={flightDetails?.departureCity || ""} onChange={(e) => setFlightDetails({ ...flightDetails!, departureCity: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-500">Arrival City</Label>
+                <Label className="text-sm text-slate-500">Arrival City</Label>
                 <Input placeholder="e.g., London (LHR)" value={flightDetails?.arrivalCity || ""} onChange={(e) => setFlightDetails({ ...flightDetails!, arrivalCity: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-500">Departure Date</Label>
+                <Label className="text-sm text-slate-500">Departure Date</Label>
                 <Input type="date" value={flightDetails?.departureDate || ""} onChange={(e) => setFlightDetails({ ...flightDetails!, departureDate: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
               </div>
               {tripType === "round_trip" && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500">Return Date</Label>
+                  <Label className="text-sm text-slate-500">Return Date</Label>
                   <Input type="date" value={flightDetails?.returnDate || ""} onChange={(e) => setFlightDetails({ ...flightDetails!, returnDate: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
                 </div>
               )}
               <div className="md:col-span-2 space-y-1.5">
-                <Label className="text-xs text-slate-500">Preferred Airline (Optional)</Label>
+                <Label className="text-sm text-slate-500">Preferred Airline (Optional)</Label>
                 <Input placeholder="e.g., Emirates, British Airways" value={flightDetails?.preferredAirline || ""} onChange={(e) => setFlightDetails({ ...flightDetails!, preferredAirline: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
               </div>
             </div>
@@ -167,19 +167,19 @@ export function StepTripDetails() {
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="md:col-span-2 space-y-1.5">
-              <Label className="text-xs text-slate-500">City / Destination</Label>
+              <Label className="text-sm text-slate-500">City / Destination</Label>
               <Input placeholder="e.g., Paris, France" value={hotelDetails?.city || ""} onChange={(e) => setHotelDetails({ ...hotelDetails!, city: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-500">Check-in</Label>
+              <Label className="text-sm text-slate-500">Check-in</Label>
               <Input type="date" value={hotelDetails?.checkInDate || ""} onChange={(e) => setHotelDetails({ ...hotelDetails!, checkInDate: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-500">Check-out</Label>
+              <Label className="text-sm text-slate-500">Check-out</Label>
               <Input type="date" value={hotelDetails?.checkOutDate || ""} onChange={(e) => setHotelDetails({ ...hotelDetails!, checkOutDate: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
             <div className="md:col-span-2 space-y-1.5">
-              <Label className="text-xs text-slate-500">Preferred Hotel (Optional)</Label>
+              <Label className="text-sm text-slate-500">Preferred Hotel (Optional)</Label>
               <Input placeholder="e.g., Hilton, Marriott" value={hotelDetails?.hotelName || ""} onChange={(e) => setHotelDetails({ ...hotelDetails!, hotelName: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
           </div>
@@ -194,15 +194,15 @@ export function StepTripDetails() {
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="md:col-span-2 space-y-1.5">
-              <Label className="text-xs text-slate-500">Destination Country</Label>
+              <Label className="text-sm text-slate-500">Destination Country</Label>
               <Input placeholder="e.g., France, Germany, UK" value={insuranceDetails?.destination || ""} onChange={(e) => setInsuranceDetails({ ...insuranceDetails!, destination: e.target.value, coverageAmount: 35000 })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-500">Start Date</Label>
+              <Label className="text-sm text-slate-500">Start Date</Label>
               <Input type="date" value={insuranceDetails?.startDate || ""} onChange={(e) => setInsuranceDetails({ ...insuranceDetails!, startDate: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-500">End Date</Label>
+              <Label className="text-sm text-slate-500">End Date</Label>
               <Input type="date" value={insuranceDetails?.endDate || ""} onChange={(e) => setInsuranceDetails({ ...insuranceDetails!, endDate: e.target.value })} className="h-10 rounded-lg border-slate-200 bg-white text-sm" />
             </div>
           </div>
