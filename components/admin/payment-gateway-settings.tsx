@@ -80,11 +80,29 @@ export function PaymentGatewaySettings() {
   }
 
   async function saveSetting(key: string, value: any) {
-    const { error } = await supabase
+    // First check if the setting exists
+    const { data: existing } = await supabase
       .from("site_settings")
-      .upsert({ key, value })
+      .select("id")
+      .eq("key", key)
+      .single()
 
-    if (error) throw error
+    if (existing) {
+      // Update existing setting
+      const { error } = await supabase
+        .from("site_settings")
+        .update({ value, updated_at: new Date().toISOString() })
+        .eq("key", key)
+
+      if (error) throw error
+    } else {
+      // Insert new setting
+      const { error } = await supabase
+        .from("site_settings")
+        .insert({ key, value, category: "payment", is_public: false })
+
+      if (error) throw error
+    }
   }
 
   async function handleSave() {
