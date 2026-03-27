@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-helpers'
 import { rateLimit, getRateLimitIdentifier, rateLimitResponse } from '@/lib/rate-limit'
 import { contactSchema, validateRequest } from '@/lib/validation'
 
 export async function GET() {
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  const supabase = await createClient()
   
   try {
     const { error: authError } = await requireAdmin()
@@ -27,7 +27,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  const supabase = await createClient()
   
   // Rate limiting - 5 submissions per minute per IP
   const identifier = getRateLimitIdentifier(request)
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  const supabase = await createClient()
   
   try {
     const { error: authError } = await requireAdmin()
@@ -99,7 +99,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  const supabase = await createClient()
   
   try {
     const { error: authError } = await requireAdmin()
