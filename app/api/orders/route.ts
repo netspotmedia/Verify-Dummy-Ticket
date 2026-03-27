@@ -11,38 +11,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       services,
-      tripType,
-      numTravelers,
       travelers,
       flightDetails,
       hotelDetails,
       insuranceDetails,
-      contactEmail,
-      contactPhone,
-      whatsappNumber,
       currency,
       totalAmount,
       paymentMethod,
       paymentReference,
+      customerCountry,
+      customerCountryCode,
+      deliveryMethod,
     } = body
 
-    // Create the order
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: user?.id || null,
+        email: user?.email || body.email || "unknown@example.com",
         status: "pending",
-        services,
-        trip_type: tripType,
-        num_travelers: numTravelers,
-        contact_email: contactEmail,
-        contact_phone: contactPhone,
-        whatsapp_number: whatsappNumber,
+        services: services || [],
         currency,
         total_amount: totalAmount,
         payment_method: paymentMethod,
         payment_reference: paymentReference,
         payment_status: "pending",
+        customer_country: customerCountry || null,
+        customer_country_code: customerCountryCode || null,
+        delivery_method: deliveryMethod || "normal",
       })
       .select()
       .single()
@@ -52,24 +48,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 })
     }
 
-    // Insert travelers
-    for (const traveler of travelers) {
-      const { error: travelerError } = await supabase.from("travelers").insert({
-        order_id: order.id,
-        title: traveler.title,
-        first_name: traveler.firstName,
-        last_name: traveler.lastName,
-        nationality: traveler.nationality,
-        passport_number: traveler.passportNumber,
-      })
+    if (travelers && Array.isArray(travelers)) {
+      for (const traveler of travelers) {
+        const { error: travelerError } = await supabase.from("travelers").insert({
+          order_id: order.id,
+          first_name: traveler.firstName,
+          last_name: traveler.lastName,
+          nationality: traveler.nationality,
+          passport_number: traveler.passportNumber,
+          email: traveler.email,
+        })
 
-      if (travelerError) {
-        console.error("Traveler creation error:", travelerError)
+        if (travelerError) {
+          console.error("Traveler creation error:", travelerError)
+        }
       }
     }
 
-    // Insert flight details if flight service selected
-    if (services.includes("flight") && flightDetails) {
+    if (services?.includes("flight") && flightDetails) {
       const { error: flightError } = await supabase.from("flight_details").insert({
         order_id: order.id,
         departure_city: flightDetails.departureCity,
@@ -84,8 +80,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Insert hotel details if hotel service selected
-    if (services.includes("hotel") && hotelDetails) {
+    if (services?.includes("hotel") && hotelDetails) {
       const { error: hotelError } = await supabase.from("hotel_details").insert({
         order_id: order.id,
         city: hotelDetails.city,
@@ -99,8 +94,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Insert insurance details if insurance service selected
-    if (services.includes("insurance") && insuranceDetails) {
+    if (services?.includes("insurance") && insuranceDetails) {
       const { error: insuranceError } = await supabase.from("insurance_details").insert({
         order_id: order.id,
         coverage_type: insuranceDetails.coverageType,

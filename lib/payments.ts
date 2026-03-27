@@ -36,6 +36,20 @@ export interface PayStackVerifyResponse {
   }
 }
 
+interface PaymentSettings {
+  paypalMode: "sandbox" | "live"
+  paypalClientId: string
+  paypalClientSecret: string
+  paystackPublicKey: string
+  paystackSecretKey: string
+  paystackMerchantEmail: string
+  paypalEnabled: boolean
+  paystackEnabled: boolean
+  cardEnabled: boolean
+  currencyRate: number
+  brandName: string
+}
+
 class PaymentService {
   private async getSupabase() {
     return createClient()
@@ -51,7 +65,8 @@ class PaymentService {
         .single()
       
       if (data?.value) {
-        return data.value.replace(/"/g, "")
+        const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value
+        return parsed.replace(/"/g, "") || "Verify Dummy Ticket"
       }
     } catch (error) {
       console.error("Failed to fetch site name:", error)
@@ -59,30 +74,56 @@ class PaymentService {
     return "Verify Dummy Ticket"
   }
 
-  async getPaymentSettings() {
+  private async getPaymentFlags(): Promise<{ paypal: boolean; paystack: boolean; card: boolean; paypalMode: string }> {
+    try {
+      const supabase = await this.getSupabase()
+      const { data } = await supabase
+        .from("site_settings")
+        .select("key, value")
+        .in("key", ["paypal_enabled", "paystack_enabled", "card_enabled", "paypal_mode"])
+
+      const flags: Record<string, any> = {}
+      data?.forEach((item: { key: string; value: any }) => {
+        flags[item.key] = item.value
+      })
+
+      return {
+        paypal: flags.paypal_enabled !== false && flags.paypal_enabled !== "false",
+        paystack: flags.paystack_enabled !== false && flags.paystack_enabled !== "false",
+        card: flags.card_enabled !== false && flags.card_enabled !== "false",
+        paypalMode: flags.paypal_mode || "sandbox",
+      }
+    } catch (error) {
+      console.error("Failed to fetch payment flags:", error)
+      return { paypal: true, paystack: true, card: true, paypalMode: "sandbox" }
+    }
+  }
+
+  async getPaymentSettings(): Promise<PaymentSettings> {
     const supabase = await this.getSupabase()
-    const { data } = await supabase
-      .from("site_settings")
-      .select("key, value")
-      .in("category", ["payment", "general"])
-
-    const settings: Record<string, any> = {}
-    data?.forEach((item: { key: string; value: string }) => {
-      settings[item.key] = item.value
-    })
-
+    const flags = await this.getPaymentFlags()
     const siteName = await this.getSiteName()
 
+    const paypalClientId = process.env.PAYPAL_CLIENT_ID || ""
+    const paypalClientSecret = process.env.PAYPAL_CLIENT_SECRET || ""
+    const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || ""
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY || ""
+    const paystackMerchantEmail = process.env.PAYSTACK_MERCHANT_EMAIL || ""
+
+    const hasPayPalSecrets = !!(paypalClientId && paypalClientSecret)
+    const hasPayStackSecrets = !!(paystackPublicKey && paystackSecretKey)
+
     return {
-      paypalMode: process.env.PAYPAL_MODE || settings.paypal_mode || "sandbox",
-      paypalClientId: process.env.PAYPAL_CLIENT_ID || settings.paypal_client_id || "",
-      paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || settings.paypal_client_secret || "",
-      paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY || settings.paystack_public_key || "",
-      paystackSecretKey: process.env.PAYSTACK_SECRET_KEY || settings.paystack_secret_key || "",
-      paystackMerchantEmail: process.env.PAYSTACK_MERCHANT_EMAIL || settings.paystack_merchant_email || "",
-      paypalEnabled: process.env.PAYPAL_CLIENT_ID ? (settings.paypal_enabled !== false) : false,
-      paystackEnabled: process.env.PAYSTACK_SECRET_KEY ? (settings.paystack_enabled !== false) : false,
-      currencyRate: parseFloat(settings.currency_conversion_rate || "1650"),
+      paypalMode: (process.env.PAYPAL_MODE as "sandbox" | "live") || flags.paypalMode as "sandbox" | "live",
+      paypalClientId,
+      paypalClientSecret,
+      paystackPublicKey,
+      paystackSecretKey,
+      paystackMerchantEmail,
+      paypalEnabled: hasPayPalSecrets && flags.paypal,
+      paystackEnabled: hasPayStackSecrets && flags.paystack,
+      cardEnabled: flags.card,
+      currencyRate: 1650,
       brandName: siteName,
     }
   }
