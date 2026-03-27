@@ -1,12 +1,13 @@
 "use client"
 
 import { useOrderStore } from "@/lib/order-store"
+import { useSiteSettings } from "@/lib/site-settings"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, ArrowRight, Clock, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DeliverySpeed, Currency } from "@/lib/types"
-import { USD_TO_NGN_RATE } from "@/lib/types"
+import { getExchangeRate } from "@/lib/types"
 
 const DELIVERY_OPTIONS: { value: DeliverySpeed; title: string; description: string; price: number }[] = [
   { value: "normal", title: "24 Hours", description: "Standard delivery", price: 10 },
@@ -14,16 +15,18 @@ const DELIVERY_OPTIONS: { value: DeliverySpeed; title: string; description: stri
   { value: "express", title: "8 Hours", description: "Priority express", price: 30 },
 ]
 
-const formatPrice = (amount: number, currency: Currency) => {
+const formatPrice = (amount: number, currency: Currency, exchangeRate: number) => {
   if (currency === "NGN") {
-    return `₦${Math.round(amount * USD_TO_NGN_RATE).toLocaleString()}`
+    return `₦${Math.round(amount * exchangeRate).toLocaleString()}`
   }
   return `$${amount.toFixed(2)}`
 }
 
 export function StepReview() {
   const { formData, setDeliverySpeed, nextStep, prevStep, isNigeria, ipCountry } = useOrderStore()
+  const { settings } = useSiteSettings()
   const { services, travelerCount, email, customerCountry, customerCountryCode, travelers, flightDetails, hotelDetails, insuranceDetails, deliverySpeed, currency } = formData
+  const exchangeRate = getExchangeRate(settings?.currency_conversion_rate)
 
   const getFlightCostPerPerson = () => {
     const tripTypePrice = flightDetails?.tripType === "one_way" ? 5 : flightDetails?.tripType === "return_trip" ? 8 : 15
@@ -135,7 +138,7 @@ export function StepReview() {
                   className="sr-only"
                 />
                 <div className="font-medium">{option.title}</div>
-                <div className="text-sm opacity-70">+{formatPrice(option.price, currency)}</div>
+                <div className="text-sm opacity-70">+{formatPrice(option.price, currency, exchangeRate)}</div>
               </label>
             )
           })}
@@ -163,24 +166,24 @@ export function StepReview() {
               <tr key={index} className="border-b border-slate-100 last:border-0">
                 <td className="py-2 px-3">
                   {row.item}
-                  {row.qty > 1 && <span className="text-slate-500 text-xs ml-1">({formatPrice(row.pricePerPerson, currency)}/person)</span>}
+                  {row.qty > 1 && <span className="text-slate-500 text-xs ml-1">({formatPrice(row.pricePerPerson, currency, exchangeRate)}/person)</span>}
                 </td>
-                <td className="text-right py-2 px-3">{formatPrice(row.pricePerPerson, currency)}</td>
+                <td className="text-right py-2 px-3">{formatPrice(row.pricePerPerson, currency, exchangeRate)}</td>
                 <td className="text-right py-2 px-3">{row.qty}</td>
-                <td className="text-right py-2 px-3 font-medium">{formatPrice(row.total, currency)}</td>
+                <td className="text-right py-2 px-3 font-medium">{formatPrice(row.total, currency, exchangeRate)}</td>
               </tr>
             ))}
             <tr className="border-t border-slate-200">
               <td className="py-2 px-3 font-medium">Delivery ({DELIVERY_OPTIONS.find(d => d.value === deliverySpeed)?.title})</td>
-              <td className="text-right py-2 px-3">{formatPrice(deliveryCost, currency)}</td>
+              <td className="text-right py-2 px-3">{formatPrice(deliveryCost, currency, exchangeRate)}</td>
               <td className="text-right py-2 px-3">1</td>
-              <td className="text-right py-2 px-3 font-medium">{formatPrice(deliveryCost, currency)}</td>
+              <td className="text-right py-2 px-3 font-medium">{formatPrice(deliveryCost, currency, exchangeRate)}</td>
             </tr>
           </tbody>
           <tfoot>
             <tr className="bg-[#c8143d]/5 border-t border-[#c8143d]/20">
               <td colSpan={3} className="py-2 px-3 font-semibold text-black">Total</td>
-              <td className="text-right py-2 px-3 font-bold text-[#c8143d]">{formatPrice(totalCost, currency)}</td>
+              <td className="text-right py-2 px-3 font-bold text-[#c8143d]">{formatPrice(totalCost, currency, exchangeRate)}</td>
             </tr>
           </tfoot>
         </table>

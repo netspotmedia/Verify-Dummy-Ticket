@@ -136,8 +136,17 @@ const PRICING_USD = {
   },
 } as const
 
-// Exchange rate (should come from backend in production)
-export const USD_TO_NGN_RATE = 1650
+export const DEFAULT_USD_TO_NGN_RATE = 1650
+
+export function getExchangeRate(customRate?: string | number): number {
+  if (customRate !== undefined) {
+    const parsed = typeof customRate === 'string' ? parseFloat(customRate) : customRate
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed
+    }
+  }
+  return DEFAULT_USD_TO_NGN_RATE
+}
 
 // ===========================================
 // PRICING CALCULATION (Per Spec Section 17)
@@ -248,10 +257,10 @@ export function calculatePriceBreakdown(
   const discountUSD = (subtotalUSD * discountPercent) / 100
   const totalUSD = subtotalUSD - discountUSD
 
-  // Convert to display currency
+  const exchangeRate = getExchangeRate()
   const convertToDisplay = (usdAmount: number) => {
     if (currency === "NGN") {
-      return Math.round(usdAmount * USD_TO_NGN_RATE)
+      return Math.round(usdAmount * exchangeRate)
     }
     return usdAmount
   }

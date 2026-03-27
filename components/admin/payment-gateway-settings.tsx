@@ -1,107 +1,59 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Save, Check, Eye, EyeOff, CreditCard } from "lucide-react"
+import { Loader2, Check, CreditCard, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 
-interface PaymentSettings {
+interface PaymentGatewayConfig {
   paypal_enabled: boolean
   paypal_mode: "sandbox" | "live"
-  paypal_client_id: string
-  paypal_client_secret: string
   paystack_enabled: boolean
-  paystack_public_key: string
-  paystack_secret_key: string
-  paystack_merchant_email: string
   card_enabled: boolean
-}
-
-const DEFAULT_SETTINGS: PaymentSettings = {
-  paypal_enabled: true,
-  paypal_mode: "sandbox",
-  paypal_client_id: "",
-  paypal_client_secret: "",
-  paystack_enabled: true,
-  paystack_public_key: "",
-  paystack_secret_key: "",
-  paystack_merchant_email: "",
-  card_enabled: true,
+  hasPayPalSecrets: boolean
+  hasPayStackSecrets: boolean
 }
 
 export function PaymentGatewaySettings() {
-  const [settings, setSettings] = useState<PaymentSettings>(DEFAULT_SETTINGS)
+  const [config, setConfig] = useState<PaymentGatewayConfig>({
+    paypal_enabled: false,
+    paypal_mode: "sandbox",
+    paystack_enabled: false,
+    card_enabled: true,
+    hasPayPalSecrets: false,
+    hasPayStackSecrets: false,
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [showPayPalSecret, setShowPayPalSecret] = useState(false)
-  const [showPayStackSecret, setShowPayStackSecret] = useState(false)
-
-  const supabase = createClient()
 
   useEffect(() => {
-    loadSettings()
+    loadConfig()
   }, [])
 
-  async function loadSettings() {
+  async function loadConfig() {
     setLoading(true)
     try {
-      const { data } = await supabase
-        .from("site_settings")
-        .select("key, value")
-
-      const settingsMap: Record<string, any> = {}
-      data?.forEach((item: { key: string; value: any }) => {
-        settingsMap[item.key] = item.value
-      })
-
-      setSettings({
-        paypal_enabled: settingsMap.paypal_enabled !== false && settingsMap.paypal_enabled !== "false",
-        paypal_mode: (settingsMap.paypal_mode as "sandbox" | "live") || "sandbox",
-        paypal_client_id: settingsMap.paypal_client_id || "",
-        paypal_client_secret: settingsMap.paypal_client_secret || "",
-        paystack_enabled: settingsMap.paystack_enabled !== false && settingsMap.paystack_enabled !== "false",
-        paystack_public_key: settingsMap.paystack_public_key || "",
-        paystack_secret_key: settingsMap.paystack_secret_key || "",
-        paystack_merchant_email: settingsMap.paystack_merchant_email || "",
-        card_enabled: settingsMap.card_enabled !== false && settingsMap.card_enabled !== "false",
-      })
+      const res = await fetch("/api/admin/payment-config")
+      if (res.ok) {
+        const data = await res.json()
+        setConfig({
+          paypal_enabled: data.paypal_enabled,
+          paypal_mode: data.paypal_mode || "sandbox",
+          paystack_enabled: data.paystack_enabled,
+          card_enabled: data.card_enabled !== false,
+          hasPayPalSecrets: data.hasPayPalSecrets,
+          hasPayStackSecrets: data.hasPayStackSecrets,
+        })
+      }
     } catch (error) {
-      console.error("Failed to load payment settings:", error)
+      console.error("Failed to load payment config:", error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function saveSetting(key: string, value: any) {
-    // First check if the setting exists
-    const { data: existing } = await supabase
-      .from("site_settings")
-      .select("id")
-      .eq("key", key)
-      .single()
-
-    if (existing) {
-      // Update existing setting
-      const { error } = await supabase
-        .from("site_settings")
-        .update({ value, updated_at: new Date().toISOString() })
-        .eq("key", key)
-
-      if (error) throw error
-    } else {
-      // Insert new setting
-      const { error } = await supabase
-        .from("site_settings")
-        .insert({ key, value, category: "payment", is_public: false })
-
-      if (error) throw error
     }
   }
 
@@ -109,15 +61,20 @@ export function PaymentGatewaySettings() {
     setSaving(true)
     setSaved(false)
     try {
-      await saveSetting("paypal_enabled", settings.paypal_enabled)
-      await saveSetting("paypal_mode", settings.paypal_mode)
-      await saveSetting("paypal_client_id", settings.paypal_client_id)
-      await saveSetting("paypal_client_secret", settings.paypal_client_secret)
-      await saveSetting("paystack_enabled", settings.paystack_enabled)
-      await saveSetting("paystack_public_key", settings.paystack_public_key)
-      await saveSetting("paystack_secret_key", settings.paystack_secret_key)
-      await saveSetting("paystack_merchant_email", settings.paystack_merchant_email)
-      await saveSetting("card_enabled", settings.card_enabled)
+      const res = await fetch("/api/admin/payment-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paypal_enabled: config.paypal_enabled,
+          paypal_mode: config.paypal_mode,
+          paystack_enabled: config.paystack_enabled,
+          card_enabled: config.card_enabled,
+        }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to save")
+      }
 
       setSaved(true)
       toast.success("Payment gateway settings saved successfully")
@@ -148,10 +105,29 @@ export function PaymentGatewaySettings() {
           Payment Gateway Settings
         </CardTitle>
         <CardDescription>
-          Configure your payment gateway API credentials and settings
+          Configure payment gateway enable/disable flags. API credentials are managed via environment variables.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+          <div className="flex gap-3">
+            <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-yellow-800">Environment Variables Required</p>
+              <p className="text-sm text-yellow-700">
+                API credentials are configured via <code className="text-xs bg-yellow-100 px-1 py-0.5 rounded">.env.local</code> file, not the database.
+                Please ensure the following variables are set:
+              </p>
+              <ul className="text-sm text-yellow-700 list-disc list-inside mt-2 space-y-1">
+                <li><code>PAYPAL_CLIENT_ID</code> & <code>PAYPAL_CLIENT_SECRET</code></li>
+                <li><code>PAYSTACK_PUBLIC_KEY</code> & <code>PAYSTACK_SECRET_KEY</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="space-y-4">
           <h3 className="text-sm font-medium uppercase text-muted-foreground">Card Payments</h3>
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -162,8 +138,8 @@ export function PaymentGatewaySettings() {
               </p>
             </div>
             <Switch
-              checked={settings.card_enabled}
-              onCheckedChange={(checked) => setSettings({ ...settings, card_enabled: checked })}
+              checked={config.card_enabled}
+              onCheckedChange={(checked) => setConfig({ ...config, card_enabled: checked })}
             />
           </div>
         </div>
@@ -173,19 +149,23 @@ export function PaymentGatewaySettings() {
         <div className="space-y-4">
           <h3 className="text-sm font-medium uppercase text-muted-foreground">PayPal</h3>
           <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="space-y-0.5">
-                <Label className="text-base">Accept PayPal Payments</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow customers to pay with PayPal account or Credit/Debit card
-                </p>
-              </div>
+            <div className="space-y-0.5">
+              <Label className="text-base">Accept PayPal Payments</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow customers to pay with PayPal account or Credit/Debit card
+              </p>
+              {!config.hasPayPalSecrets && (
+                <p className="text-sm text-amber-600">API credentials not configured in environment</p>
+              )}
+            </div>
             <Switch
-              checked={settings.paypal_enabled}
-              onCheckedChange={(checked) => setSettings({ ...settings, paypal_enabled: checked })}
+              checked={config.paypal_enabled}
+              onCheckedChange={(checked) => setConfig({ ...config, paypal_enabled: checked })}
+              disabled={!config.hasPayPalSecrets}
             />
           </div>
 
-          {settings.paypal_enabled && (
+          {config.paypal_enabled && (
             <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
               <div className="space-y-2">
                 <Label>Mode</Label>
@@ -194,8 +174,8 @@ export function PaymentGatewaySettings() {
                     <input
                       type="radio"
                       name="paypal_mode"
-                      checked={settings.paypal_mode === "sandbox"}
-                      onChange={() => setSettings({ ...settings, paypal_mode: "sandbox" })}
+                      checked={config.paypal_mode === "sandbox"}
+                      onChange={() => setConfig({ ...config, paypal_mode: "sandbox" })}
                       className="mr-2"
                     />
                     <span className="text-sm">Sandbox (Testing)</span>
@@ -204,44 +184,12 @@ export function PaymentGatewaySettings() {
                     <input
                       type="radio"
                       name="paypal_mode"
-                      checked={settings.paypal_mode === "live"}
-                      onChange={() => setSettings({ ...settings, paypal_mode: "live" })}
+                      checked={config.paypal_mode === "live"}
+                      onChange={() => setConfig({ ...config, paypal_mode: "live" })}
                       className="mr-2"
                     />
                     <span className="text-sm">Live (Production)</span>
                   </label>
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="paypalClientId">Client ID</Label>
-                  <Input
-                    id="paypalClientId"
-                    value={settings.paypal_client_id}
-                    onChange={(e) => setSettings({ ...settings, paypal_client_id: e.target.value })}
-                    placeholder="Enter PayPal Client ID"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paypalClientSecret">Client Secret</Label>
-                  <div className="relative">
-                    <Input
-                      id="paypalClientSecret"
-                      type={showPayPalSecret ? "text" : "password"}
-                      value={settings.paypal_client_secret}
-                      onChange={(e) => setSettings({ ...settings, paypal_client_secret: e.target.value })}
-                      placeholder="Enter PayPal Client Secret"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPayPalSecret(!showPayPalSecret)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPayPalSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -258,59 +206,16 @@ export function PaymentGatewaySettings() {
               <p className="text-sm text-muted-foreground">
                 Allow customers to pay with PayStack (Cards, Bank Transfer, USSD, Mobile Money)
               </p>
+              {!config.hasPayStackSecrets && (
+                <p className="text-sm text-amber-600">API credentials not configured in environment</p>
+              )}
             </div>
             <Switch
-              checked={settings.paystack_enabled}
-              onCheckedChange={(checked) => setSettings({ ...settings, paystack_enabled: checked })}
+              checked={config.paystack_enabled}
+              onCheckedChange={(checked) => setConfig({ ...config, paystack_enabled: checked })}
+              disabled={!config.hasPayStackSecrets}
             />
           </div>
-
-          {settings.paystack_enabled && (
-            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-              <div className="space-y-2">
-                <Label htmlFor="paystackMerchantEmail">Merchant Email</Label>
-                <Input
-                  id="paystackMerchantEmail"
-                  type="email"
-                  value={settings.paystack_merchant_email}
-                  onChange={(e) => setSettings({ ...settings, paystack_merchant_email: e.target.value })}
-                  placeholder="merchant@email.com"
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="paystackPublicKey">Public Key</Label>
-                  <Input
-                    id="paystackPublicKey"
-                    value={settings.paystack_public_key}
-                    onChange={(e) => setSettings({ ...settings, paystack_public_key: e.target.value })}
-                    placeholder="Enter PayStack Public Key"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paystackSecretKey">Secret Key</Label>
-                  <div className="relative">
-                    <Input
-                      id="paystackSecretKey"
-                      type={showPayStackSecret ? "text" : "password"}
-                      value={settings.paystack_secret_key}
-                      onChange={(e) => setSettings({ ...settings, paystack_secret_key: e.target.value })}
-                      placeholder="Enter PayStack Secret Key"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPayStackSecret(!showPayStackSecret)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPayStackSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <Separator />
@@ -321,7 +226,7 @@ export function PaymentGatewaySettings() {
           ) : saved ? (
             <Check className="h-4 w-4" />
           ) : (
-            <Save className="h-4 w-4" />
+            <Check className="h-4 w-4" />
           )}
           {saved ? "Settings Saved!" : "Save Payment Settings"}
         </Button>

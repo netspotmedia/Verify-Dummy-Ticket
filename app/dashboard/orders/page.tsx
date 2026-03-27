@@ -23,12 +23,7 @@ export default async function OrdersPage() {
 
   const { data: orders } = await supabase
     .from("orders")
-    .select(`
-      *,
-      order_services (
-        service_type
-      )
-    `)
+    .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
@@ -123,9 +118,9 @@ export default async function OrdersPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {order.order_services?.map((s: { service_type: string }, i: number) => (
-                            <span key={i} className="flex items-center gap-1 text-muted-foreground" title={s.service_type}>
-                              {getServiceIcon(s.service_type)}
+                          {(order.services || []).map((service: string, i: number) => (
+                            <span key={i} className="flex items-center gap-1 text-muted-foreground" title={service}>
+                              {getServiceIcon(service)}
                             </span>
                           ))}
                         </div>
@@ -134,7 +129,7 @@ export default async function OrdersPage() {
                         {new Date(order.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {formatCurrency(order.total, order.currency)}
+                        {formatCurrency(order.total_amount, order.currency)}
                       </TableCell>
                       <TableCell>{getPaymentBadge(order.payment_status)}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>

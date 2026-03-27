@@ -27,13 +27,60 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   if (!supabase) return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
   
-  const { user, error: authError } = await requireAdmin()
+  const { error: authError } = await requireAdmin()
   if (authError) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
     const body = await request.json()
+    
+    // Handle bulk update
+    if (body.settings && Array.isArray(body.settings)) {
+      const now = new Date().toISOString()
+      const results = []
+      
+      for (const setting of body.settings) {
+        const { key, value, category = 'general' } = setting
+        
+        const { data: existing } = await supabase
+          .from('site_settings')
+          .select('id')
+          .eq('key', key)
+          .single()
+        
+        if (existing) {
+          const { data, error } = await supabase
+            .from('site_settings')
+            .update({ value, updated_at: now })
+            .eq('key', key)
+            .select()
+            .single()
+          
+          if (error) {
+            results.push({ key, error: error.message })
+          } else {
+            results.push({ key, success: true })
+          }
+        } else {
+          const { data, error } = await supabase
+            .from('site_settings')
+            .insert([{ key, value, category, is_public: true, updated_at: now }])
+            .select()
+            .single()
+          
+          if (error) {
+            results.push({ key, error: error.message })
+          } else {
+            results.push({ key, success: true })
+          }
+        }
+      }
+      
+      return NextResponse.json({ success: true, results })
+    }
+    
+    // Handle single update
     const { key, value, category = 'general' } = body
     
     const { data: existing } = await supabase

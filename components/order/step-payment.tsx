@@ -49,7 +49,7 @@ const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description:
 
 export function StepPayment() {
   const router = useRouter()
-  const { formData, setPaymentMethod, setCaptchaToken, setIpCountry, prevStep, resetForm, isNigeria, ipCountry } = useOrderStore()
+  const { formData, setPaymentMethod, setIpCountry, prevStep, resetForm, isNigeria, ipCountry } = useOrderStore()
 
   const {
     services,
@@ -98,39 +98,60 @@ export function StepPayment() {
     deliverySpeed
   )
 
-  const [captchaQuestion, setCaptchaQuestion] = useState<{ question: string; answer: number } | null>(null)
+  const [captchaToken, setCaptchaTokenState] = useState<string | null>(null)
+  const [captchaQuestion, setCaptchaQuestion] = useState<string>("")
   const [captchaInput, setCaptchaInput] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
 
-  const generateCaptcha = useCallback(() => {
-    const a = Math.floor(Math.random() * 10) + 1
-    const b = Math.floor(Math.random() * 10) + 1
-    setCaptchaQuestion({ question: `${a} + ${b} = ?`, answer: a + b })
-    setCaptchaInput("")
-    setCaptchaVerified(false)
+  const fetchCaptcha = useCallback(async () => {
+    try {
+      const res = await fetch("/api/captcha")
+      const data = await res.json()
+      setCaptchaTokenState(data.token)
+      setCaptchaQuestion(data.question)
+      setCaptchaInput("")
+      setCaptchaVerified(false)
+    } catch (err) {
+      console.error("Failed to fetch captcha:", err)
+    }
   }, [])
 
   useEffect(() => {
-    generateCaptcha()
-  }, [generateCaptcha])
+    fetchCaptcha()
+  }, [fetchCaptcha])
 
   const handleCaptcha = async () => {
-    if (!captchaQuestion) {
-      generateCaptcha()
+    if (!captchaToken) {
+      fetchCaptcha()
       return
     }
 
     setIsVerifying(true)
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    if (parseInt(captchaInput) === captchaQuestion.answer) {
-      setCaptchaVerified(true)
-      setCaptchaToken("verified_" + Date.now())
-      toast.success("Verification complete")
-    } else {
-      toast.error("Incorrect answer. Please try again.")
-      generateCaptcha()
+    
+    try {
+      const res = await fetch("/api/captcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: captchaToken,
+          answer: parseInt(captchaInput)
+        })
+      })
+      
+      const result = await res.json()
+      
+      if (result.valid) {
+        setCaptchaVerified(true)
+        toast.success("Verification complete")
+      } else {
+        toast.error(result.error || "Incorrect answer. Please try again.")
+        fetchCaptcha()
+      }
+    } catch (err) {
+      toast.error("Verification failed. Please try again.")
+      fetchCaptcha()
     }
+    
     setIsVerifying(false)
   }
 
@@ -183,7 +204,10 @@ export function StepPayment() {
           payment_method: paymentMethod,
           currency: pricing.currency,
           total_amount: pricing.total,
-          contact_email: email,
+          services: services,
+          customer_country: formData.customerCountry || null,
+          customer_country_code: formData.customerCountryCode || null,
+          delivery_method: deliverySpeed || "normal",
         })
         .select()
         .single()
@@ -253,7 +277,7 @@ export function StepPayment() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="px-3 py-1.5 bg-slate-100 rounded font-mono text-sm font-bold text-slate-700">
-                {captchaQuestion?.question}
+                {captchaQuestion}
               </div>
               <span className="text-slate-400">=</span>
               <input
@@ -268,7 +292,7 @@ export function StepPayment() {
               <Button onClick={handleCaptcha} disabled={!captchaInput || isVerifying} variant="outline" className="h-8 px-3 rounded-md text-xs">
                 {isVerifying ? <RefreshCw className="h-3 w-3 animate-spin" /> : "Verify"}
               </Button>
-              <button type="button" onClick={generateCaptcha} className="text-sm text-slate-500 hover:text-[#c8143d]">
+              <button type="button" onClick={fetchCaptcha} className="text-sm text-slate-500 hover:text-[#c8143d]">
                 Refresh
               </button>
             </div>

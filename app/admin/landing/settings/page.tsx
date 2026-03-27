@@ -77,16 +77,20 @@ export default function SettingsPage() {
         { key: 'footer_twitter', value: settings.footer_twitter, category: 'landing' },
       ]
 
-      for (const update of updates) {
-        await fetch('/api/landing/settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(update),
-        })
+      // Bulk update in single request
+      const res = await fetch('/api/landing/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: updates }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to save settings')
       }
 
       toast.success('Settings saved successfully!')
     } catch (error) {
+      console.error('Failed to save settings:', error)
       toast.error('Failed to save settings')
     } finally {
       setSaving(false)
