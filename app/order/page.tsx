@@ -22,7 +22,7 @@ function OrderPageContent() {
   return (
     <div className="flex min-h-screen flex-col bg-slate-50/30">
       <SiteHeader />
-      <main className="flex-1 py-10 md:py-16">
+      <main className="flex-1 pt-24 md:pt-28 pb-10">
         <div className="container mx-auto max-w-[560px] px-4">
           <OrderWizard />
         </div>
