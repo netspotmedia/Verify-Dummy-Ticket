@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,13 +25,68 @@ import { toast } from "sonner"
 
 export default function SettingsPage() {
   const router = useRouter()
+  const supabase = createClient()
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [loadingProfile, setLoadingProfile] = useState(true)
 
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [whatsappNotifications, setWhatsappNotifications] = useState(true)
+
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("email_notifications, whatsapp_notifications")
+        .eq("id", user.id)
+        .single()
+
+      if (!error && data) {
+        setEmailNotifications(data.email_notifications ?? true)
+        setWhatsappNotifications(data.whatsapp_notifications ?? true)
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile:", error)
+    } finally {
+      setLoadingProfile(false)
+    }
+  }
+
+  const handleNotificationChange = async (type: "email" | "whatsapp", value: boolean) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const updateData = type === "email"
+        ? { email_notifications: value }
+        : { whatsapp_notifications: value }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("id", user.id)
+
+      if (error) throw error
+
+      if (type === "email") {
+        setEmailNotifications(value)
+      } else {
+        setWhatsappNotifications(value)
+      }
+      toast.success(`${type === "email" ? "Email" : "WhatsApp"} notifications ${value ? "enabled" : "disabled"}`)
+    } catch (error) {
+      console.error("Failed to update notifications:", error)
+      toast.error("Failed to update notification preferences")
+    }
+  }
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -47,7 +102,6 @@ export default function SettingsPage() {
     setIsChangingPassword(true)
 
     try {
-      const supabase = createClient()
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       })
@@ -55,7 +109,6 @@ export default function SettingsPage() {
       if (error) throw error
 
       toast.success("Password updated successfully")
-      setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
     } catch (err) {
@@ -72,14 +125,12 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
       <div className="grid gap-6">
-        {/* Password */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -89,16 +140,6 @@ export default function SettingsPage() {
             <CardDescription>Update your password to keep your account secure</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-              />
-            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
@@ -131,7 +172,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Notifications */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -141,35 +181,42 @@ export default function SettingsPage() {
             <CardDescription>Choose how you want to receive updates</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Email Notifications</p>
-                <p className="text-sm text-muted-foreground">
-                  Receive order updates and promotions via email
-                </p>
+            {loadingProfile ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-              <Switch
-                checked={emailNotifications}
-                onCheckedChange={setEmailNotifications}
-              />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">WhatsApp Notifications</p>
-                <p className="text-sm text-muted-foreground">
-                  Receive order updates via WhatsApp
-                </p>
-              </div>
-              <Switch
-                checked={whatsappNotifications}
-                onCheckedChange={setWhatsappNotifications}
-              />
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Email Notifications</p>
+                    <p className="text-sm text-muted-foreground">
+                      Receive order updates and promotions via email
+                    </p>
+                  </div>
+                  <Switch
+                    checked={emailNotifications}
+                    onCheckedChange={(value) => handleNotificationChange("email", value)}
+                  />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">WhatsApp Notifications</p>
+                    <p className="text-sm text-muted-foreground">
+                      Receive order updates via WhatsApp
+                    </p>
+                  </div>
+                  <Switch
+                    checked={whatsappNotifications}
+                    onCheckedChange={(value) => handleNotificationChange("whatsapp", value)}
+                  />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
-        {/* Danger Zone */}
         <Card className="border-destructive/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
