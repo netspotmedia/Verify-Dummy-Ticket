@@ -1,32 +1,14 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist_Mono, Outfit } from 'next/font/google'
-import { Open_Sans } from 'next/font/google'
+import { Outfit } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { SiteSettingsProvider } from '@/lib/site-settings'
 import './globals.css'
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  variable: '--font-inter'
-})
-
-const geistMono = Geist_Mono({ 
-  subsets: ["latin"],
-  variable: '--font-geist-mono'
-})
-
 const outfit = Outfit({ 
   subsets: ["latin"],
   variable: '--font-outfit',
   weight: ['400', '500', '600', '700', '800']
-})
-
-const openSans = Open_Sans({ 
-  subsets: ["latin"],
-  variable: '--font-open-sans',
-  weight: ['700'],
-  style: ['italic', 'normal']
 })
 
 export const metadata: Metadata = {
@@ -106,7 +88,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${geistMono.variable} ${outfit.variable} ${openSans.variable} font-outfit antialiased`}>
+      <body className={`${outfit.variable} antialiased`}>
         <SiteSettingsProvider>
           {children}
         </SiteSettingsProvider>
