@@ -62,7 +62,7 @@ export function StepInsurance() {
   return (
     <div className="space-y-4 font-outfit">
       <section className="space-y-2">
-        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-black">
           Coverage Area
         </Label>
 
@@ -114,10 +114,10 @@ export function StepInsurance() {
 
       {selectedArea && (
         <section className="space-y-2">
-          <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
+          <Label className="text-sm font-medium uppercase tracking-wider text-black">
             Coverage Duration
           </Label>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-black">
             Pick how long the policy should remain valid
           </p>
 
@@ -161,49 +161,16 @@ export function StepInsurance() {
         </section>
       )}
 
-      {selectedArea && (
-        <section className="p-3 border border-slate-200 rounded">
-          <p className="text-sm font-medium text-slate-500 mb-2">Pricing by Travelers</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-1.5 font-semibold text-slate-500">Duration</th>
-                  <th className="text-right py-1.5 px-2 font-semibold text-slate-500">1 person</th>
-                  <th className="text-right py-1.5 px-2 font-semibold text-slate-500">2 persons</th>
-                  <th className="text-right py-1.5 px-2 font-semibold text-slate-500">3 persons</th>
-                  <th className="text-right py-1.5 font-semibold text-slate-500">4 persons</th>
-                </tr>
-              </thead>
-              <tbody className="text-slate-700">
-                {DURATION_OPTIONS.map((duration) => {
-                  const price = PRICING_TABLE[selectedArea][duration.value]
-                  return (
-                    <tr key={duration.value} className="border-b border-slate-100 last:border-0">
-                      <td className="py-1.5 font-medium">{duration.label}</td>
-                      <td className="text-right py-1.5 px-2">${price}</td>
-                      <td className="text-right py-1.5 px-2">${price * 2}</td>
-                      <td className="text-right py-1.5 px-2">${price * 3}</td>
-                      <td className="text-right py-1.5">${price * 4}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
       {selectedArea && selectedDuration && (
         <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Insurance Cost</p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-sm font-semibold uppercase tracking-wider text-black">Insurance Cost</p>
+            <p className="text-sm text-black mt-0.5">
               ${unitPrice} × {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-sm font-semibold uppercase tracking-wider text-slate-500">Total</span>
+            <span className="text-sm font-semibold uppercase tracking-wider text-black">Total</span>
             <p className="text-xl font-semibold text-[#c8143d]">${insuranceCost}</p>
           </div>
         </section>

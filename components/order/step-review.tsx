@@ -17,33 +17,58 @@ export function StepReview() {
   const { formData, setDeliverySpeed, nextStep, prevStep } = useOrderStore()
   const { services, travelerCount, email, customerCountry, customerCountryCode, travelers, flightDetails, hotelDetails, insuranceDetails, deliverySpeed } = formData
 
-  const getServiceBaseCost = (service: string) => {
-    switch (service) {
-      case "flight": {
-        const tripTypePrice = flightDetails?.tripType === "one_way" ? 5 : flightDetails?.tripType === "return_trip" ? 8 : 15
-        const validityPrice = flightDetails?.validity === "3d" ? 0 : flightDetails?.validity === "7d" ? 5 : flightDetails?.validity === "14d" ? 10 : flightDetails?.validity === "21d" ? 15 : 20
-        return (tripTypePrice + validityPrice) * travelerCount
-      }
-      case "hotel": return hotelDetails?.type === "separate_per_traveler" ? travelerCount * 5 : 5 + Math.max(travelerCount - 1, 0) * 1
-      case "insurance": {
-        const pricingTable = { schengen: { "21d": 20, "3m": 30, "6m": 40, "1y": 50 }, worldwide_area_1: { "21d": 25, "3m": 35, "6m": 45, "1y": 55 }, worldwide_area_2: { "21d": 28, "3m": 48, "6m": 65, "1y": 80 } } as const
-        return insuranceDetails?.area && insuranceDetails?.duration ? pricingTable[insuranceDetails.area][insuranceDetails.duration] * travelerCount : 0
-      }
-      default: return 0
-    }
+  const getFlightCostPerPerson = () => {
+    const tripTypePrice = flightDetails?.tripType === "one_way" ? 5 : flightDetails?.tripType === "return_trip" ? 8 : 15
+    const validityPrice = flightDetails?.validity === "3d" ? 0 : flightDetails?.validity === "7d" ? 5 : flightDetails?.validity === "14d" ? 10 : flightDetails?.validity === "21d" ? 15 : 20
+    return tripTypePrice + validityPrice
   }
 
-  const baseServiceCost = services.reduce((sum, service) => sum + getServiceBaseCost(service), 0)
+  const getHotelCostPerPerson = () => {
+    if (hotelDetails?.type === "separate_per_traveler") return 5
+    return 5 + Math.max(travelerCount - 1, 0) * 1
+  }
+
+  const getInsuranceCostPerPerson = () => {
+    const pricingTable = { schengen: { "21d": 20, "3m": 30, "6m": 40, "1y": 50 }, worldwide_area_1: { "21d": 25, "3m": 35, "6m": 45, "1y": 55 }, worldwide_area_2: { "21d": 28, "3m": 48, "6m": 65, "1y": 80 } } as const
+    return insuranceDetails?.area && insuranceDetails?.duration ? pricingTable[insuranceDetails.area][insuranceDetails.duration] : 0
+  }
+
   const deliveryCost = DELIVERY_OPTIONS.find((d) => d.value === deliverySpeed)?.price || 0
-  const totalCost = baseServiceCost + deliveryCost
+  const totalCost = (
+    (services.includes("flight") ? getFlightCostPerPerson() * travelerCount : 0) +
+    (services.includes("hotel") ? getHotelCostPerPerson() : 0) +
+    (services.includes("insurance") ? getInsuranceCostPerPerson() * travelerCount : 0) +
+    deliveryCost
+  )
 
   const getServiceName = (service: string) => ({ flight: "Flight", hotel: "Hotel", insurance: "Insurance" }[service] || service)
   const getTravelerLabel = (index: number) => index === 0 ? "Primary" : index === 1 ? "Traveler 2" : `Traveler ${index + 1}`
 
+  const orderItems = [
+    ...(services.includes("flight") ? [{
+      item: `Flight (${getFlightCostPerPerson()}/person)`,
+      price: getFlightCostPerPerson(),
+      qty: travelerCount,
+      total: getFlightCostPerPerson() * travelerCount
+    }] : []),
+    ...(services.includes("hotel") ? [{
+      item: "Hotel",
+      price: getHotelCostPerPerson(),
+      qty: 1,
+      total: getHotelCostPerPerson()
+    }] : []),
+    ...(services.includes("insurance") ? [{
+      item: `Insurance (${getInsuranceCostPerPerson()}/person)`,
+      price: getInsuranceCostPerPerson(),
+      qty: travelerCount,
+      total: getInsuranceCostPerPerson() * travelerCount
+    }] : []),
+  ]
+
   return (
     <div className="space-y-3 font-outfit">
       <div className="space-y-1">
-        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">Services</Label>
+        <Label className="text-sm font-medium uppercase tracking-wider text-black">Services</Label>
         <div className="flex flex-wrap gap-1.5">
           {services.map((service) => (
             <span key={service} className="inline-flex items-center gap-1 rounded bg-[#c8143d]/10 px-1.5 py-0.5 text-sm font-medium text-[#c8143d]">
@@ -55,20 +80,20 @@ export function StepReview() {
 
       <div className="grid gap-2 md:grid-cols-2">
         <div className="p-2 border border-slate-200 rounded">
-          <p className="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Contact</p>
+          <p className="text-sm font-medium text-black mb-1 uppercase tracking-wider">Contact</p>
           <div className="space-y-0.5">
-            <div className="flex justify-between text-sm"><span className="text-slate-500">Email</span><span className="font-medium text-slate-700 truncate ml-2">{email}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-slate-500">Country</span><span className="font-medium text-slate-700">{customerCountry}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-slate-500">Travelers</span><span className="font-medium text-slate-700">{travelerCount}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-black">Email</span><span className="font-medium text-black truncate ml-2">{email}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-black">Country</span><span className="font-medium text-black">{customerCountry}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-black">Travelers</span><span className="font-medium text-black">{travelerCount}</span></div>
           </div>
         </div>
         <div className="p-2 border border-slate-200 rounded">
-          <p className="text-sm font-medium text-slate-500 mb-1 uppercase tracking-wider">Passengers</p>
+          <p className="text-sm font-medium text-black mb-1 uppercase tracking-wider">Passengers</p>
           <div className="space-y-0.5">
             {travelers.slice(0, 3).map((traveler, index) => (
-              <div key={index} className="flex justify-between text-xs">
-                <span className="text-slate-500">{getTravelerLabel(index)}</span>
-                <span className="font-medium text-slate-700">{traveler.firstName} {traveler.lastName}</span>
+              <div key={index} className="flex justify-between text-sm">
+                <span className="text-black">{getTravelerLabel(index)}</span>
+                <span className="font-medium text-black">{traveler.firstName} {traveler.lastName}</span>
               </div>
             ))}
             {travelers.length > 3 && <p className="text-sm text-slate-400">+{travelers.length - 3} more</p>}
@@ -77,7 +102,7 @@ export function StepReview() {
       </div>
 
       <div className="space-y-1">
-        <Label className="text-sm font-medium text-slate-500">Delivery Speed</Label>
+        <Label className="text-sm font-medium text-black">Delivery Speed</Label>
         <div className="flex gap-1">
           {DELIVERY_OPTIONS.map((option) => {
             const active = deliverySpeed === option.value
@@ -110,13 +135,39 @@ export function StepReview() {
         </div>
       )}
 
-      <div className="p-2 border border-slate-200 rounded">
-        <div className="flex justify-between text-sm"><span className="text-slate-500">Services</span><span className="font-medium text-slate-700">${baseServiceCost}</span></div>
-        <div className="flex justify-between text-sm"><span className="text-slate-500">Delivery</span><span className="font-medium text-slate-700">${deliveryCost}</span></div>
-        <div className="border-t border-slate-200 mt-1 pt-1 flex justify-between">
-          <span className="text-sm font-medium text-slate-900">Total</span>
-          <span className="text-base font-semibold text-[#c8143d]">${totalCost}</span>
-        </div>
+      <div className="border border-slate-200 rounded overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200">
+              <th className="text-left py-2 px-3 font-semibold text-black">Item</th>
+              <th className="text-right py-2 px-3 font-semibold text-black">Price</th>
+              <th className="text-right py-2 px-3 font-semibold text-black">Qty</th>
+              <th className="text-right py-2 px-3 font-semibold text-black">Total</th>
+            </tr>
+          </thead>
+          <tbody className="text-black">
+            {orderItems.map((row, index) => (
+              <tr key={index} className="border-b border-slate-100 last:border-0">
+                <td className="py-2 px-3">{row.item}</td>
+                <td className="text-right py-2 px-3">${row.price}</td>
+                <td className="text-right py-2 px-3">{row.qty}</td>
+                <td className="text-right py-2 px-3 font-medium">${row.total}</td>
+              </tr>
+            ))}
+            <tr className="border-t border-slate-200">
+              <td className="py-2 px-3 font-medium">Delivery ({DELIVERY_OPTIONS.find(d => d.value === deliverySpeed)?.title})</td>
+              <td className="text-right py-2 px-3">${deliveryCost}</td>
+              <td className="text-right py-2 px-3">1</td>
+              <td className="text-right py-2 px-3 font-medium">${deliveryCost}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr className="bg-[#c8143d]/5 border-t border-[#c8143d]/20">
+              <td colSpan={3} className="py-2 px-3 font-semibold text-black">Total</td>
+              <td className="text-right py-2 px-3 font-bold text-[#c8143d]">${totalCost}</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
 
       <div className="flex gap-2 pt-1">

@@ -223,7 +223,7 @@ export function StepPayment() {
           <div className={cn("flex h-7 w-7 items-center justify-center rounded text-white", captchaVerified ? "bg-green-600" : "bg-[#c8143d]")}>
             {captchaVerified ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">!</span>}
           </div>
-          <Label className="text-sm font-medium uppercase tracking-wider text-slate-500">Security Verification</Label>
+          <Label className="text-sm font-medium uppercase tracking-wider text-black">Security Verification</Label>
         </div>
 
         {captchaVerified ? (
@@ -260,8 +260,8 @@ export function StepPayment() {
 
       <section className="space-y-2">
         <div>
-          <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">Payment Method</Label>
-          <p className="text-sm text-slate-500 mt-0.5">Choose a secure payment option</p>
+          <Label className="text-sm font-medium uppercase tracking-wider text-black">Payment Method</Label>
+          <p className="text-sm text-black mt-0.5">Choose a secure payment option</p>
         </div>
 
         <div className="space-y-1">
@@ -308,13 +308,13 @@ export function StepPayment() {
 
       <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
         <div>
-          <p className="text-sm font-medium uppercase tracking-wider text-slate-500">Total Amount</p>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-sm font-medium uppercase tracking-wider text-black">Total Amount</p>
+          <p className="text-sm text-black mt-0.5">
             {pricing.currency === "NGN" ? "Naira" : "USD"} • {PAYMENT_METHODS_CONFIG[paymentMethod].name}
           </p>
         </div>
         <div className="text-right">
-          <span className="text-sm font-medium uppercase tracking-wider text-slate-500">Total</span>
+          <span className="text-sm font-medium uppercase tracking-wider text-black">Total</span>
           <p className="text-xl font-semibold text-[#c8143d]">{formatCurrency(pricing.total, pricing.currency)}</p>
         </div>
       </section>

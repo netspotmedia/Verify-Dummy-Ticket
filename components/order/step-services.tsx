@@ -43,10 +43,10 @@ export function StepServices() {
   return (
     <div className="space-y-4 font-outfit">
       <div className="space-y-1">
-        <Label className="text-sm font-medium uppercase tracking-wider text-slate-400">
+        <Label className="text-sm font-medium uppercase tracking-wider text-black">
           Select Services
         </Label>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-black">
           Choose one or more services for your visa application
         </p>
       </div>
