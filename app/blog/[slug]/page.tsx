@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, User, ArrowLeft, Clock, Share2 } from "lucide-react"
+import { sanitizeHtml } from "@/lib/utils"
 
 interface BlogPost {
   id: string
@@ -103,7 +104,7 @@ export default async function BlogPostPage({
     notFound()
   }
 
-  const formattedContent = formatContent(post.content)
+  const formattedContent = sanitizeHtml(formatContent(post.content))
 
   const jsonLd = {
     "@context": "https://schema.org",

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Plane, Building2, Shield, User, Mail, Phone } from "lucide-react"
 import { OrderStatusActions } from "@/components/admin/order-status-actions"
+import { OrderDocumentUpload } from "@/components/admin/order-document-upload"
 
 export default async function AdminOrderDetailPage({
   params,
@@ -292,6 +293,9 @@ export default async function AdminOrderDetailPage({
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Document Upload */}
+          <OrderDocumentUpload orderId={order.id} />
+
           {/* Customer Info */}
           <Card>
             <CardHeader>

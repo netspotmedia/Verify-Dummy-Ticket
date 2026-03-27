@@ -14,7 +14,9 @@ interface SiteSettings {
   site_tagline?: string
   site_phone?: string
   support_email?: string
+  site_url?: string
   order_page_image?: string
+  currency_conversion_rate?: string
   footer_company_name?: string
   footer_copyright?: string
   footer_facebook?: string
@@ -38,7 +40,9 @@ const defaultSettings: SiteSettings = {
   site_tagline: "Flight, Hotel & Travel Insurance for Visa Applications",
   site_phone: "+234 800 123 4567",
   support_email: "support@example.com",
+  site_url: "",
   order_page_image: "",
+  currency_conversion_rate: "1650",
   footer_company_name: "My Travel Services",
   footer_copyright: `© ${new Date().getFullYear()} My Travel Services. All rights reserved.`,
   footer_facebook: "https://facebook.com",
@@ -69,7 +73,9 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             site_tagline: data.site_tagline || defaultSettings.site_tagline,
             site_phone: data.site_phone || defaultSettings.site_phone,
             support_email: data.support_email || defaultSettings.support_email,
+            site_url: data.site_url || defaultSettings.site_url,
             order_page_image: data.order_page_image || defaultSettings.order_page_image,
+            currency_conversion_rate: data.currency_conversion_rate || defaultSettings.currency_conversion_rate,
             footer_company_name: data.footer_company_name || defaultSettings.footer_company_name,
             footer_copyright: data.footer_copyright?.replace('{year}', new Date().getFullYear().toString()) || defaultSettings.footer_copyright,
             footer_facebook: data.footer_facebook || defaultSettings.footer_facebook,

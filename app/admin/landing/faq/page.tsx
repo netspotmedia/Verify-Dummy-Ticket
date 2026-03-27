@@ -11,6 +11,7 @@ import Link from 'next/link'
 import type { FaqItem } from '@/lib/supabase'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { RichTextEditor, renderRichText } from '@/components/rich-text-editor'
+import { sanitizeHtml } from '@/lib/utils'
 
 export default function FAQPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([])
@@ -128,9 +129,9 @@ export default function FAQPage() {
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq) => (
               <AccordionItem key={faq.id} value={faq.id}>
-                <AccordionTrigger dangerouslySetInnerHTML={{ __html: faq.question }} />
+                <AccordionTrigger dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.question) }} />
                 <AccordionContent>
-                  <div dangerouslySetInnerHTML={{ __html: renderRichText(faq.answer) }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderRichText(faq.answer)) }} />
                 </AccordionContent>
               </AccordionItem>
             ))}
