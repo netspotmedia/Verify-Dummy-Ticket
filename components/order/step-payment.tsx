@@ -43,19 +43,18 @@ function generateSecurePassword(length: number = 12): string {
 }
 
 const PAYMENT_METHODS_CONFIG: Record<PaymentMethod, { name: string; description: string }> = {
-  card: { name: "Credit/Debit Card", description: "Visa, Mastercard, Verve" },
   paypal: { name: "PayPal", description: "PayPal account or card" },
   paystack: { name: "PayStack", description: "Cards, Bank, USSD, Mobile" },
 }
 
 export function StepPayment() {
   const router = useRouter()
-  const { formData, setPaymentMethod, setCaptchaToken, prevStep, resetForm } = useOrderStore()
+  const { formData, setPaymentMethod, setCaptchaToken, setIpCountry, prevStep, resetForm, isNigeria, ipCountry } = useOrderStore()
 
   const {
     services,
     travelerCount,
-    customerCountryCode,
+    currency,
     paymentMethod,
     flightDetails,
     hotelDetails,
@@ -66,13 +65,33 @@ export function StepPayment() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [captchaVerified, setCaptchaVerified] = useState(false)
+  const [ipDetected, setIpDetected] = useState(false)
 
-  const allowedMethods = getAllowedPaymentMethods(customerCountryCode)
+  useEffect(() => {
+    const detectCountry = async () => {
+      if (ipDetected) return
+      
+      try {
+        const res = await fetch("/api/geo")
+        const data = await res.json()
+        setIpCountry(data.country, data.countryCode, data.isNigeria)
+        setIpDetected(true)
+      } catch (err) {
+        console.error("Failed to detect location:", err)
+        setIpCountry("Unknown", "US", false)
+        setIpDetected(true)
+      }
+    }
+    
+    detectCountry()
+  }, [ipDetected, setIpCountry])
+
+  const allowedMethods = getAllowedPaymentMethods(isNigeria)
 
   const pricing = calculatePriceBreakdown(
     services,
     travelerCount,
-    customerCountryCode,
+    isNigeria,
     flightDetails || undefined,
     hotelDetails || undefined,
     insuranceDetails || undefined,

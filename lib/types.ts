@@ -6,7 +6,7 @@ export type OrderStatus = "pending" | "processing" | "completed" | "cancelled" |
 
 export type PaymentStatus = "unpaid" | "paid" | "refunded" | "failed"
 
-export type PaymentMethod = "paypal" | "paystack" | "card"
+export type PaymentMethod = "paypal" | "paystack"
 
 export type Currency = "USD" | "NGN"
 
@@ -146,7 +146,7 @@ export const USD_TO_NGN_RATE = 1650
 export function calculatePriceBreakdown(
   services: ServiceType[],
   travelerCount: number,
-  customerCountryCode: string,
+  isNigeria: boolean,
   flightDetails?: FlightDetails,
   hotelDetails?: HotelDetails,
   insuranceDetails?: InsuranceDetails,
@@ -155,8 +155,8 @@ export function calculatePriceBreakdown(
 ): PriceBreakdown {
   const lines: PricingLine[] = []
   
-  // Determine currency based on country (per Spec Section 19)
-  const currency: Currency = customerCountryCode === "NG" ? "NGN" : "USD"
+  // Determine currency based on IP-detected country
+  const currency: Currency = isNigeria ? "NGN" : "USD"
 
   // Flight pricing (per traveler)
   if (services.includes("flight") && flightDetails) {
@@ -309,11 +309,15 @@ function getDeliveryLabel(speed: DeliverySpeed): string {
 // UTILITY FUNCTIONS
 // ===========================================
 
-export function getAllowedPaymentMethods(countryCode: string): PaymentMethod[] {
-  if (countryCode === "NG") {
-    return ["paystack", "card"] // Nigeria: Paystack and Card
+export function getAllowedPaymentMethods(isNigeria: boolean): PaymentMethod[] {
+  if (isNigeria) {
+    return ["paystack"] // Nigeria: Paystack only (accepts Naira)
   }
-  return ["paypal", "paystack", "card"] // Others: all methods including Card
+  return ["paystack", "paypal"] // Non-Nigeria: Paystack (card only) + PayPal (account + card)
+}
+
+export function getCurrencyFromIP(isNigeria: boolean): Currency {
+  return isNigeria ? "NGN" : "USD"
 }
 
 export function formatCurrency(amount: number, currency: Currency): string {
