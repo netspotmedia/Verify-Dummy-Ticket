@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ import { useSiteSettings } from "@/lib/site-settings"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { settings } = useSiteSettings()
   const siteName = settings?.site_name || "My Travel Services"
   const [email, setEmail] = useState("")
@@ -38,25 +39,28 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Check if user is admin from database (authoritative source)
-        const { data: profile, error } = await supabase
+        const redirectTarget = searchParams.get("redirect")
+
+        if (redirectTarget && redirectTarget.startsWith("/") && !redirectTarget.startsWith("/auth")) {
+          toast.success("Welcome back!")
+          router.push(redirectTarget)
+          router.refresh()
+          return
+        }
+
+        const { data: profile } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single()
-        
-        console.log('[LOGIN] Profile check:', { profile, error })
-        
-        // If profile doesn't exist or query failed, treat as non-admin
-        if (error || !profile) {
-          console.log('[LOGIN] Profile not found - redirecting to dashboard')
-          router.push('/dashboard')
-          router.refresh()
-          return
-        }
-        
-        const isAdmin = profile.role === 'admin'
-        console.log('[LOGIN] isAdmin:', isAdmin)
+
+        const normalizedRole = typeof profile?.role === 'string'
+          ? profile.role.replace(/"/g, '').trim().toLowerCase()
+          : ''
+
+        const metadataIsAdmin = data.user.user_metadata?.is_admin === true
+        const isAdmin = normalizedRole === 'admin' || metadataIsAdmin
+
         toast.success("Welcome back!")
         router.push(isAdmin ? "/admin" : "/dashboard")
         router.refresh()

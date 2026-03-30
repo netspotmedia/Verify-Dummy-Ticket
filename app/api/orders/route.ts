@@ -3,11 +3,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
+import { getCaptchaSecret } from "@/lib/captcha"
 
-const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "default-captcha-secret-change-me"
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
-function verifyCaptchaToken(token: string): boolean {
+function verifyCaptchaToken(token: string, secret: string): boolean {
   if (!token) return false
   
   try {
@@ -15,8 +15,9 @@ function verifyCaptchaToken(token: string): boolean {
     if (parts.length !== 2) return false
     
     const [payloadBase64, signature] = parts
+
     const expectedSignature = crypto
-      .createHmac("sha256", CAPTCHA_SECRET)
+      .createHmac("sha256", secret)
       .update(payloadBase64)
       .digest("base64url")
     
@@ -37,6 +38,11 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     
     const body = await request.json()
+    const captchaSecret = getCaptchaSecret()
+    if (!captchaSecret) {
+      return NextResponse.json({ error: "CAPTCHA is not configured" }, { status: 503 })
+    }
+
     const {
       captchaToken,
       services,
@@ -53,7 +59,7 @@ export async function POST(request: NextRequest) {
       deliveryMethod,
     } = body
 
-    if (!verifyCaptchaToken(captchaToken)) {
+    if (!verifyCaptchaToken(captchaToken, captchaSecret)) {
       return NextResponse.json({ error: "Invalid or expired CAPTCHA" }, { status: 400 })
     }
 
