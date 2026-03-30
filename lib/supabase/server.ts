@@ -29,7 +29,7 @@ export async function createClient() {
     },
   )
 
-  await supabase.auth.getSession()
+  await supabase.auth.refreshSession()
 
   return supabase
 }
