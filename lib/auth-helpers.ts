@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { isAdminUser, normalizeRole } from "@/lib/admin-role"
 
 export interface AuthUser {
   id: string
@@ -7,6 +8,7 @@ export interface AuthUser {
   isAdmin: boolean
   role?: string
 }
+
 
 export async function requireAuth() {
   const supabase = await createClient()
@@ -37,11 +39,11 @@ export async function requireAdmin(): Promise<{ user: AuthUser | null; error: st
     .eq("id", user.id)
     .single()
   
-  if (profileError || !profile) {
+  const isAdmin = isAdminUser(profile?.role, user)
+
+  if (profileError && !isAdmin) {
     return { user: null, error: "Forbidden" }
   }
-  
-  const isAdmin = profile.role === "admin"
   
   if (!isAdmin) {
     return { user: null, error: "Forbidden" }
@@ -52,7 +54,7 @@ export async function requireAdmin(): Promise<{ user: AuthUser | null; error: st
       id: user.id, 
       email: user.email || "", 
       isAdmin: true,
-      role: profile.role
+      role: normalizeRole(profile?.role)
     }, 
     error: null 
   }
@@ -77,8 +79,8 @@ export async function requireUserWithProfile(): Promise<{ user: AuthUser | null;
     user: { 
       id: user.id, 
       email: user.email || "", 
-      isAdmin: profile?.role === "admin",
-      role: profile?.role
+      isAdmin: isAdminUser(profile?.role, user),
+      role: normalizeRole(profile?.role)
     }, 
     error: null 
   }
