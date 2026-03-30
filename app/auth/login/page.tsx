@@ -38,8 +38,14 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Check if user is admin
-        const isAdmin = data.user.user_metadata?.is_admin === true
+        // Check if user is admin from database (authoritative source)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+        
+        const isAdmin = profile?.role === 'admin'
         toast.success("Welcome back!")
         router.push(isAdmin ? "/admin" : "/dashboard")
         router.refresh()
