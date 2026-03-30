@@ -30,30 +30,18 @@ export function OrderDocuments({ orderId, documents, orderEmail }: OrderDocument
     setDownloadingId(doc.id)
 
     try {
-      const { data, error } = await supabase.storage
-        .from("order-documents")
-        .download(doc.file_url)
-
-      if (error) {
-        // If storage download fails, try direct URL
-        window.open(doc.file_url, "_blank")
-      } else {
-        // Create download link
-        const url = URL.createObjectURL(data)
-        const link = document.createElement("a")
-        link.href = url
-        link.download = doc.file_name
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-      }
-
+      const link = document.createElement("a")
+      link.href = doc.file_url
+      link.target = "_blank"
+      link.rel = "noopener noreferrer"
+      link.download = doc.file_name
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
       toast.success("Download started")
     } catch (error) {
       console.error("Download error:", error)
-      // Fallback: open in new tab
-      window.open(doc.file_url, "_blank")
+      window.open(doc.file_url, "_blank", "noopener,noreferrer")
     } finally {
       setDownloadingId(null)
     }
@@ -61,15 +49,25 @@ export function OrderDocuments({ orderId, documents, orderEmail }: OrderDocument
 
   const handleResendEmail = async () => {
     try {
-      const { error } = await supabase.functions.invoke("resend-order-email", {
-        body: { orderId, email: orderEmail },
+      const res = await fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: orderEmail,
+          subject: `Your order documents - ${orderId.slice(0, 8).toUpperCase()}`,
+          type: 'order_delivered',
+          data: {
+            name: orderEmail.split('@')[0] || 'Customer',
+            orderId,
+          },
+        }),
       })
 
-      if (error) throw error
-      toast.success("Documents sent to your email")
+      if (!res.ok) throw new Error('Failed to resend email')
+      toast.success('Documents sent to your email')
     } catch (error) {
-      console.error("Resend error:", error)
-      toast.error("Failed to resend email")
+      console.error('Resend error:', error)
+      toast.error('Failed to resend email')
     }
   }
 

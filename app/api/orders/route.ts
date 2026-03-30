@@ -3,11 +3,17 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
+import { getCaptchaSecret } from "@/lib/captcha"
+import { calculatePriceBreakdown, type DeliverySpeed, type ServiceType } from "@/lib/types"
 
-const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "default-captcha-secret-change-me"
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
-function verifyCaptchaToken(token: string): boolean {
+function amountsMatch(expected: number, provided: number, currency: string): boolean {
+  const tolerance = currency === "NGN" ? 1 : 0.01
+  return Math.abs(expected - provided) <= tolerance
+}
+
+function verifyCaptchaToken(token: string, secret: string): boolean {
   if (!token) return false
   
   try {
@@ -15,8 +21,9 @@ function verifyCaptchaToken(token: string): boolean {
     if (parts.length !== 2) return false
     
     const [payloadBase64, signature] = parts
+
     const expectedSignature = crypto
-      .createHmac("sha256", CAPTCHA_SECRET)
+      .createHmac("sha256", secret)
       .update(payloadBase64)
       .digest("base64url")
     
@@ -37,6 +44,11 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     
     const body = await request.json()
+    const captchaSecret = getCaptchaSecret()
+    if (!captchaSecret) {
+      return NextResponse.json({ error: "CAPTCHA is not configured" }, { status: 503 })
+    }
+
     const {
       captchaToken,
       services,
@@ -53,8 +65,27 @@ export async function POST(request: NextRequest) {
       deliveryMethod,
     } = body
 
-    if (!verifyCaptchaToken(captchaToken)) {
+    if (!verifyCaptchaToken(captchaToken, captchaSecret)) {
       return NextResponse.json({ error: "Invalid or expired CAPTCHA" }, { status: 400 })
+    }
+
+    const travelerCount = Array.isArray(travelers) && travelers.length > 0 ? travelers.length : 1
+    const deliverySpeed = (deliveryMethod || "normal") as DeliverySpeed
+    const normalizedServices = (Array.isArray(services) ? services : []) as ServiceType[]
+    const isNigeria = currency === "NGN"
+
+    const pricing = calculatePriceBreakdown(
+      normalizedServices,
+      travelerCount,
+      isNigeria,
+      flightDetails,
+      hotelDetails,
+      insuranceDetails,
+      deliverySpeed
+    )
+
+    if (!amountsMatch(pricing.total, Number(totalAmount), currency)) {
+      return NextResponse.json({ error: "Invalid order total" }, { status: 400 })
     }
 
     const { data: order, error: orderError } = await supabase
@@ -63,9 +94,9 @@ export async function POST(request: NextRequest) {
         user_id: user?.id || null,
         email: user?.email || body.email || "unknown@example.com",
         status: "pending",
-        services: services || [],
+        services: normalizedServices,
         currency,
-        total_amount: totalAmount,
+        total_amount: pricing.total,
         payment_method: paymentMethod,
         payment_reference: paymentReference,
         payment_status: "pending",

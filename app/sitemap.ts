@@ -1,17 +1,18 @@
 import { MetadataRoute } from "next"
-import { createClient } from "@/lib/supabase/server"
+import { supabase } from "@/lib/supabase"
 
 async function getSiteUrl(): Promise<string> {
   try {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "site_url")
-      .single()
-    
-    if (data?.value) {
-      return data.value.replace(/"/g, "")
+    if (supabase) {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "site_url")
+        .single()
+
+      if (data?.value) {
+        return String(data.value).replace(/"/g, "")
+      }
     }
   } catch (error) {
     console.error("Failed to fetch site URL:", error)
@@ -50,7 +51,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   try {
-    const supabase = await createClient()
+    if (!supabase) return staticPages
+
     const { data: posts } = await supabase
       .from("blog_posts")
       .select("slug, updated_at")
