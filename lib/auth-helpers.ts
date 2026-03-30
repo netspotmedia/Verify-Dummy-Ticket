@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { isAdminUser, normalizeRole } from "@/lib/admin-role"
 
 export interface AuthUser {
   id: string
@@ -42,7 +43,9 @@ export async function requireAdmin(): Promise<{ user: AuthUser | null; error: st
     .eq("id", user.id)
     .single()
   
-  if (profileError || !profile) {
+  const isAdmin = isAdminUser(profile?.role, user)
+
+  if (profileError && !isAdmin) {
     return { user: null, error: "Forbidden" }
   }
   
