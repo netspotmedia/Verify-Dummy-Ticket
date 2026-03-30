@@ -63,7 +63,7 @@ export default function LoginPage() {
         const isAdmin = normalizedRole === 'admin' || metadataIsAdmin
 
         toast.success("Welcome back!")
-        router.push(isAdmin ? "/admin" : "/dashboard")
+        router.push(destination)
         router.refresh()
       }
     } catch (err) {
