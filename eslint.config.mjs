@@ -11,4 +11,16 @@ export default [
       'tsconfig.tsbuildinfo',
     ],
   },
+  {
+    files: ['**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+    },
+    rules: {
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'no-undef': 'error',
+    },
+  },
 ]

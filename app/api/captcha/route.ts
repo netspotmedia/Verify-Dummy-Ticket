@@ -114,7 +114,11 @@ export async function POST(request: NextRequest) {
     }
     
     const result = verifyAnswer(token, answer)
-    
+
+    if (!result.valid && result.error === "CAPTCHA configuration is missing") {
+      return NextResponse.json(result, { status: 500 })
+    }
+
     return NextResponse.json(result)
   } catch {
     return NextResponse.json({ valid: false, error: "Invalid request" }, { status: 400 })

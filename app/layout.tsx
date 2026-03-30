@@ -4,7 +4,10 @@ import { Toaster } from '@/components/ui/sonner'
 import { SiteSettingsProvider } from '@/lib/site-settings'
 import './globals.css'
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://verifydummytickets.com'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
     template: '%s | VerifyDummyTickets'
