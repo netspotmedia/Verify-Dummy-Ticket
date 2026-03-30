@@ -5,6 +5,11 @@ import { AdminHeader } from "@/components/admin/admin-header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { isAdminUser } from "@/lib/admin-role"
 
+function normalizeRole(role: unknown): string {
+  if (typeof role !== "string") return ""
+  return role.replace(/"/g, "").trim().toLowerCase()
+}
+
 export default async function AdminLayout({
   children,
 }: {
@@ -23,9 +28,10 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single()
 
-  const isAdmin = isAdminUser(profile?.role, user)
+  const roleIsAdmin = normalizeRole(profile?.role) === "admin"
+  const metadataIsAdmin = user.user_metadata?.is_admin === true
 
-  if (!isAdmin) {
+  if (!roleIsAdmin && !metadataIsAdmin) {
     redirect("/dashboard")
   }
 

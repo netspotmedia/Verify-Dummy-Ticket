@@ -9,6 +9,10 @@ export interface AuthUser {
   role?: string
 }
 
+function normalizeRole(role: unknown): string {
+  if (typeof role !== "string") return ""
+  return role.replace(/"/g, "").trim().toLowerCase()
+}
 
 export async function requireAuth() {
   const supabase = await createClient()
@@ -45,6 +49,8 @@ export async function requireAdmin(): Promise<{ user: AuthUser | null; error: st
     return { user: null, error: "Forbidden" }
   }
   
+  const isAdmin = normalizeRole(profile.role) === "admin"
+  
   if (!isAdmin) {
     return { user: null, error: "Forbidden" }
   }
@@ -54,7 +60,7 @@ export async function requireAdmin(): Promise<{ user: AuthUser | null; error: st
       id: user.id, 
       email: user.email || "", 
       isAdmin: true,
-      role: normalizeRole(profile?.role)
+      role: normalizeRole(profile.role)
     }, 
     error: null 
   }
@@ -79,7 +85,7 @@ export async function requireUserWithProfile(): Promise<{ user: AuthUser | null;
     user: { 
       id: user.id, 
       email: user.email || "", 
-      isAdmin: isAdminUser(profile?.role, user),
+      isAdmin: normalizeRole(profile?.role) === "admin",
       role: normalizeRole(profile?.role)
     }, 
     error: null 

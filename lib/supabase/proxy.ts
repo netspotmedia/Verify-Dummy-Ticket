@@ -1,6 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { hasAdminFlag, isAdminUser, normalizeRole } from '@/lib/admin-role'
+import { isAdminUser } from '@/lib/admin-role'
+
+function normalizeRole(role: unknown): string {
+  if (typeof role !== 'string') return ''
+  return role.replace(/"/g, '').trim().toLowerCase()
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -65,12 +70,9 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const hasAdminMetadata = hasAdminFlag(user)
-    if (hasAdminMetadata && normalizeRole(profile?.role) !== 'admin') {
-      await supabase.from('profiles').update({ role: 'admin' }).eq('id', user.id)
-    }
-
-    const isAdmin = isAdminUser(profile?.role, user)
+    const roleIsAdmin = normalizeRole(profile?.role) === 'admin'
+    const metadataIsAdmin = user.user_metadata?.is_admin === true
+    const isAdmin = roleIsAdmin || metadataIsAdmin
 
     if (!isAdmin) {
       const url = request.nextUrl.clone()
@@ -87,12 +89,9 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const hasAdminMetadata = hasAdminFlag(user)
-    if (hasAdminMetadata && normalizeRole(profile?.role) !== 'admin') {
-      await supabase.from('profiles').update({ role: 'admin' }).eq('id', user.id)
-    }
-
-    const isAdmin = isAdminUser(profile?.role, user)
+    const roleIsAdmin = normalizeRole(profile?.role) === 'admin'
+    const metadataIsAdmin = user.user_metadata?.is_admin === true
+    const isAdmin = roleIsAdmin || metadataIsAdmin
     const url = request.nextUrl.clone()
     url.pathname = isAdmin ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
