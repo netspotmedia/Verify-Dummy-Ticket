@@ -63,15 +63,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired CAPTCHA" }, { status: 400 })
     }
 
+    const travelerCount = Array.isArray(travelers) && travelers.length > 0 ? travelers.length : 1
+    const deliverySpeed = (deliveryMethod || "normal") as DeliverySpeed
+    const normalizedServices = (Array.isArray(services) ? services : []) as ServiceType[]
+    const isNigeria = currency === "NGN"
+
+    const pricing = calculatePriceBreakdown(
+      normalizedServices,
+      travelerCount,
+      isNigeria,
+      flightDetails,
+      hotelDetails,
+      insuranceDetails,
+      deliverySpeed
+    )
+
+    if (!amountsMatch(pricing.total, Number(totalAmount), currency)) {
+      return NextResponse.json({ error: "Invalid order total" }, { status: 400 })
+    }
+
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: user?.id || null,
         email: user?.email || body.email || "unknown@example.com",
         status: "pending",
-        services: services || [],
+        services: normalizedServices,
         currency,
-        total_amount: totalAmount,
+        total_amount: pricing.total,
         payment_method: paymentMethod,
         payment_reference: paymentReference,
         payment_status: "pending",
