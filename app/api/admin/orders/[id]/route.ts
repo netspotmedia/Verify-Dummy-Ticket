@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth-helpers"
 
@@ -19,9 +18,6 @@ export async function PATCH(
     const { status, paymentStatus, adminNotes } = body
 
     const updateData: Record<string, unknown> = {}
-    if (status) updateData.status = status
-    if (paymentStatus) updateData.payment_status = paymentStatus
-    if (adminNotes !== undefined) updateData.admin_notes = adminNotes
 
     const { data, error: dbError } = await supabase
       .from("orders")

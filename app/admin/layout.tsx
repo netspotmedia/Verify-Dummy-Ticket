@@ -4,6 +4,11 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 
+function normalizeRole(role: unknown): string {
+  if (typeof role !== "string") return ""
+  return role.replace(/"/g, "").trim().toLowerCase()
+}
+
 export default async function AdminLayout({
   children,
 }: {
@@ -16,25 +21,16 @@ export default async function AdminLayout({
     redirect("/auth/login")
   }
 
-  // Check if user is admin from database profiles table
-  const { data: profile, error } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single()
 
-  console.log('[ADMIN LAYOUT] Profile check:', { profile, error, userId: user.id })
+  const roleIsAdmin = normalizeRole(profile?.role) === "admin"
+  const metadataIsAdmin = user.user_metadata?.is_admin === true
 
-  // If profile doesn't exist or query failed, treat as non-admin
-  if (error || !profile) {
-    console.log('[ADMIN LAYOUT] Profile not found - redirecting')
-    redirect("/dashboard")
-  }
-
-  const isAdmin = profile.role === "admin"
-  console.log('[ADMIN LAYOUT] isAdmin:', isAdmin, 'role:', profile.role)
-
-  if (!isAdmin) {
+  if (!roleIsAdmin && !metadataIsAdmin) {
     redirect("/dashboard")
   }
 

@@ -1,17 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Outfit } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { SiteSettingsProvider } from '@/lib/site-settings'
 import './globals.css'
 
-const outfit = Outfit({ 
-  subsets: ["latin"],
-  variable: '--font-outfit',
-  weight: ['400', '500', '600', '700', '800']
-})
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://verifydummytickets.com'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
     template: '%s | VerifyDummyTickets'
@@ -88,7 +84,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} antialiased`}>
+      <body className="antialiased">
         <SiteSettingsProvider>
           {children}
         </SiteSettingsProvider>
