@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MessageCircle, MapPin, Clock, Send, CheckCircle } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
+
+import { toast } from "sonner"
 import { useSiteSettings } from "@/lib/site-settings"
 
 export default function ContactPage() {
@@ -28,19 +29,27 @@ export default function ContactPage() {
     setIsSubmitting(true)
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from("contact_messages").insert({
-        name: formData.name,
-        email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       })
 
-      if (error) throw error
+      const result = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast.error("Too many requests. Please wait a moment and try again.")
+        } else {
+          toast.error(result.error || "Failed to send message. Please try again.")
+        }
+        return
+      }
+
       setIsSubmitted(true)
     } catch (error) {
       console.error("Contact form error:", error)
-      alert("Failed to send message. Please try again.")
+      toast.error("Failed to send message. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

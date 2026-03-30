@@ -55,7 +55,12 @@ export default function LoginPage() {
           .eq('id', data.user.id)
           .single()
 
-        const isAdmin = isAdminUser(profile?.role, data.user)
+        const normalizedRole = typeof profile?.role === 'string'
+          ? profile.role.replace(/"/g, '').trim().toLowerCase()
+          : ''
+
+        const metadataIsAdmin = data.user.user_metadata?.is_admin === true
+        const isAdmin = normalizedRole === 'admin' || metadataIsAdmin
 
         toast.success("Welcome back!")
         router.push(isAdmin ? "/admin" : "/dashboard")
