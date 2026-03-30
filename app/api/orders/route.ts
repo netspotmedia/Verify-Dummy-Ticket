@@ -4,14 +4,8 @@ import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import { getCaptchaSecret } from "@/lib/captcha"
-import { calculatePriceBreakdown, type DeliverySpeed, type ServiceType } from "@/lib/types"
 
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
-
-function amountsMatch(expected: number, provided: number, currency: string): boolean {
-  const tolerance = currency === "NGN" ? 1 : 0.01
-  return Math.abs(expected - provided) <= tolerance
-}
 
 function verifyCaptchaToken(token: string, secret: string): boolean {
   if (!token) return false

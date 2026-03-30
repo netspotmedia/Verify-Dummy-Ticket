@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -43,8 +42,6 @@ export function SupportTicketList({ tickets, onTicketCreated }: SupportTicketLis
   const [orderId, setOrderId] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const supabase = createClient()
-
   const handleCreateTicket = async () => {
     if (!subject.trim() || !message.trim()) {
       toast.error("Please fill in all fields")
@@ -53,35 +50,17 @@ export function SupportTicketList({ tickets, onTicketCreated }: SupportTicketLis
 
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-
-      const { error } = await supabase.from("support_tickets").insert({
-        subject,
-        priority,
-        order_id: orderId || null,
-        user_id: user?.id || null,
-        status: "open",
+      const response = await fetch("/api/support/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, message, priority, orderId }),
       })
 
-      if (error) throw error
+      const result = await response.json()
 
-      // Create initial message
-      const { data: ticket } = await supabase
-        .from("support_tickets")
-        .select("id")
-        .eq("subject", subject)
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single()
-
-      if (ticket) {
-        await supabase.from("ticket_messages").insert({
-          ticket_id: ticket.id,
-          user_id: user?.id || null,
-          message,
-          is_admin_message: false,
-        })
+      if (!response.ok) {
+        toast.error(result.error || "Failed to create ticket")
+        return
       }
 
       toast.success("Ticket created successfully")
