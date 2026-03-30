@@ -72,14 +72,18 @@ export function TicketChat({ ticket, initialMessages, currentUserId }: TicketCha
 
     setSending(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-
-      await supabase.from("ticket_messages").insert({
-        ticket_id: ticket.id,
-        user_id: user?.id || null,
-        message: newMessage,
-        is_admin_message: false,
+      const response = await fetch("/api/support/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: ticket.id, message: newMessage }),
       })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || "Failed to send message")
+        return
+      }
 
       setNewMessage("")
       toast.success("Message sent")
@@ -94,10 +98,18 @@ export function TicketChat({ ticket, initialMessages, currentUserId }: TicketCha
   const handleCloseTicket = async () => {
     setLoading(true)
     try {
-      await supabase
-        .from("support_tickets")
-        .update({ status: "closed", closed_at: new Date().toISOString() })
-        .eq("id", ticket.id)
+      const response = await fetch(`/api/support/tickets/${ticket.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: ticket.id, action: "close" }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || "Failed to close ticket")
+        return
+      }
 
       toast.success("Ticket closed")
     } catch (error) {

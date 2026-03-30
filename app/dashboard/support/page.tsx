@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -43,8 +42,6 @@ export default function SupportPage() {
   const [replyMessage, setReplyMessage] = useState("")
   const [sending, setSending] = useState(false)
 
-  const supabase = createClient()
-
   useEffect(() => {
     fetchTickets()
   }, [])
@@ -57,16 +54,14 @@ export default function SupportPage() {
 
   const fetchTickets = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data, error } = await supabase
-        .from("support_tickets")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
+      const response = await fetch("/api/support/tickets")
+      if (!response.ok) {
+        if (response.status === 401) {
+          return
+        }
+        throw new Error("Failed to fetch tickets")
+      }
+      const data = await response.json()
       setTickets(data || [])
     } catch (error) {
       console.error("Failed to fetch tickets:", error)
@@ -77,13 +72,11 @@ export default function SupportPage() {
 
   const fetchTicketMessages = async (ticketId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("ticket_messages")
-        .select("*")
-        .eq("ticket_id", ticketId)
-        .order("created_at", { ascending: true })
-
-      if (error) throw error
+      const response = await fetch(`/api/support/messages?ticketId=${ticketId}`)
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages")
+      }
+      const data = await response.json()
       setTicketMessages(data || [])
     } catch (error) {
       console.error("Failed to fetch messages:", error)
@@ -98,29 +91,18 @@ export default function SupportPage() {
 
     setCreating(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data: ticket, error: ticketError } = await supabase
-        .from("support_tickets")
-        .insert({
-          subject,
-          priority,
-          order_id: orderId || null,
-          user_id: user.id,
-          status: "open",
-        })
-        .select()
-        .single()
-
-      if (ticketError) throw ticketError
-
-      await supabase.from("ticket_messages").insert({
-        ticket_id: ticket.id,
-        user_id: user.id,
-        message,
-        is_admin_message: false,
+      const response = await fetch("/api/support/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, message, priority, orderId }),
       })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || "Failed to create ticket")
+        return
+      }
 
       toast.success("Ticket created successfully")
       setIsOpen(false)
@@ -142,15 +124,18 @@ export default function SupportPage() {
 
     setSending(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      await supabase.from("ticket_messages").insert({
-        ticket_id: selectedTicket.id,
-        user_id: user.id,
-        message: replyMessage,
-        is_admin_message: false,
+      const response = await fetch("/api/support/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: selectedTicket.id, message: replyMessage }),
       })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || "Failed to send reply")
+        return
+      }
 
       setReplyMessage("")
       fetchTicketMessages(selectedTicket.id)
