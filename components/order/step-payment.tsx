@@ -133,7 +133,7 @@ export function StepPayment() {
   }
 
   const handleSubmitOrder = async () => {
-    if (!captchaVerified) {
+    if (!captchaVerified || !captchaToken) {
       toast.error("Please complete verification")
       return
     }
@@ -144,42 +144,35 @@ export function StepPayment() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
-      let userId = user?.id
-      let isNewUser = !userId
+      const isNewUser = !user?.id
       const customerName = email.split("@")[0]
 
-      if (!userId) {
-        const existingUser = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', email.toLowerCase())
-          .single()
-        
-        if (existingUser.data) {
-          userId = existingUser.data.id
-          isNewUser = false
-        }
-      }
-
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: userId,
+      // Submit order through API with captcha verification
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          captchaToken,
           email: email.toLowerCase(),
-          status: "pending",
-          payment_status: "unpaid",
-          payment_method: paymentMethod,
+          services,
+          travelers: formData.travelers,
+          flightDetails,
+          hotelDetails,
+          insuranceDetails,
           currency: pricing.currency,
-          total_amount: pricing.total,
-          services: services,
-          customer_country: formData.customerCountry || null,
-          customer_country_code: formData.customerCountryCode || null,
-          delivery_method: deliverySpeed || "normal",
-        })
-        .select()
-        .single()
+          totalAmount: pricing.total,
+          paymentMethod,
+          customerCountry: formData.customerCountry,
+          customerCountryCode: formData.customerCountryCode,
+          deliveryMethod: deliverySpeed,
+        }),
+      })
 
-      if (orderError) throw orderError
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create order")
+      }
 
       try {
         await fetch('/api/email', {
@@ -187,13 +180,13 @@ export function StepPayment() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             to: email,
-            subject: `Order Confirmed - ${order.id.slice(0, 8).toUpperCase()}`,
+            subject: `Order Confirmed - ${result.orderId?.slice(0, 8).toUpperCase() || 'NEW'}`,
             type: 'order_placed',
             data: { 
               name: customerName, 
-              orderId: order.id, 
+              orderId: result.orderId, 
               services: formData.services,
-              isNewUser: isNewUser
+              isNewUser
             }
           })
         })
@@ -209,10 +202,10 @@ export function StepPayment() {
         toast.success("Order created successfully!")
       }
       
-      router.push(`/order/confirmation?id=${order.id}`)
+      router.push(`/order/confirmation?id=${result.orderId}`)
     } catch (error) {
       console.error("Order error:", error)
-      toast.error("Failed to create order. Please try again.")
+      toast.error(error instanceof Error ? error.message : "Failed to create order. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
