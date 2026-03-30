@@ -16,12 +16,7 @@ export default async function DashboardPage() {
   // Get user's orders
   const { data: orders } = await supabase
     .from("orders")
-    .select(`
-      *,
-      order_services (
-        service_type
-      )
-    `)
+    .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5)
@@ -135,16 +130,14 @@ export default async function DashboardPage() {
                         Order #{order.id.slice(0, 8).toUpperCase()}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {order.order_services?.map((s: { service_type: string }) => 
-                          s.service_type.charAt(0).toUpperCase() + s.service_type.slice(1)
-                        ).join(", ")}
+                        {(order.services || []).map((service: string) => service.charAt(0).toUpperCase() + service.slice(1)).join(", ")}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="font-medium">
-                        {formatCurrency(order.total, order.currency)}
+                        {formatCurrency(order.total_amount || 0, order.currency)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(order.created_at).toLocaleDateString()}

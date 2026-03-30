@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { isAdminUser } from "@/lib/admin-role"
 
 export default async function AdminLayout({
   children,
@@ -16,23 +17,13 @@ export default async function AdminLayout({
     redirect("/auth/login")
   }
 
-  // Check if user is admin from database profiles table
-  const { data: profile, error } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single()
 
-  console.log('[ADMIN LAYOUT] Profile check:', { profile, error, userId: user.id })
-
-  // If profile doesn't exist or query failed, treat as non-admin
-  if (error || !profile) {
-    console.log('[ADMIN LAYOUT] Profile not found - redirecting')
-    redirect("/dashboard")
-  }
-
-  const isAdmin = profile.role === "admin"
-  console.log('[ADMIN LAYOUT] isAdmin:', isAdmin, 'role:', profile.role)
+  const isAdmin = isAdminUser(profile?.role, user)
 
   if (!isAdmin) {
     redirect("/dashboard")

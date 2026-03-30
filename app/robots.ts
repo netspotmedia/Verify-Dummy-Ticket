@@ -1,17 +1,18 @@
 import { MetadataRoute } from "next"
-import { createClient } from "@/lib/supabase/server"
+import { supabase } from "@/lib/supabase"
 
 async function getSiteUrl(): Promise<string> {
   try {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "site_url")
-      .single()
-    
-    if (data?.value) {
-      return data.value.replace(/"/g, "")
+    if (supabase) {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "site_url")
+        .single()
+
+      if (data?.value) {
+        return String(data.value).replace(/"/g, "")
+      }
     }
   } catch (error) {
     console.error("Failed to fetch site URL:", error)
@@ -21,7 +22,7 @@ async function getSiteUrl(): Promise<string> {
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const baseUrl = await getSiteUrl()
-  
+
   return {
     rules: {
       userAgent: "*",

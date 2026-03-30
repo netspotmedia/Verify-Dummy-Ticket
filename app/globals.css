@@ -43,6 +43,7 @@
   --success-foreground: oklch(0.99 0 0);
   --warning: oklch(0.75 0.14 80);
   --warning-foreground: oklch(0.20 0.03 80);
+  --font-outfit: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .dark {
