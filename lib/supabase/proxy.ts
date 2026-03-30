@@ -1,6 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function normalizeRole(role: unknown): string {
+  if (typeof role !== 'string') return ''
+  return role.replace(/"/g, '').trim().toLowerCase()
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -58,34 +63,21 @@ export async function updateSession(request: NextRequest) {
 
   // Admin routes require admin role - check DATABASE for authoritative status
   if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    console.log('[MIDDLEWARE] Checking admin access for user:', user.id)
-    
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
-    
-    console.log('[MIDDLEWARE] Profile query result:', { profile, error })
-    
-    // If profile doesn't exist or query failed, treat as non-admin
-    if (error || !profile) {
-      console.log('[MIDDLEWARE] Profile not found or error - redirecting to dashboard')
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
-    
-    const isAdmin = profile.role === 'admin'
-    console.log('[MIDDLEWARE] isAdmin:', isAdmin, 'role:', profile.role)
-    
+
+    const roleIsAdmin = normalizeRole(profile?.role) === 'admin'
+    const metadataIsAdmin = user.user_metadata?.is_admin === true
+    const isAdmin = roleIsAdmin || metadataIsAdmin
+
     if (!isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
-    
-    console.log('[MIDDLEWARE] Admin access granted')
   }
 
   // Redirect logged-in users away from auth pages - check DATABASE
@@ -95,8 +87,10 @@ export async function updateSession(request: NextRequest) {
       .select('role')
       .eq('id', user.id)
       .single()
-    
-    const isAdmin = profile?.role === 'admin'
+
+    const roleIsAdmin = normalizeRole(profile?.role) === 'admin'
+    const metadataIsAdmin = user.user_metadata?.is_admin === true
+    const isAdmin = roleIsAdmin || metadataIsAdmin
     const url = request.nextUrl.clone()
     url.pathname = isAdmin ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
