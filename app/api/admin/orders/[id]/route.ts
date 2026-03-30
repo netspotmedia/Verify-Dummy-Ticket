@@ -1,24 +1,19 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdmin } from "@/lib/auth-helpers"
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { user, error } = await requireAdmin()
+    
+    if (error || !user) {
+      return NextResponse.json({ error: error || "Unauthorized" }, { status: error === "Forbidden" ? 403 : 401 })
+    }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const isAdmin = user.user_metadata?.is_admin === true
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
     const { id } = await params
     const body = await request.json()
     const { status, paymentStatus, adminNotes } = body
@@ -28,15 +23,15 @@ export async function PATCH(
     if (paymentStatus) updateData.payment_status = paymentStatus
     if (adminNotes !== undefined) updateData.admin_notes = adminNotes
 
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from("orders")
       .update(updateData)
       .eq("id", id)
       .select()
       .single()
 
-    if (error) {
-      console.error("Order update error:", error)
+    if (dbError) {
+      console.error("Order update error:", dbError)
       return NextResponse.json({ error: "Failed to update order" }, { status: 500 })
     }
 
