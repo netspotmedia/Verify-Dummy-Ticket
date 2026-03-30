@@ -37,6 +37,8 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: If you remove getUser() and you use server-side rendering
   // with the Supabase client, your users may be randomly logged out.
+  // Refresh session first to get updated user_metadata
+  await supabase.auth.getSession()
   const {
     data: { user },
   } = await supabase.auth.getUser()
