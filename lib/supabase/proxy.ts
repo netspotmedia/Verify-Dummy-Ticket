@@ -58,18 +58,34 @@ export async function updateSession(request: NextRequest) {
 
   // Admin routes require admin role - check DATABASE for authoritative status
   if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const { data: profile } = await supabase
+    console.log('[MIDDLEWARE] Checking admin access for user:', user.id)
+    
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
     
-    const isAdmin = profile?.role === 'admin'
+    console.log('[MIDDLEWARE] Profile query result:', { profile, error })
+    
+    // If profile doesn't exist or query failed, treat as non-admin
+    if (error || !profile) {
+      console.log('[MIDDLEWARE] Profile not found or error - redirecting to dashboard')
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+    
+    const isAdmin = profile.role === 'admin'
+    console.log('[MIDDLEWARE] isAdmin:', isAdmin, 'role:', profile.role)
+    
     if (!isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
+    
+    console.log('[MIDDLEWARE] Admin access granted')
   }
 
   // Redirect logged-in users away from auth pages - check DATABASE

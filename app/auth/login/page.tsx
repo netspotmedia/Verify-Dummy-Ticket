@@ -39,13 +39,24 @@ export default function LoginPage() {
 
       if (data.user) {
         // Check if user is admin from database (authoritative source)
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single()
         
-        const isAdmin = profile?.role === 'admin'
+        console.log('[LOGIN] Profile check:', { profile, error })
+        
+        // If profile doesn't exist or query failed, treat as non-admin
+        if (error || !profile) {
+          console.log('[LOGIN] Profile not found - redirecting to dashboard')
+          router.push('/dashboard')
+          router.refresh()
+          return
+        }
+        
+        const isAdmin = profile.role === 'admin'
+        console.log('[LOGIN] isAdmin:', isAdmin)
         toast.success("Welcome back!")
         router.push(isAdmin ? "/admin" : "/dashboard")
         router.refresh()

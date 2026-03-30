@@ -17,13 +17,23 @@ export default async function AdminLayout({
   }
 
   // Check if user is admin from database profiles table
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single()
 
-  const isAdmin = profile?.role === "admin"
+  console.log('[ADMIN LAYOUT] Profile check:', { profile, error, userId: user.id })
+
+  // If profile doesn't exist or query failed, treat as non-admin
+  if (error || !profile) {
+    console.log('[ADMIN LAYOUT] Profile not found - redirecting')
+    redirect("/dashboard")
+  }
+
+  const isAdmin = profile.role === "admin"
+  console.log('[ADMIN LAYOUT] isAdmin:', isAdmin, 'role:', profile.role)
+
   if (!isAdmin) {
     redirect("/dashboard")
   }
