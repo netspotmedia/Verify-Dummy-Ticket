@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isAdminUser } from '@/lib/admin-role'
 
 function normalizeRole(role: unknown): string {
   if (typeof role !== 'string') return ''
