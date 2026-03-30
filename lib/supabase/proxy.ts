@@ -56,9 +56,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Admin routes require admin role
+  // Admin routes require admin role - check DATABASE for authoritative status
   if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const isAdmin = user.user_metadata?.is_admin === true
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    const isAdmin = profile?.role === 'admin'
     if (!isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
@@ -66,9 +72,15 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages - check DATABASE
   if (user && request.nextUrl.pathname.startsWith('/auth')) {
-    const isAdmin = user.user_metadata?.is_admin === true
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    const isAdmin = profile?.role === 'admin'
     const url = request.nextUrl.clone()
     url.pathname = isAdmin ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
