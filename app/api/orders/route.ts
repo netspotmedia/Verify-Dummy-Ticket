@@ -3,8 +3,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
+import { getCaptchaSecret } from "@/lib/captcha"
 
-const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "default-captcha-secret-change-me"
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
 function verifyCaptchaToken(token: string): boolean {
@@ -15,8 +15,12 @@ function verifyCaptchaToken(token: string): boolean {
     if (parts.length !== 2) return false
     
     const [payloadBase64, signature] = parts
+
+    const secret = getCaptchaSecret()
+    if (!secret) return false
+
     const expectedSignature = crypto
-      .createHmac("sha256", CAPTCHA_SECRET)
+      .createHmac("sha256", secret)
       .update(payloadBase64)
       .digest("base64url")
     

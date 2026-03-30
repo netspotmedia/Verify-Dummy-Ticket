@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
+import { getCaptchaSecret } from "@/lib/captcha"
 
-const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "default-captcha-secret-change-me"
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
 interface CaptchaToken {
@@ -19,9 +19,14 @@ function generateCaptcha(): { token: string; question: string } {
     timestamp: Date.now()
   }
   
+  const secret = getCaptchaSecret()
+  if (!secret) {
+    throw new Error("CAPTCHA configuration is missing")
+  }
+
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url")
   const signature = crypto
-    .createHmac("sha256", CAPTCHA_SECRET)
+    .createHmac("sha256", secret)
     .update(payloadBase64)
     .digest("base64url")
   
@@ -44,8 +49,13 @@ function verifyCaptcha(token: string): { valid: boolean; error?: string } {
     
     const [payloadBase64, signature] = parts
     
+    const secret = getCaptchaSecret()
+    if (!secret) {
+      return { valid: false, error: "CAPTCHA configuration is missing" }
+    }
+
     const expectedSignature = crypto
-      .createHmac("sha256", CAPTCHA_SECRET)
+      .createHmac("sha256", secret)
       .update(payloadBase64)
       .digest("base64url")
     
@@ -86,9 +96,12 @@ function verifyAnswer(token: string, userAnswer: number): { valid: boolean; erro
 }
 
 export async function GET() {
-  const { token, question } = generateCaptcha()
-  
-  return NextResponse.json({ token, question })
+  try {
+    const { token, question } = generateCaptcha()
+    return NextResponse.json({ token, question })
+  } catch {
+    return NextResponse.json({ valid: false, error: "CAPTCHA is not configured" }, { status: 500 })
+  }
 }
 
 export async function POST(request: NextRequest) {

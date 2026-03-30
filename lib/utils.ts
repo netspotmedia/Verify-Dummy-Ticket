@@ -86,14 +86,14 @@ function sanitizeAttributeValue(name: string, value: string): string | null {
   return null
 }
 
-function sanitizeAttribute(name: string, value: string): string {
-  const allowed = ALLOWED_ATTRS[name.toLowerCase()]
-  if (!allowed) return ''
-  
-  const sanitized = sanitizeAttributeValue(name, value)
+function sanitizeAttribute(tagName: string, attrName: string, value: string): string {
+  const allowedForTag = ALLOWED_ATTRS[tagName.toLowerCase()]
+  if (!allowedForTag || !allowedForTag.has(attrName.toLowerCase())) return ''
+
+  const sanitized = sanitizeAttributeValue(attrName, value)
   if (sanitized === null) return ''
-  
-  return `${name}="${sanitized.replace(/"/g, '&quot;')}"`
+
+  return `${attrName}="${sanitized.replace(/"/g, '&quot;')}"`
 }
 
 function parseAndSanitize(html: string): string {
@@ -134,7 +134,7 @@ function parseAndSanitize(html: string): string {
     while ((attrMatch = attrRegex.exec(attrString)) !== null) {
       const [, attrName, dblQuoted, sglQuoted, unquoted] = attrMatch
       const value = dblQuoted ?? sglQuoted ?? unquoted ?? ''
-      const sanitized = sanitizeAttribute(attrName, value)
+      const sanitized = sanitizeAttribute(tagLower, attrName, value)
       if (sanitized) {
         attrParts.push(sanitized)
       }
