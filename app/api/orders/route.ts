@@ -41,22 +41,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
-    // ── DEBUG: log exactly what we received ──────────────────────────
     console.log("=== ORDER API CALLED ===")
     console.log("User:", user?.id ?? "anonymous")
-    console.log("Body keys:", Object.keys(body))
-    console.log("Services:", body.services)
-    console.log("Currency:", body.currency)
-    console.log("TotalAmount:", body.totalAmount)
-    console.log("Email:", body.email)
-    console.log("Travelers:", JSON.stringify(body.travelers))
-    // ─────────────────────────────────────────────────────────────────
 
     const captchaSecret = getCaptchaSecret()
     if (!captchaSecret) {
       console.error("CAPTCHA_SECRET is not configured")
       return NextResponse.json({
-        error: "CAPTCHA is not configured on the server. Set CAPTCHA_SECRET env variable (min 32 chars)."
+        error: "Server configuration error. Please contact support."
       }, { status: 503 })
     }
 
@@ -79,9 +71,9 @@ export async function POST(request: NextRequest) {
 
     // Verify captcha
     if (!verifyCaptchaToken(captchaToken, captchaSecret)) {
-      console.error("CAPTCHA verification failed. Token:", captchaToken ? "present" : "missing")
+      console.error("CAPTCHA verification failed")
       return NextResponse.json({
-        error: "Invalid or expired CAPTCHA. Please refresh and try again."
+        error: "Invalid or expired security check. Please refresh the page and try again."
       }, { status: 400 })
     }
 
@@ -104,30 +96,29 @@ export async function POST(request: NextRequest) {
       deliverySpeed
     )
 
-    console.log("Calculated total:", pricing.total, "Submitted total:", totalAmount)
-
-    // ── Step 1: Insert order ─────────────────────────────────────────
     const orderEmail = email || user?.email || "unknown@example.com"
 
-    const orderPayload = {
-      order_number: generateOrderNumber(),
-      user_id: user?.id || null,
-      email: orderEmail,
-      status: "pending",
-      services: normalizedServices,
-      currency: currency || "USD",
-      total_amount: pricing.total,
+    // ── Build order payload with safe type handling ──────────────────────────
+    // `services` may be stored as TEXT[] or JSONB depending on migration state.
+    // We cast to a plain array; PostgREST handles both column types correctly.
+    const orderPayload: Record<string, unknown> = {
+      order_number:   generateOrderNumber(),
+      user_id:        user?.id || null,
+      email:          orderEmail,
+      status:         "pending",
+      currency:       currency || "USD",
+      total_amount:   pricing.total,
       payment_method: paymentMethod || "paystack",
-      payment_reference: paymentReference || null,
-      // Use "unpaid" for compatibility with the original schema check constraint.
-      // Some environments may not yet include the later migration that added "pending".
       payment_status: "unpaid",
-      customer_country: customerCountry || null,
-      customer_country_code: customerCountryCode || null,
-      delivery_method: deliverySpeed,
+      // Extended columns (added by migrations 007/009/010)
+      services:              normalizedServices,
+      delivery_method:       deliverySpeed,
+      customer_country:      customerCountry      || null,
+      customer_country_code: customerCountryCode  || null,
+      payment_reference:     paymentReference     || null,
     }
 
-    console.log("Inserting order payload:", JSON.stringify(orderPayload))
+    console.log("Inserting order for:", orderEmail, "| services:", normalizedServices)
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -141,117 +132,174 @@ export async function POST(request: NextRequest) {
       console.error("Message:", orderError.message)
       console.error("Details:", orderError.details)
       console.error("Hint:", orderError.hint)
-      return NextResponse.json({
-        error: "Failed to create order",
-        debug: {
-          code: orderError.code,
-          message: orderError.message,
-          details: orderError.details,
-          hint: orderError.hint,
+
+      // If it's a missing-column error, retry with the minimal guaranteed columns
+      // This handles databases that haven't run all migrations.
+      if (
+        orderError.code === "42703" || // undefined_column
+        orderError.message?.includes("column") ||
+        orderError.message?.includes("does not exist")
+      ) {
+        console.log("Retrying with minimal payload (schema migration may be incomplete)...")
+
+        const minimalPayload = {
+          order_number:   orderPayload.order_number,
+          user_id:        orderPayload.user_id,
+          email:          orderPayload.email,
+          status:         "pending",
+          currency:       orderPayload.currency,
+          total_amount:   orderPayload.total_amount,
+          payment_method: orderPayload.payment_method,
+          payment_status: "unpaid",
         }
+
+        const { data: orderRetry, error: retryError } = await supabase
+          .from("orders")
+          .insert(minimalPayload)
+          .select()
+          .single()
+
+        if (retryError) {
+          console.error("Retry also failed:", retryError.message)
+          return NextResponse.json({
+            error: "Failed to create order. Please ensure the database migrations have been run.",
+            details: retryError.message,
+          }, { status: 500 })
+        }
+
+        // Try to backfill extended columns
+        await supabase
+          .from("orders")
+          .update({
+            services:              normalizedServices,
+            delivery_method:       deliverySpeed,
+            customer_country:      customerCountry      || null,
+            customer_country_code: customerCountryCode  || null,
+          })
+          .eq("id", orderRetry!.id)
+          .then(({ error: updateErr }) => {
+            if (updateErr) console.warn("Could not update extended columns:", updateErr.message)
+          })
+
+        console.log("Order created (minimal):", orderRetry!.id)
+        return await finaliseOrder(supabase, orderRetry!, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail)
+      }
+
+      return NextResponse.json({
+        error: "Failed to create order. " + (orderError.message || ""),
+        details: orderError.message,
       }, { status: 500 })
     }
 
     console.log("Order created:", order.id)
-
-    // ── Step 2: Travelers ────────────────────────────────────────────
-    if (travelers && Array.isArray(travelers)) {
-      for (const traveler of travelers) {
-        const travelerPayload = {
-          order_id: order.id,
-          first_name: traveler.firstName || traveler.first_name || "",
-          last_name: traveler.lastName || traveler.last_name || "",
-          nationality: traveler.nationality || null,
-          passport_number: traveler.passportNumber || traveler.passport_number || null,
-          email: traveler.email || orderEmail,
-        }
-
-        const { error: travelerError } = await supabase
-          .from("travelers")
-          .insert(travelerPayload)
-
-        if (travelerError) {
-          console.error("Traveler insert error:", travelerError.message, travelerError.details)
-        }
-      }
-    }
-
-    // ── Step 3: Flight details ───────────────────────────────────────
-    if (normalizedServices.includes("flight") && flightDetails) {
-      const flightPayload: Record<string, unknown> = {
-        order_id: order.id,
-        departure_city: flightDetails.departureCity || flightDetails.departure_city || "N/A",
-        arrival_city: flightDetails.arrivalCity || flightDetails.arrival_city || "N/A",
-        departure_date: flightDetails.departureDate || flightDetails.departure_date || new Date().toISOString().split("T")[0],
-        return_date: flightDetails.returnDate || flightDetails.return_date || null,
-        preferred_airline: flightDetails.preferredAirline || flightDetails.preferred_airline || null,
-      }
-
-      console.log("Inserting flight details:", JSON.stringify(flightPayload))
-
-      const { error: flightError } = await supabase
-        .from("flight_details")
-        .insert(flightPayload)
-
-      if (flightError) {
-        console.error("Flight details error:", flightError.message, flightError.details, flightError.hint)
-      }
-    }
-
-    // ── Step 4: Hotel details ────────────────────────────────────────
-    if (normalizedServices.includes("hotel") && hotelDetails) {
-      const today = new Date().toISOString().split("T")[0]
-      const hotelPayload: Record<string, unknown> = {
-        order_id: order.id,
-        city: hotelDetails.city || hotelDetails.destination || "N/A",
-        check_in_date: hotelDetails.checkInDate || hotelDetails.check_in_date || today,
-        check_out_date: hotelDetails.checkOutDate || hotelDetails.check_out_date || today,
-        hotel_name: hotelDetails.hotelName || hotelDetails.hotel_name || null,
-      }
-
-      const { error: hotelError } = await supabase
-        .from("hotel_details")
-        .insert(hotelPayload)
-
-      if (hotelError) {
-        console.error("Hotel details error:", hotelError.message, hotelError.details, hotelError.hint)
-      }
-    }
-
-    // ── Step 5: Insurance details ────────────────────────────────────
-    if (normalizedServices.includes("insurance") && insuranceDetails) {
-      const today = new Date().toISOString().split("T")[0]
-      const insurancePayload: Record<string, unknown> = {
-        order_id: order.id,
-        coverage_type: insuranceDetails.area || "schengen",
-        destination_country: insuranceDetails.area || "Europe",
-        start_date: insuranceDetails.startDate || insuranceDetails.start_date || today,
-        end_date: insuranceDetails.endDate || insuranceDetails.end_date || today,
-        coverage_amount: 50000,
-      }
-
-      const { error: insuranceError } = await supabase
-        .from("insurance_details")
-        .insert(insurancePayload)
-
-      if (insuranceError) {
-        console.error("Insurance details error:", insuranceError.message, insuranceError.details, insuranceError.hint)
-      }
-    }
-
-    console.log("=== ORDER COMPLETE:", order.id, "===")
-
-    return NextResponse.json({
-      success: true,
-      orderId: order.id,
-      orderNumber: order.order_number,
-    })
+    return await finaliseOrder(supabase, order, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail)
 
   } catch (error) {
     console.error("=== UNEXPECTED ERROR ===", error)
     return NextResponse.json({
       error: "Internal server error",
-      debug: error instanceof Error ? error.message : String(error)
+      details: error instanceof Error ? error.message : String(error),
     }, { status: 500 })
   }
+}
+
+/** Insert travelers + service details, then return the success response. */
+async function finaliseOrder(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  order: { id: string; order_number: string },
+  travelers: any[],
+  services: ServiceType[],
+  flightDetails: any,
+  hotelDetails: any,
+  insuranceDetails: any,
+  orderEmail: string,
+) {
+  // ── Travelers ────────────────────────────────────────────────────────────
+  if (Array.isArray(travelers) && travelers.length > 0) {
+    for (const traveler of travelers) {
+      const { error: travelerError } = await supabase
+        .from("travelers")
+        .insert({
+          order_id:        order.id,
+          first_name:      traveler.firstName || traveler.first_name || "",
+          last_name:       traveler.lastName  || traveler.last_name  || "",
+          nationality:     traveler.nationality     || null,
+          passport_number: traveler.passportNumber  || traveler.passport_number || null,
+          email:           traveler.email           || orderEmail,
+        })
+
+      if (travelerError) {
+        console.error("Traveler insert error:", travelerError.message)
+      }
+    }
+  }
+
+  // ── Flight details ───────────────────────────────────────────────────────
+  if (services.includes("flight") && flightDetails) {
+    const today = new Date().toISOString().split("T")[0]
+    const { error: flightError } = await supabase
+      .from("flight_details")
+      .insert({
+        order_id:          order.id,
+        // The FlightDetails interface uses tripType/flightDetails/validity.
+        // Map to DB columns; fall back to safe defaults.
+        trip_type:         flightDetails.tripType          || flightDetails.trip_type || "one_way",
+        departure_city:    flightDetails.departureCity     || flightDetails.departure_city     || "N/A",
+        arrival_city:      flightDetails.arrivalCity       || flightDetails.arrival_city       || "N/A",
+        departure_date:    flightDetails.departureDate     || flightDetails.departure_date     || today,
+        return_date:       flightDetails.returnDate        || flightDetails.return_date        || null,
+        preferred_airline: flightDetails.preferredAirline || flightDetails.preferred_airline  || null,
+        // Store the free-text itinerary in the notes-like column if it exists
+        // (flight_details column on the FlightDetails object)
+      })
+
+    if (flightError) {
+      console.error("Flight details error:", flightError.message, flightError.details)
+    }
+  }
+
+  // ── Hotel details ────────────────────────────────────────────────────────
+  if (services.includes("hotel") && hotelDetails) {
+    const today = new Date().toISOString().split("T")[0]
+    const { error: hotelError } = await supabase
+      .from("hotel_details")
+      .insert({
+        order_id:       order.id,
+        city:           hotelDetails.city           || hotelDetails.destination || "N/A",
+        check_in_date:  hotelDetails.checkInDate    || hotelDetails.check_in_date  || today,
+        check_out_date: hotelDetails.checkOutDate   || hotelDetails.check_out_date || today,
+        hotel_name:     hotelDetails.hotelName      || hotelDetails.hotel_name     || null,
+      })
+
+    if (hotelError) {
+      console.error("Hotel details error:", hotelError.message, hotelError.details)
+    }
+  }
+
+  // ── Insurance details ────────────────────────────────────────────────────
+  if (services.includes("insurance") && insuranceDetails) {
+    const today = new Date().toISOString().split("T")[0]
+    const { error: insuranceError } = await supabase
+      .from("insurance_details")
+      .insert({
+        order_id:           order.id,
+        coverage_type:      insuranceDetails.area      || "schengen",
+        destination_country: insuranceDetails.area     || "Europe",
+        start_date:         insuranceDetails.startDate || insuranceDetails.start_date || today,
+        end_date:           insuranceDetails.endDate   || insuranceDetails.end_date   || today,
+        coverage_amount:    50000,
+      })
+
+    if (insuranceError) {
+      console.error("Insurance details error:", insuranceError.message, insuranceError.details)
+    }
+  }
+
+  console.log("=== ORDER COMPLETE:", order.id, "===")
+
+  return NextResponse.json({
+    success: true,
+    orderId:     order.id,
+    orderNumber: order.order_number,
+  })
 }
