@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 import { requireAdmin } from "@/lib/auth-helpers"
 
 export async function PATCH(
@@ -7,9 +8,12 @@ export async function PATCH(
 ) {
   try {
     const { user, error } = await requireAdmin()
-    
+
     if (error || !user) {
-      return NextResponse.json({ error: error || "Unauthorized" }, { status: error === "Forbidden" ? 403 : 401 })
+      return NextResponse.json(
+        { error: error || "Unauthorized" },
+        { status: error === "Forbidden" ? 403 : 401 }
+      )
     }
 
     const supabase = await createClient()
@@ -17,7 +21,13 @@ export async function PATCH(
     const body = await request.json()
     const { status, paymentStatus, adminNotes } = body
 
-    const updateData: Record<string, unknown> = {}
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    }
+
+    if (status)        updateData.status         = status
+    if (paymentStatus) updateData.payment_status = paymentStatus
+    if (adminNotes !== undefined) updateData.admin_notes = adminNotes
 
     const { data, error: dbError } = await supabase
       .from("orders")
