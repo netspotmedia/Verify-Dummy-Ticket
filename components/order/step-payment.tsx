@@ -6,7 +6,7 @@ import { useOrderStore } from "@/lib/order-store"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2, Check, Info, RefreshCw, Shield } from "lucide-react"
+import { ArrowLeft, Loader2, RefreshCw, Shield } from "lucide-react"
 import { toast } from "sonner"
 import { calculatePriceBreakdown, getAllowedPaymentMethods } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -47,19 +47,16 @@ export function StepPayment() {
   useEffect(() => {
     const detectCountry = async () => {
       if (ipDetected) return
-      
       try {
         const res = await fetch("/api/geo")
         const data = await res.json()
         setIpCountry(data.country, data.countryCode, data.isNigeria)
         setIpDetected(true)
       } catch (err) {
-        console.error("Failed to detect location:", err)
         setIpCountry("Unknown", "US", false)
         setIpDetected(true)
       }
     }
-    
     detectCountry()
   }, [ipDetected, setIpCountry])
 
@@ -98,25 +95,15 @@ export function StepPayment() {
   }, [fetchCaptcha])
 
   const handleCaptcha = async () => {
-    if (!captchaToken) {
-      fetchCaptcha()
-      return
-    }
-
+    if (!captchaToken) { fetchCaptcha(); return }
     setIsVerifying(true)
-    
     try {
       const res = await fetch("/api/captcha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: captchaToken,
-          answer: parseInt(captchaInput)
-        })
+        body: JSON.stringify({ token: captchaToken, answer: parseInt(captchaInput) })
       })
-      
       const result = await res.json()
-      
       if (result.valid) {
         setCaptchaVerified(true)
         toast.success("Verification complete")
@@ -128,7 +115,6 @@ export function StepPayment() {
       toast.error("Verification failed. Please try again.")
       fetchCaptcha()
     }
-    
     setIsVerifying(false)
   }
 
@@ -141,14 +127,8 @@ export function StepPayment() {
     setIsSubmitting(true)
 
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      const isNewUser = !user?.id
-      const customerName = email.split("@")[0]
-
-      // Submit order through API with captcha verification
-      const response = await fetch("/api/orders", {
+      // Step 1: Create the order record
+      const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -168,43 +148,86 @@ export function StepPayment() {
         }),
       })
 
-      const result = await response.json()
+      const orderResult = await orderResponse.json()
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to create order")
+      if (!orderResponse.ok) {
+        throw new Error(orderResult.error || "Failed to create order")
       }
 
+      const { orderId } = orderResult
+      const customerName = email.split("@")[0]
+
+      // Step 2: Send order confirmation email
       try {
-        await fetch('/api/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/api/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: email,
-            subject: `Order Confirmed - ${result.orderId?.slice(0, 8).toUpperCase() || 'NEW'}`,
-            type: 'order_placed',
-            data: { 
-              name: customerName, 
-              orderId: result.orderId, 
-              services: formData.services,
-              isNewUser
-            }
-          })
+            subject: `Order Received - ${orderId?.slice(0, 8).toUpperCase()}`,
+            type: "order_placed",
+            data: { name: customerName, orderId, services: formData.services },
+          }),
         })
       } catch (emailErr) {
-        console.error('Order confirmation email error:', emailErr)
+        console.error("Order confirmation email error:", emailErr)
       }
 
-      resetForm()
-      
-      if (isNewUser) {
-        toast.success("Order created! Check your email to set up your account.")
+      // Step 3: Initialize payment gateway
+      if (paymentMethod === "paystack") {
+        const payRes = await fetch("/api/payments/paystack/initialize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            amount: pricing.total,
+            email: email.toLowerCase(),
+            currency: pricing.currency,
+          }),
+        })
+
+        const payData = await payRes.json()
+
+        if (!payRes.ok || !payData.authorizationUrl) {
+          throw new Error(payData.error || "Failed to initialize PayStack payment")
+        }
+
+        // Reset form before redirect so it doesn't persist stale state
+        resetForm()
+        // Redirect to PayStack checkout
+        window.location.href = payData.authorizationUrl
+
+      } else if (paymentMethod === "paypal") {
+        const payRes = await fetch("/api/payments/paypal/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            amount: pricing.total,
+            currency: pricing.currency,
+            email: email.toLowerCase(),
+          }),
+        })
+
+        const payData = await payRes.json()
+
+        if (!payRes.ok || !payData.approvalUrl) {
+          throw new Error(payData.error || "Failed to initialize PayPal payment")
+        }
+
+        resetForm()
+        // Redirect to PayPal approval page
+        window.location.href = payData.approvalUrl
+
       } else {
+        // Fallback: no payment gateway configured — go straight to confirmation
+        resetForm()
         toast.success("Order created successfully!")
+        router.push(`/order/confirmation?id=${orderId}`)
       }
-      
-      router.push(`/order/confirmation?id=${result.orderId}`)
+
     } catch (error) {
-      console.error("Order error:", error)
+      console.error("Order/payment error:", error)
       toast.error(error instanceof Error ? error.message : "Failed to create order. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -213,10 +236,15 @@ export function StepPayment() {
 
   return (
     <div className="space-y-4 font-outfit">
+      {/* Security verification */}
       <section className="p-3 border rounded">
         <div className="flex items-center gap-2 mb-2">
           <div className={cn("flex h-7 w-7 items-center justify-center rounded text-white", captchaVerified ? "bg-green-600" : "bg-[#c8143d]")}>
-            {captchaVerified ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">!</span>}
+            {captchaVerified ? (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            ) : (
+              <span className="text-xs font-bold">!</span>
+            )}
           </div>
           <Label className="text-sm font-medium uppercase tracking-wider text-black">Security Verification</Label>
         </div>
@@ -236,6 +264,7 @@ export function StepPayment() {
                 type="number"
                 value={captchaInput}
                 onChange={(e) => setCaptchaInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && captchaInput && handleCaptcha()}
                 placeholder="?"
                 className="h-8 w-14 rounded-md border border-slate-200 px-2 text-center text-sm font-bold focus:border-[#c8143d] focus:outline-none"
               />
@@ -253,6 +282,7 @@ export function StepPayment() {
         )}
       </section>
 
+      {/* Payment method selection */}
       <section className="space-y-2">
         <div>
           <Label className="text-sm font-medium uppercase tracking-wider text-black">Payment Method</Label>
@@ -263,34 +293,18 @@ export function StepPayment() {
           {allowedMethods.map((method) => {
             const config = PAYMENT_METHODS_CONFIG[method]
             const isSelected = paymentMethod === method
-
             return (
               <label
                 key={method}
                 className={cn(
                   "flex items-center gap-3 p-2.5 rounded cursor-pointer border transition-all",
-                  isSelected
-                    ? "border-[#c8143d] bg-[#fff7f9]"
-                    : "border-slate-200 bg-white hover:border-slate-300"
+                  isSelected ? "border-[#c8143d] bg-[#fff7f9]" : "border-slate-200 bg-white hover:border-slate-300"
                 )}
               >
-                <div
-                  className={cn(
-                    "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
-                    isSelected
-                      ? "border-[#c8143d]"
-                      : "border-slate-300"
-                  )}
-                >
+                <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center shrink-0", isSelected ? "border-[#c8143d]" : "border-slate-300")}>
                   {isSelected && <div className="h-2 w-2 rounded-full bg-[#c8143d]" />}
                 </div>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  checked={isSelected}
-                  onChange={() => setPaymentMethod(method)}
-                  className="sr-only"
-                />
+                <input type="radio" name="paymentMethod" checked={isSelected} onChange={() => setPaymentMethod(method)} className="sr-only" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-slate-900">{config.name}</p>
                   <p className="text-sm text-slate-500">{config.description}</p>
@@ -301,11 +315,12 @@ export function StepPayment() {
         </div>
       </section>
 
+      {/* Order total */}
       <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
         <div>
           <p className="text-sm font-medium uppercase tracking-wider text-black">Total Amount</p>
           <p className="text-sm text-black mt-0.5">
-            {pricing.currency === "NGN" ? "Naira" : "USD"} • {PAYMENT_METHODS_CONFIG[paymentMethod].name}
+            {pricing.currency === "NGN" ? "Naira" : "USD"} &bull; {PAYMENT_METHODS_CONFIG[paymentMethod].name}
           </p>
         </div>
         <div className="text-right">
@@ -321,14 +336,17 @@ export function StepPayment() {
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={prevStep} disabled={isSubmitting} className="h-9 px-3 rounded-md text-xs">
-          <ArrowLeft className="mr-1 h-3 w-3" />
-          Back
+          <ArrowLeft className="mr-1 h-3 w-3" />Back
         </Button>
-        <Button onClick={handleSubmitOrder} disabled={!captchaVerified || isSubmitting} className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] font-medium text-xs">
+        <Button
+          onClick={handleSubmitOrder}
+          disabled={!captchaVerified || isSubmitting}
+          className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] font-medium text-xs"
+        >
           {isSubmitting ? (
             <><Loader2 className="mr-1 h-3 w-3 animate-spin" />Processing...</>
           ) : (
-            <>Pay {formatCurrency(pricing.total, pricing.currency)}</>
+            <>Pay {formatCurrency(pricing.total, pricing.currency)} via {PAYMENT_METHODS_CONFIG[paymentMethod].name}</>
           )}
         </Button>
       </div>
