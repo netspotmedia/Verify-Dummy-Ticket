@@ -11,34 +11,21 @@ const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
 function verifyCaptchaToken(token: string, secret: string): boolean {
   if (!token) return false
-
   try {
     const parts = token.split(".")
     if (parts.length !== 2) return false
-
     const [payloadBase64, signature] = parts
-
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(payloadBase64)
       .digest("base64url")
-
     if (signature !== expectedSignature) return false
-
     const payload = JSON.parse(Buffer.from(payloadBase64, "base64url").toString())
     if (Date.now() - payload.timestamp > CAPTCHA_EXPIRY) return false
-
     return true
   } catch {
     return false
   }
-}
-
-function amountsMatch(calculated: number, submitted: number, currency: string): boolean {
-  // Allow ±5% tolerance for floating point / rate differences
-  const tolerance = 0.05
-  const diff = Math.abs(calculated - submitted) / (calculated || 1)
-  return diff <= tolerance
 }
 
 export async function POST(request: NextRequest) {
@@ -47,9 +34,24 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     const body = await request.json()
+
+    // ── DEBUG: log exactly what we received ──────────────────────────
+    console.log("=== ORDER API CALLED ===")
+    console.log("User:", user?.id ?? "anonymous")
+    console.log("Body keys:", Object.keys(body))
+    console.log("Services:", body.services)
+    console.log("Currency:", body.currency)
+    console.log("TotalAmount:", body.totalAmount)
+    console.log("Email:", body.email)
+    console.log("Travelers:", JSON.stringify(body.travelers))
+    // ─────────────────────────────────────────────────────────────────
+
     const captchaSecret = getCaptchaSecret()
     if (!captchaSecret) {
-      return NextResponse.json({ error: "CAPTCHA is not configured" }, { status: 503 })
+      console.error("CAPTCHA_SECRET is not configured")
+      return NextResponse.json({
+        error: "CAPTCHA is not configured on the server. Set CAPTCHA_SECRET env variable (min 32 chars)."
+      }, { status: 503 })
     }
 
     const {
@@ -69,8 +71,12 @@ export async function POST(request: NextRequest) {
       email,
     } = body
 
+    // Verify captcha
     if (!verifyCaptchaToken(captchaToken, captchaSecret)) {
-      return NextResponse.json({ error: "Invalid or expired CAPTCHA" }, { status: 400 })
+      console.error("CAPTCHA verification failed. Token:", captchaToken ? "present" : "missing")
+      return NextResponse.json({
+        error: "Invalid or expired CAPTCHA. Please refresh and try again."
+      }, { status: 400 })
     }
 
     const travelerCount = Array.isArray(travelers) && travelers.length > 0 ? travelers.length : 1
@@ -78,7 +84,10 @@ export async function POST(request: NextRequest) {
     const normalizedServices = (Array.isArray(services) ? services : []) as ServiceType[]
     const isNigeria = currency === "NGN"
 
-    // Validate total amount
+    if (normalizedServices.length === 0) {
+      return NextResponse.json({ error: "No services selected." }, { status: 400 })
+    }
+
     const pricing = calculatePriceBreakdown(
       normalizedServices,
       travelerCount,
@@ -89,115 +98,151 @@ export async function POST(request: NextRequest) {
       deliverySpeed
     )
 
-    if (!amountsMatch(pricing.total, Number(totalAmount), currency)) {
-      console.warn("Amount mismatch", { calculated: pricing.total, submitted: totalAmount })
-      // Don't block — just log for now. Uncomment below to enforce strictly:
-      // return NextResponse.json({ error: "Invalid order total" }, { status: 400 })
+    console.log("Calculated total:", pricing.total, "Submitted total:", totalAmount)
+
+    // ── Step 1: Insert order ─────────────────────────────────────────
+    const orderEmail = email || user?.email || "unknown@example.com"
+
+    const orderPayload = {
+      user_id: user?.id || null,
+      email: orderEmail,
+      status: "pending",
+      services: normalizedServices,
+      currency: currency || "USD",
+      total_amount: pricing.total,
+      payment_method: paymentMethod || "paystack",
+      payment_reference: paymentReference || null,
+      payment_status: "pending",
+      customer_country: customerCountry || null,
+      customer_country_code: customerCountryCode || null,
+      delivery_method: deliverySpeed,
     }
 
-    // Create the order
-    const orderEmail = email || user?.email || "unknown@example.com"
+    console.log("Inserting order payload:", JSON.stringify(orderPayload))
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .insert({
-        user_id: user?.id || null,
-        email: orderEmail,
-        status: "pending",
-        services: normalizedServices,
-        currency,
-        total_amount: pricing.total,
-        payment_method: paymentMethod || "paystack",
-        payment_reference: paymentReference || null,
-        payment_status: "pending",
-        customer_country: customerCountry || null,
-        customer_country_code: customerCountryCode || null,
-        delivery_method: deliverySpeed,
-      })
+      .insert(orderPayload)
       .select()
       .single()
 
     if (orderError) {
-      console.error("Order creation error:", orderError)
-      return NextResponse.json({ error: "Failed to create order: " + orderError.message }, { status: 500 })
+      console.error("=== ORDER INSERT FAILED ===")
+      console.error("Code:", orderError.code)
+      console.error("Message:", orderError.message)
+      console.error("Details:", orderError.details)
+      console.error("Hint:", orderError.hint)
+      return NextResponse.json({
+        error: "Failed to create order",
+        debug: {
+          code: orderError.code,
+          message: orderError.message,
+          details: orderError.details,
+          hint: orderError.hint,
+        }
+      }, { status: 500 })
     }
 
-    // Create travelers
+    console.log("Order created:", order.id)
+
+    // ── Step 2: Travelers ────────────────────────────────────────────
     if (travelers && Array.isArray(travelers)) {
       for (const traveler of travelers) {
-        const { error: travelerError } = await supabase.from("travelers").insert({
+        const travelerPayload = {
           order_id: order.id,
-          first_name: traveler.firstName || traveler.first_name,
-          last_name: traveler.lastName || traveler.last_name,
+          first_name: traveler.firstName || traveler.first_name || "",
+          last_name: traveler.lastName || traveler.last_name || "",
           nationality: traveler.nationality || null,
           passport_number: traveler.passportNumber || traveler.passport_number || null,
           email: traveler.email || orderEmail,
-        })
+        }
+
+        const { error: travelerError } = await supabase
+          .from("travelers")
+          .insert(travelerPayload)
 
         if (travelerError) {
-          console.error("Traveler creation error:", travelerError)
+          console.error("Traveler insert error:", travelerError.message, travelerError.details)
         }
       }
     }
 
-    // Create flight details
+    // ── Step 3: Flight details ───────────────────────────────────────
     if (normalizedServices.includes("flight") && flightDetails) {
-      const { error: flightError } = await supabase.from("flight_details").insert({
+      const flightPayload: Record<string, unknown> = {
         order_id: order.id,
-        departure_city: flightDetails.departureCity || flightDetails.departure_city || "",
-        arrival_city: flightDetails.arrivalCity || flightDetails.arrival_city || "",
+        departure_city: flightDetails.departureCity || flightDetails.departure_city || "N/A",
+        arrival_city: flightDetails.arrivalCity || flightDetails.arrival_city || "N/A",
         departure_date: flightDetails.departureDate || flightDetails.departure_date || new Date().toISOString().split("T")[0],
         return_date: flightDetails.returnDate || flightDetails.return_date || null,
         preferred_airline: flightDetails.preferredAirline || flightDetails.preferred_airline || null,
-        // Store extra details in JSON if columns don't exist
-        ...(flightDetails.tripType ? { trip_type: flightDetails.tripType } : {}),
-        ...(flightDetails.flightDetails ? { notes: flightDetails.flightDetails } : {}),
-        ...(flightDetails.validity ? { validity: flightDetails.validity } : {}),
-      })
+      }
+
+      console.log("Inserting flight details:", JSON.stringify(flightPayload))
+
+      const { error: flightError } = await supabase
+        .from("flight_details")
+        .insert(flightPayload)
 
       if (flightError) {
-        console.error("Flight details error:", flightError)
+        console.error("Flight details error:", flightError.message, flightError.details, flightError.hint)
       }
     }
 
-    // Create hotel details
+    // ── Step 4: Hotel details ────────────────────────────────────────
     if (normalizedServices.includes("hotel") && hotelDetails) {
-      const { error: hotelError } = await supabase.from("hotel_details").insert({
+      const today = new Date().toISOString().split("T")[0]
+      const hotelPayload: Record<string, unknown> = {
         order_id: order.id,
-        city: hotelDetails.city || hotelDetails.destination || "",
-        check_in_date: hotelDetails.checkInDate || hotelDetails.check_in_date || new Date().toISOString().split("T")[0],
-        check_out_date: hotelDetails.checkOutDate || hotelDetails.check_out_date || new Date().toISOString().split("T")[0],
+        city: hotelDetails.city || hotelDetails.destination || "N/A",
+        check_in_date: hotelDetails.checkInDate || hotelDetails.check_in_date || today,
+        check_out_date: hotelDetails.checkOutDate || hotelDetails.check_out_date || today,
         hotel_name: hotelDetails.hotelName || hotelDetails.hotel_name || null,
-      })
+      }
+
+      const { error: hotelError } = await supabase
+        .from("hotel_details")
+        .insert(hotelPayload)
 
       if (hotelError) {
-        console.error("Hotel details error:", hotelError)
+        console.error("Hotel details error:", hotelError.message, hotelError.details, hotelError.hint)
       }
     }
 
-    // Create insurance details
+    // ── Step 5: Insurance details ────────────────────────────────────
     if (normalizedServices.includes("insurance") && insuranceDetails) {
-      const { error: insuranceError } = await supabase.from("insurance_details").insert({
+      const today = new Date().toISOString().split("T")[0]
+      const insurancePayload: Record<string, unknown> = {
         order_id: order.id,
-        coverage_type: insuranceDetails.area || insuranceDetails.coverageType || "schengen",
-        start_date: insuranceDetails.startDate || insuranceDetails.start_date || new Date().toISOString().split("T")[0],
-        end_date: insuranceDetails.endDate || insuranceDetails.end_date || new Date().toISOString().split("T")[0],
-        coverage_amount: insuranceDetails.coverageAmount || 50000,
+        coverage_type: insuranceDetails.area || "schengen",
         destination_country: insuranceDetails.area || "Europe",
-      })
+        start_date: insuranceDetails.startDate || insuranceDetails.start_date || today,
+        end_date: insuranceDetails.endDate || insuranceDetails.end_date || today,
+        coverage_amount: 50000,
+      }
+
+      const { error: insuranceError } = await supabase
+        .from("insurance_details")
+        .insert(insurancePayload)
 
       if (insuranceError) {
-        console.error("Insurance details error:", insuranceError)
+        console.error("Insurance details error:", insuranceError.message, insuranceError.details, insuranceError.hint)
       }
     }
+
+    console.log("=== ORDER COMPLETE:", order.id, "===")
 
     return NextResponse.json({
       success: true,
       orderId: order.id,
       orderNumber: order.order_number,
     })
+
   } catch (error) {
-    console.error("Order submission error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("=== UNEXPECTED ERROR ===", error)
+    return NextResponse.json({
+      error: "Internal server error",
+      debug: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
