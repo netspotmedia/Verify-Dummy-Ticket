@@ -112,7 +112,9 @@ export async function POST(request: NextRequest) {
       total_amount: pricing.total,
       payment_method: paymentMethod || "paystack",
       payment_reference: paymentReference || null,
-      payment_status: "pending",
+      // Use "unpaid" for compatibility with the original schema check constraint.
+      // Some environments may not yet include the later migration that added "pending".
+      payment_status: "unpaid",
       customer_country: customerCountry || null,
       customer_country_code: customerCountryCode || null,
       delivery_method: deliverySpeed,
