@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Plane, Loader2, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 import { useSiteSettings } from "@/lib/site-settings"
-import { isAdminUser } from "@/lib/admin-role"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -61,6 +60,8 @@ export default function LoginPage() {
 
         const metadataIsAdmin = data.user.user_metadata?.is_admin === true
         const isAdmin = normalizedRole === 'admin' || metadataIsAdmin
+
+        const destination = isAdmin ? '/admin' : '/dashboard'
 
         toast.success("Welcome back!")
         router.push(destination)
