@@ -9,6 +9,12 @@ import type { ServiceType, DeliverySpeed } from "@/lib/types"
 
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
+function generateOrderNumber(): string {
+  const timestamp = Date.now().toString().slice(-8)
+  const randomSuffix = crypto.randomInt(0, 100000).toString().padStart(5, "0")
+  return `VDT-${timestamp}-${randomSuffix}`
+}
+
 function verifyCaptchaToken(token: string, secret: string): boolean {
   if (!token) return false
   try {
@@ -104,6 +110,7 @@ export async function POST(request: NextRequest) {
     const orderEmail = email || user?.email || "unknown@example.com"
 
     const orderPayload = {
+      order_number: generateOrderNumber(),
       user_id: user?.id || null,
       email: orderEmail,
       status: "pending",
