@@ -66,11 +66,11 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
   const { settings } = useSiteSettings()
 
   const displayName = profile?.first_name
-    ? `${profile.first_name} ${profile.last_name || ""}`
+    ? `${profile.first_name} ${profile.last_name || ""}`.trim()
     : user.email?.split("@")[0] || "Admin"
 
   const initials = profile?.first_name
-    ? `${profile.first_name[0]}${profile.last_name?.[0] || ""}`
+    ? `${profile.first_name[0]}${profile.last_name?.[0] || ""}`.toUpperCase()
     : "A"
 
   const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
@@ -80,17 +80,13 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
     <Sidebar>
       <SidebarHeader className="border-b">
         <Link href="/admin" className="flex items-center gap-2 px-2 py-3">
+          {/* Logo — image only, no icon fallback */}
           {logoUrl ? (
             <img src={logoUrl} alt={siteName} className="h-8 w-auto object-contain" />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Plane className="h-4 w-4 text-primary-foreground" />
-            </div>
-          )}
-          <div>
             <span className="font-bold text-sm">{siteName}</span>
-            <p className="text-xs text-muted-foreground">Admin Panel</p>
-          </div>
+          )}
+          <p className="text-xs text-muted-foreground">Admin Panel</p>
         </Link>
       </SidebarHeader>
 
@@ -153,7 +149,7 @@ export function AdminSidebar({ user, profile }: AdminSidebarProps) {
       <SidebarFooter className="border-t">
         <div className="flex items-center gap-3 p-2">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
