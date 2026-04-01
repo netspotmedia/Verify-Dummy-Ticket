@@ -2,69 +2,93 @@ import type { Metadata, Viewport } from 'next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { SiteSettingsProvider } from '@/lib/site-settings'
+import { createClient } from '@/lib/supabase/server'
 import './globals.css'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://verifydummytickets.com'
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
-    template: '%s | VerifyDummyTickets'
-  },
-  description: 'Get verified flight reservations, hotel bookings, and travel insurance for your visa applications. Trusted by 100K+ travelers worldwide. Fast delivery within 24 hours.',
-  keywords: ['visa application', 'flight reservation', 'hotel booking', 'travel insurance', 'dummy ticket', 'visa documents', 'travel documents'],
-  authors: [{ name: 'VerifyDummyTickets' }],
-  creator: 'VerifyDummyTickets',
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://verifydummytickets.com',
-    siteName: 'VerifyDummyTickets',
-    title: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
-    description: 'Get verified flight reservations, hotel bookings, and travel insurance for your visa applications. Trusted by 100K+ travelers worldwide.',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'VerifyDummyTickets - Your Travel Document Solution',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance',
-    description: 'Get verified travel documents for your visa applications. Fast, reliable, and trusted.',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+async function getFaviconUrl(): Promise<string | null> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'site_logo')
+      .single()
+
+    if (data?.value) {
+      const logo = typeof data.value === 'string' ? JSON.parse(data.value) : data.value
+      if (logo?.favicon && String(logo.favicon).startsWith('http')) {
+        return logo.favicon
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const faviconUrl = await getFaviconUrl()
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
+      template: '%s | VerifyDummyTickets'
+    },
+    description: 'Get verified flight reservations, hotel bookings, and travel insurance for your visa applications. Trusted by 100K+ travelers worldwide. Fast delivery within 24 hours.',
+    keywords: ['visa application', 'flight reservation', 'hotel booking', 'travel insurance', 'dummy ticket', 'visa documents', 'travel documents'],
+    authors: [{ name: 'VerifyDummyTickets' }],
+    creator: 'VerifyDummyTickets',
+    openGraph: {
+      type: 'website',
+      locale: 'en_US',
+      url: 'https://verifydummytickets.com',
+      siteName: 'VerifyDummyTickets',
+      title: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
+      description: 'Get verified flight reservations, hotel bookings, and travel insurance for your visa applications. Trusted by 100K+ travelers worldwide.',
+      images: [
+        {
+          url: '/og-image.jpg',
+          width: 1200,
+          height: 630,
+          alt: 'VerifyDummyTickets - Your Travel Document Solution',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance',
+      description: 'Get verified travel documents for your visa applications. Fast, reliable, and trusted.',
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+    icons: faviconUrl
+      ? {
+          icon: [
+            { url: faviconUrl },
+          ],
+          apple: faviconUrl,
+        }
+      : {
+          icon: [
+            { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
+            { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
+            { url: '/icon.svg', type: 'image/svg+xml' },
+          ],
+          apple: '/apple-icon.png',
+        },
+  }
 }
 
 export const viewport: Viewport = {
