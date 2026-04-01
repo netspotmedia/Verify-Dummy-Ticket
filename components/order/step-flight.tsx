@@ -15,11 +15,11 @@ const TRIP_TYPES: { value: TripType; label: string; price: number; description: 
 ]
 
 const VALIDITY_OPTIONS: { value: FlightValidity; label: string; price: number }[] = [
-  { value: "3d", label: "3 Days", price: 0 },
+  { value: "3d", label: "3 Days (72 hrs)", price: 0 },
   { value: "7d", label: "7 Days", price: 5 },
-  { value: "14d", label: "14 Days", price: 10 },
-  { value: "21d", label: "21 Days", price: 15 },
-  { value: "30d", label: "30 Days", price: 20 },
+  { value: "14d", label: "14 Days (2 weeks)", price: 10 },
+  { value: "21d", label: "21 Days (3 weeks)", price: 15 },
+  { value: "30d", label: "30 Days (1 month)", price: 20 },
 ]
 
 export function StepFlight() {
@@ -62,9 +62,7 @@ export function StepFlight() {
                 <div
                   className={cn(
                     "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
-                    active
-                      ? "border-[#c8143d]"
-                      : "border-slate-300"
+                    active ? "border-[#c8143d]" : "border-slate-300"
                   )}
                 >
                   {active && <div className="h-2 w-2 rounded-full bg-[#c8143d]" />}
@@ -124,10 +122,10 @@ export function StepFlight() {
           Flight Validity
         </Label>
         <p className="text-sm text-slate-500">
-          How long should the reservation remain valid?
+          Select how long you want your flight reservation to remain valid.
         </p>
 
-        <div className="grid grid-cols-5 gap-2">
+        <div className="space-y-1">
           {VALIDITY_OPTIONS.map((option) => {
             const active = validity === option.value
 
@@ -135,12 +133,20 @@ export function StepFlight() {
               <label
                 key={option.value}
                 className={cn(
-                  "block p-2 rounded cursor-pointer text-center border transition-all",
+                  "flex items-center gap-3 p-2.5 rounded cursor-pointer border transition-all",
                   active
                     ? "border-[#c8143d] bg-[#fff7f9]"
                     : "border-slate-200 bg-white hover:border-slate-300"
                 )}
               >
+                <div
+                  className={cn(
+                    "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
+                    active ? "border-[#c8143d]" : "border-slate-300"
+                  )}
+                >
+                  {active && <div className="h-2 w-2 rounded-full bg-[#c8143d]" />}
+                </div>
                 <input
                   type="radio"
                   name="validity"
@@ -155,12 +161,14 @@ export function StepFlight() {
                   }
                   className="sr-only"
                 />
-                <div className={cn("text-xs font-semibold", active ? "text-[#c8143d]" : "text-slate-800")}>
-                  {option.label}
+                <div className="flex-1">
+                  <span className={cn("text-sm font-medium", active ? "text-[#c8143d]" : "text-slate-900")}>
+                    {option.label}
+                  </span>
                 </div>
-                <div className={cn("text-sm mt-0.5", option.price === 0 ? "text-green-600" : active ? "text-[#c8143d]" : "text-slate-500")}>
+                <span className={cn("text-sm font-semibold shrink-0", option.price === 0 ? "text-green-600" : active ? "text-[#c8143d]" : "text-slate-600")}>
                   {option.price === 0 ? "Free" : `+$${option.price}`}
-                </div>
+                </span>
               </label>
             )
           })}
