@@ -5,6 +5,7 @@ ci4-foundation/
 ├── .env.example
 ├── FILEMANAGER.md
 ├── PART2.md
+├── PART3.md
 ├── README.md
 ├── app/
 │   ├── Config/
@@ -25,9 +26,12 @@ ci4-foundation/
 │   ├── Filters/
 │   │   ├── AdminAuthFilter.php
 │   │   └── AuthFilter.php
+│   ├── Libraries/
+│   │   └── OrderStatusService.php
 │   ├── Models/
 │   │   ├── OrderItemModel.php
 │   │   ├── OrderModel.php
+│   │   ├── OrderStatusHistoryModel.php
 │   │   ├── PaymentModel.php
 │   │   ├── TicketModel.php
 │   │   └── UserModel.php
@@ -35,6 +39,7 @@ ci4-foundation/
 │   │   └── Payments/
 │   │       ├── DummyGateway.php
 │   │       ├── PaymentGatewayFactory.php
+│   │       ├── StripeGateway.php
 │   │       └── PaymentGatewayInterface.php
 │   └── Views/
 │       ├── admin/orders/index.php
@@ -51,8 +56,10 @@ ci4-foundation/
 │   ├── full_database_export.sql
 │   ├── part1_schema.sql
 │   ├── part1_seed.sql
-│   └── part2/
-│       └── part2_security_and_ops.sql
+│   ├── part2/
+│   │   └── part2_security_and_ops.sql
+│   └── part3/
+│       └── part3_integrations_and_security.sql
 └── download/
     ├── .gitignore
     ├── BUILD_DOWNLOAD.sh

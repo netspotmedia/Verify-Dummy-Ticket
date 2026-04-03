@@ -9,9 +9,11 @@ class PaymentGatewayFactory
     public static function make(?string $provider = null): PaymentGatewayInterface
     {
         $config = config(Payment::class);
-        $selected = $provider ?? $config->defaultProvider;
+        $selected = strtolower($provider ?? $config->defaultProvider);
 
         switch ($selected) {
+            case 'stripe':
+                return new StripeGateway();
             case 'dummy':
             default:
                 return new DummyGateway();

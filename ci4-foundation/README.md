@@ -60,6 +60,10 @@ From `ci4-foundation/download/`, run `./PUSH_NEW_GITHUB_REPO.sh` after setting `
 
 Part 2 foundation is now included (auth filters, login flow, payment abstraction, webhook validation, upload endpoint, and SQL ops/security extension). See `PART2.md`.
 
+## Part 3
+
+Part 3 foundation is now included (Stripe gateway stub, auditable order status service, and integration security SQL extension). See `PART3.md`.
+
 ## Next parts
 
-Part 3 can implement provider-specific gateways, queue workers, role-policy hardening, and automated CI4 tests.
+Part 4 can implement real provider SDK integrations, idempotency middleware, queue workers, and automated CI4 tests.
