@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Models\OrderModel;
 use App\Services\Order\OrderPricingService;
 use InvalidArgumentException;
 
@@ -10,21 +9,19 @@ class OrderController extends BaseController
 {
     public function index()
     {
-        return view('order/index', ['title' => 'Place Order']);
+        $prefill = [
+            'customer_name' => (string) ($this->request->getGet('full_name') ?? ''),
+            'customer_email' => (string) ($this->request->getGet('email') ?? ''),
+            'from' => (string) ($this->request->getGet('from') ?? ''),
+            'to' => (string) ($this->request->getGet('to') ?? ''),
+        ];
+
+        return view('order/index', ['title' => 'Place Order', 'prefill' => $prefill]);
     }
 
     public function saveDraft()
     {
-        $orderModel = new OrderModel();
-        $id = $orderModel->insert([
-            'order_number' => 'DRAFT-' . date('YmdHis'),
-            'status' => 'draft',
-            'currency' => 'USD',
-            'subtotal_amount' => 0,
-            'total_amount' => 0,
-        ]);
-
-        return $this->response->setJSON(['ok' => true, 'order_id' => $id]);
+        return $this->response->setJSON(['ok' => true, 'message' => 'Draft endpoint reserved for async wizard save.']);
     }
 
     public function review()
@@ -45,6 +42,8 @@ class OrderController extends BaseController
             'provider' => (string) ($this->request->getPost('provider') ?? 'paystack'),
             'separate_pnr_per_traveler' => (bool) $this->request->getPost('separate_pnr_per_traveler'),
             'traveler_names' => (string) ($this->request->getPost('traveler_names') ?? ''),
+            'from' => (string) ($this->request->getPost('from') ?? ''),
+            'to' => (string) ($this->request->getPost('to') ?? ''),
         ];
 
         if (count($payload['services']) < 1) {
@@ -58,6 +57,11 @@ class OrderController extends BaseController
         }
 
         $payload['currency'] = $pricing['currency'];
+
+        session()->set('checkout_context', [
+            'form' => $payload,
+            'pricing' => $pricing,
+        ]);
 
         return view('order/review', [
             'title' => 'Review Order',

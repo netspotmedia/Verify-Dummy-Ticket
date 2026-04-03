@@ -22,13 +22,11 @@ class PaymentSettingsController extends BaseController
             $settings[$row['setting_key']] = $row['setting_value'];
         }
 
-        return view('admin/payment-settings/index', ['title' => 'Payment Settings', 'settings' => $settings]);
+        return view('admin/payment-settings/index', ['title' => 'Payment Settings', 'settings' => $settings, 'adminDashboard' => true]);
     }
 
     public function update()
     {
-        $table = db_connect()->table('site_settings');
-
         $pairs = [
             'payment.default_provider' => (string) $this->request->getPost('default_provider'),
             'payment.paystack_public_key' => (string) $this->request->getPost('paystack_public_key'),
@@ -36,11 +34,12 @@ class PaymentSettingsController extends BaseController
         ];
 
         foreach ($pairs as $key => $value) {
+            $table = db_connect()->table('site_settings');
             $existing = $table->where('setting_key', $key)->get()->getRowArray();
             if ($existing) {
-                $table->where('setting_key', $key)->update(['setting_value' => $value]);
+                db_connect()->table('site_settings')->where('setting_key', $key)->update(['setting_value' => $value]);
             } else {
-                $table->insert(['setting_key' => $key, 'setting_value' => $value, 'is_public' => 0]);
+                db_connect()->table('site_settings')->insert(['setting_key' => $key, 'setting_value' => $value, 'is_public' => 0]);
             }
         }
 

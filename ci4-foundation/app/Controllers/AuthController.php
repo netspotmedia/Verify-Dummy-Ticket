@@ -16,11 +16,14 @@ class AuthController extends BaseController
         $email = (string) $this->request->getPost('email');
         $password = (string) $this->request->getPost('password');
 
-        $user = (new UserModel())->where('email', $email)->first();
+        $userModel = new UserModel();
+        $user = $userModel->where('email', $email)->first();
 
         if (! $user || ! password_verify($password, $user['password_hash'])) {
             return redirect()->back()->withInput()->with('error', 'Invalid credentials.');
         }
+
+        $userModel->update((int) $user['id'], ['last_login_at' => date('Y-m-d H:i:s')]);
 
         session()->set([
             'userId' => (int) $user['id'],
@@ -29,7 +32,11 @@ class AuthController extends BaseController
             'isAuthenticated' => true,
         ]);
 
-        return redirect()->to('/dashboard');
+        if (in_array($user['role'], ['admin', 'super_admin'], true)) {
+            return redirect()->to('/admin')->with('message', 'Welcome back, admin.');
+        }
+
+        return redirect()->to('/dashboard')->with('message', 'Login successful.');
     }
 
     public function logout()

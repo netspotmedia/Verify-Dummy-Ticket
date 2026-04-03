@@ -62,6 +62,10 @@ class OrdersController extends BaseController
     {
         $status = (string) $this->request->getPost('status');
         $reason = (string) ($this->request->getPost('reason') ?? '');
+
+        if (! in_array($status, ['pending', 'processing', 'completed', 'cancelled'], true)) {
+            return redirect()->back()->with('error', 'Invalid status supplied.');
+        }
         $adminId = session()->get('userId') ? (int) session()->get('userId') : null;
 
         $updated = (new OrderStatusService())->changeStatus($id, $status, $adminId, $reason !== '' ? $reason : null);
@@ -107,6 +111,10 @@ class OrdersController extends BaseController
         (new PaymentModel())->update((int) $payment['id'], [
             'status' => 'verified',
             'processed_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        (new OrderModel())->update($orderId, [
+            'payment_status' => 'paid',
         ]);
 
         if (! $this->request->isAJAX()) {

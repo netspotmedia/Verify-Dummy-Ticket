@@ -276,7 +276,20 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                 <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
-                <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="/order">Order Form</a></li>
+                <?php if (session()->get('isAuthenticated')): ?>
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                    <?php if (in_array((string) session()->get('role'), ['admin', 'super_admin'], true)): ?>
+                        <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <form method="post" action="/auth/logout" class="m-0">
+                            <button class="btn btn-outline-secondary btn-sm" type="submit">Logout</button>
+                        </form>
+                    </li>
+                <?php else: ?>
+                    <li class="nav-item"><a class="btn btn-outline-secondary btn-sm" href="/auth/login">Login</a></li>
+                <?php endif; ?>
                 <li class="nav-item"><a class="btn btn-primary ms-lg-2" href="/order">Start Order</a></li>
             </ul>
         </div>
