@@ -23,23 +23,34 @@ class IdempotencyFilter implements FilterInterface
         $model = new IdempotencyKeyModel();
         $existing = $model->where('idempotency_key', $key)->where('scope', $scope)->first();
 
-        if ($existing) {
-            if (($existing['request_hash'] ?? '') !== $requestHash) {
-                return service('response')->setStatusCode(409)->setJSON(['ok' => false, 'message' => 'Idempotency key reused with different payload']);
-            }
-
-            return service('response')->setStatusCode(409)->setJSON([
-                'ok' => false,
-                'message' => 'Duplicate request',
-                'previous_status' => $existing['status_code'] ?? null,
+        if (! $existing) {
+            $model->insert([
+                'idempotency_key' => $key,
+                'scope' => $scope,
+                'request_hash' => $requestHash,
+                'expires_at' => date('Y-m-d H:i:s', time() + 3600),
             ]);
+
+            return;
         }
 
-        $model->insert([
-            'idempotency_key' => $key,
-            'scope' => $scope,
-            'request_hash' => $requestHash,
-            'expires_at' => date('Y-m-d H:i:s', time() + 3600),
+        if (($existing['request_hash'] ?? '') !== $requestHash) {
+            return service('response')->setStatusCode(409)->setJSON(['ok' => false, 'message' => 'Idempotency key reused with different payload']);
+        }
+
+        $storedBody = $existing['response_json'] ?? null;
+        $storedStatus = (int) ($existing['status_code'] ?? 200);
+
+        if ($storedBody) {
+            return service('response')
+                ->setStatusCode($storedStatus)
+                ->setHeader('X-Idempotent-Replay', '1')
+                ->setJSON(json_decode($storedBody, true) ?? ['ok' => true]);
+        }
+
+        return service('response')->setStatusCode(202)->setJSON([
+            'ok' => false,
+            'message' => 'Request already accepted and processing',
         ]);
     }
 

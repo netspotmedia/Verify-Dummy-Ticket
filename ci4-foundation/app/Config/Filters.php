@@ -21,6 +21,7 @@ class Filters extends BaseFilters
         'adminAuth' => \App\Filters\AdminAuthFilter::class,
         'apiClient' => \App\Filters\ApiClientFilter::class,
         'idempotency' => \App\Filters\IdempotencyFilter::class,
+        'throttle' => \App\Filters\RateLimitFilter::class,
     ];
 
     public array $globals = [

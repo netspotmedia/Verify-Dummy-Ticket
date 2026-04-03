@@ -7,6 +7,7 @@ ci4-foundation/
 ├── PART2.md
 ├── PART3.md
 ├── PART4.md
+├── PART5.md
 ├── README.md
 ├── app/
 │   ├── Config/
@@ -15,7 +16,8 @@ ci4-foundation/
 │   │   └── Routes.php
 │   ├── Controllers/
 │   │   ├── Admin/
-│   │   │   └── OrdersController.php
+│   │   │   ├── OrdersController.php
+│   │   │   └── PaymentSettingsController.php
 │   │   ├── Api/
 │   │   │   └── DocumentUploadController.php
 │   │   ├── AuthController.php
@@ -28,7 +30,8 @@ ci4-foundation/
 │   │   ├── AdminAuthFilter.php
 │   │   ├── ApiClientFilter.php
 │   │   ├── AuthFilter.php
-│   │   └── IdempotencyFilter.php
+│   │   ├── IdempotencyFilter.php
+│   │   └── RateLimitFilter.php
 │   ├── Libraries/
 │   │   └── OrderStatusService.php
 │   ├── Models/
@@ -38,7 +41,9 @@ ci4-foundation/
 │   │   ├── OrderModel.php
 │   │   ├── OrderStatusHistoryModel.php
 │   │   ├── PaymentModel.php
+│   │   ├── RequestRateLimitModel.php
 │   │   ├── TicketModel.php
+│   │   ├── WebhookEventModel.php
 │   │   └── UserModel.php
 │   ├── Services/
 │   │   └── Payments/
@@ -50,6 +55,7 @@ ci4-foundation/
 │   │       └── PaymentGatewayInterface.php
 │   └── Views/
 │       ├── admin/orders/index.php
+│       ├── admin/payment-settings/index.php
 │       ├── auth/login.php
 │       ├── dashboard/index.php
 │       ├── home/contact.php

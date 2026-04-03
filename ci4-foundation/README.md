@@ -68,6 +68,10 @@ Part 3 foundation is now included (Stripe + Paystack + PayPal gateway stubs, aud
 
 Part 4 foundation is now included (API client filter, idempotency filter, and resilience/access SQL extension). See `PART4.md`.
 
-## Next parts
+## Part 5
 
-Part 5 can implement provider SDK production integrations, response replay for idempotent requests, throttling middleware, queue workers, and automated CI4 tests.
+Part 5 production-readiness foundation is now included (idempotent replay, throttling filter, webhook event persistence, and admin payment settings). See `PART5.md`.
+
+## Remaining final hardening
+
+Real provider SDK/API integration, signed webhook verification by provider APIs, automated feature tests, and deployment security runbooks are still required before go-live.
