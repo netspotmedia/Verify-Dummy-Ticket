@@ -80,3 +80,5 @@ Real provider SDK/API integration, signed webhook verification by provider APIs,
 ## Order form parity progress
 
 The server-rendered order module now includes services, trip parameters, insurance, delivery speed, provider selection, and review/checkout breakdown flow (still extendable for full UI parity).
+
+For detailed pricing/validation flow rules, see `docs/ORDER_FORM_LOGIC.md`.

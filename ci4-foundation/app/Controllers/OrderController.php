@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\OrderModel;
 use App\Services\Order\OrderPricingService;
+use InvalidArgumentException;
 
 class OrderController extends BaseController
 {
@@ -37,13 +38,26 @@ class OrderController extends BaseController
             'insurance_area' => (string) $this->request->getPost('insurance_area'),
             'insurance_duration' => (string) $this->request->getPost('insurance_duration'),
             'delivery_speed' => (string) $this->request->getPost('delivery_speed'),
-            'currency' => strtoupper((string) ($this->request->getPost('currency') ?? 'USD')),
             'customer_name' => (string) $this->request->getPost('customer_name'),
             'customer_email' => (string) $this->request->getPost('customer_email'),
+            'customer_country' => (string) $this->request->getPost('customer_country'),
+            'customer_country_code' => strtoupper((string) $this->request->getPost('customer_country_code')),
             'provider' => (string) ($this->request->getPost('provider') ?? 'paystack'),
+            'separate_pnr_per_traveler' => (bool) $this->request->getPost('separate_pnr_per_traveler'),
+            'traveler_names' => (string) ($this->request->getPost('traveler_names') ?? ''),
         ];
 
-        $pricing = (new OrderPricingService())->calculate($payload);
+        if (count($payload['services']) < 1) {
+            return redirect()->back()->withInput()->with('error', 'Select at least one service.');
+        }
+
+        try {
+            $pricing = (new OrderPricingService())->calculate($payload);
+        } catch (InvalidArgumentException $e) {
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
+
+        $payload['currency'] = $pricing['currency'];
 
         return view('order/review', [
             'title' => 'Review Order',
