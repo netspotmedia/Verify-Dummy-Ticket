@@ -64,6 +64,10 @@ Part 2 foundation is now included (auth filters, login flow, payment abstraction
 
 Part 3 foundation is now included (Stripe + Paystack + PayPal gateway stubs, auditable order status service, and integration security SQL extension). See `PART3.md`.
 
+## Part 4
+
+Part 4 foundation is now included (API client filter, idempotency filter, and resilience/access SQL extension). See `PART4.md`.
+
 ## Next parts
 
-Part 4 can implement real provider SDK integrations, idempotency middleware, queue workers, and automated CI4 tests.
+Part 5 can implement provider SDK production integrations, response replay for idempotent requests, throttling middleware, queue workers, and automated CI4 tests.

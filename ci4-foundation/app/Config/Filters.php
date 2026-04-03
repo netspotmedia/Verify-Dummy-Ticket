@@ -19,6 +19,8 @@ class Filters extends BaseFilters
         'secureheaders' => SecureHeaders::class,
         'auth' => \App\Filters\AuthFilter::class,
         'adminAuth' => \App\Filters\AdminAuthFilter::class,
+        'apiClient' => \App\Filters\ApiClientFilter::class,
+        'idempotency' => \App\Filters\IdempotencyFilter::class,
     ];
 
     public array $globals = [

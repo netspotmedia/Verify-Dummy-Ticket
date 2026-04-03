@@ -6,6 +6,7 @@ ci4-foundation/
 ├── FILEMANAGER.md
 ├── PART2.md
 ├── PART3.md
+├── PART4.md
 ├── README.md
 ├── app/
 │   ├── Config/
@@ -25,10 +26,14 @@ ci4-foundation/
 │   │   └── WebhookController.php
 │   ├── Filters/
 │   │   ├── AdminAuthFilter.php
-│   │   └── AuthFilter.php
+│   │   ├── ApiClientFilter.php
+│   │   ├── AuthFilter.php
+│   │   └── IdempotencyFilter.php
 │   ├── Libraries/
 │   │   └── OrderStatusService.php
 │   ├── Models/
+│   │   ├── ApiClientModel.php
+│   │   ├── IdempotencyKeyModel.php
 │   │   ├── OrderItemModel.php
 │   │   ├── OrderModel.php
 │   │   ├── OrderStatusHistoryModel.php
@@ -60,8 +65,10 @@ ci4-foundation/
 │   ├── part1_seed.sql
 │   ├── part2/
 │   │   └── part2_security_and_ops.sql
-│   └── part3/
-│       └── part3_integrations_and_security.sql
+│   ├── part3/
+│   │   └── part3_integrations_and_security.sql
+│   └── part4/
+│       └── part4_resilience_and_access.sql
 └── download/
     ├── .gitignore
     ├── BUILD_DOWNLOAD.sh
