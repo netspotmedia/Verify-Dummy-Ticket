@@ -46,6 +46,8 @@ ci4-foundation/
 │   │   ├── WebhookEventModel.php
 │   │   └── UserModel.php
 │   ├── Services/
+│   │   ├── Order/
+│   │   │   └── OrderPricingService.php
 │   │   └── Payments/
 │   │       ├── DummyGateway.php
 │   │       ├── PayPalGateway.php
@@ -63,6 +65,7 @@ ci4-foundation/
 │       ├── home/services.php
 │       ├── layouts/main.php
 │       ├── order/index.php
+│       ├── order/review.php
 │       ├── payment/failed.php
 │       └── payment/success.php
 ├── database/

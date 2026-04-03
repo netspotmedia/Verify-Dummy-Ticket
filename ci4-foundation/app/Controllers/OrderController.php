@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\OrderModel;
+use App\Services\Order\OrderPricingService;
 
 class OrderController extends BaseController
 {
@@ -27,6 +28,27 @@ class OrderController extends BaseController
 
     public function review()
     {
-        return $this->response->setJSON(['ok' => true, 'message' => 'Review step validated.']);
+        $payload = [
+            'services' => (array) $this->request->getPost('services'),
+            'traveler_count' => (int) $this->request->getPost('traveler_count'),
+            'trip_type' => (string) $this->request->getPost('trip_type'),
+            'validity' => (string) $this->request->getPost('validity'),
+            'hotel_type' => (string) $this->request->getPost('hotel_type'),
+            'insurance_area' => (string) $this->request->getPost('insurance_area'),
+            'insurance_duration' => (string) $this->request->getPost('insurance_duration'),
+            'delivery_speed' => (string) $this->request->getPost('delivery_speed'),
+            'currency' => strtoupper((string) ($this->request->getPost('currency') ?? 'USD')),
+            'customer_name' => (string) $this->request->getPost('customer_name'),
+            'customer_email' => (string) $this->request->getPost('customer_email'),
+            'provider' => (string) ($this->request->getPost('provider') ?? 'paystack'),
+        ];
+
+        $pricing = (new OrderPricingService())->calculate($payload);
+
+        return view('order/review', [
+            'title' => 'Review Order',
+            'form' => $payload,
+            'pricing' => $pricing,
+        ]);
     }
 }
