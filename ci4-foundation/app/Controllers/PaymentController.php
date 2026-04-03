@@ -83,11 +83,17 @@ class PaymentController extends BaseController
             $gatewayResponse = $gateway->createCheckout($payload);
 
             (new PaymentModel())->update($paymentId, [
+                'provider_reference' => (string) ($gatewayResponse['reference'] ?? (string) ($gatewayResponse['payment_intent'] ?? 'INIT-' . $orderNumber)),
                 'provider_payload_json' => json_encode($gatewayResponse, JSON_UNESCAPED_UNICODE),
                 'status' => 'pending',
             ]);
 
             session()->remove('checkout_context');
+
+            $checkoutUrl = (string) ($gatewayResponse['checkout_url'] ?? '');
+            if ($checkoutUrl !== '' && preg_match('/^https?:\/\//i', $checkoutUrl) === 1) {
+                return redirect()->to($checkoutUrl);
+            }
 
             return redirect()->to('/order/success/' . $orderNumber)
                 ->with('message', 'Checkout initiated successfully with ' . strtoupper($provider) . '.');

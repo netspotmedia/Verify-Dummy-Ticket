@@ -6,22 +6,40 @@
     <title><?= esc($title ?? 'Verify Dummy Ticket') ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        :root {
+            --vdt-font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+            --vdt-text: #14213d;
+            --vdt-muted: #6b7280;
+            --vdt-bg: #f5f7fb;
+            --vdt-surface: #ffffff;
+            --vdt-border: #e5eaf3;
+            --vdt-primary: #2551d1;
+            --vdt-primary-hover: #1f44af;
+            --vdt-radius-lg: 1rem;
+            --vdt-space-1: .25rem;
+            --vdt-space-2: .5rem;
+            --vdt-space-3: .75rem;
+            --vdt-space-4: 1rem;
+            --vdt-space-5: 1.5rem;
+        }
+
         body {
-            background-color: #f5f7fb;
-            color: #14213d;
+            font-family: var(--vdt-font-family);
+            background-color: var(--vdt-bg);
+            color: var(--vdt-text);
         }
 
         .navbar-brand { font-weight: 800; letter-spacing: .2px; }
 
         .top-nav {
-            background: #ffffff;
+            background: var(--vdt-surface);
             border-bottom: 1px solid #e6ebf3;
         }
 
         .footer {
             border-top: 1px solid #e6ebf3;
-            color: #6b7280;
-            background: #ffffff;
+            color: var(--vdt-muted);
+            background: var(--vdt-surface);
         }
 
         <?php if (! empty($landing)): ?>
@@ -72,8 +90,8 @@
         }
 
         .quote-card {
-            border-radius: 1rem;
-            background: #ffffff;
+            border-radius: var(--vdt-radius-lg);
+            background: var(--vdt-surface);
         }
 
         .quote-card .form-control {
@@ -84,7 +102,7 @@
         .airline-chip {
             padding: .55rem .95rem;
             border-radius: 999px;
-            background: #ffffff;
+            background: var(--vdt-surface);
             border: 1px solid #dbe3f0;
             color: #334160;
             font-weight: 600;
@@ -93,9 +111,9 @@
 
         .offer-card,
         .testimonial-card {
-            background: #ffffff;
-            border: 1px solid #e5eaf3;
-            border-radius: 1rem;
+            background: var(--vdt-surface);
+            border: 1px solid var(--vdt-border);
+            border-radius: var(--vdt-radius-lg);
         }
 
         .offer-card h3 {
@@ -109,7 +127,7 @@
         }
 
         .faq-section .accordion-item {
-            border: 1px solid #e5eaf3;
+            border: 1px solid var(--vdt-border);
             border-radius: .8rem;
             overflow: hidden;
             margin-bottom: .8rem;
@@ -121,15 +139,15 @@
         }
 
         .btn-primary {
-            background-color: #2551d1;
-            border-color: #2551d1;
+            background-color: var(--vdt-primary);
+            border-color: var(--vdt-primary);
             font-weight: 600;
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
-            background-color: #1f44af;
-            border-color: #1f44af;
+            background-color: var(--vdt-primary-hover);
+            border-color: var(--vdt-primary-hover);
         }
         <?php endif; ?>
 
@@ -138,18 +156,18 @@
 
         <?php if (! empty($adminDashboard)): ?>
         .admin-shell {
-            color: #14213d;
+            color: var(--vdt-text);
         }
 
         .admin-panel,
         .metric-card {
-            background: #ffffff;
-            border: 1px solid #e5eaf3;
-            border-radius: 1rem;
+            background: var(--vdt-surface);
+            border: 1px solid var(--vdt-border);
+            border-radius: var(--vdt-radius-lg);
         }
 
         .metric-label {
-            color: #6b7280;
+            color: var(--vdt-muted);
             font-size: .78rem;
             letter-spacing: .04em;
             text-transform: uppercase;
@@ -164,7 +182,7 @@
         }
 
         .admin-table thead th {
-            color: #6b7280;
+            color: var(--vdt-muted);
             font-size: .8rem;
             letter-spacing: .04em;
             text-transform: uppercase;
@@ -189,15 +207,15 @@
         }
         <?php endif; ?>
         <?php if (! empty($dashboard)): ?>
-        .dashboard-shell { color: #14213d; }
+        .dashboard-shell { color: var(--vdt-text); }
 
         .dashboard-sidebar,
         .dashboard-header,
         .dashboard-panel,
         .dashboard-metric {
-            background: #ffffff;
-            border: 1px solid #e5eaf3;
-            border-radius: 1rem;
+            background: var(--vdt-surface);
+            border: 1px solid var(--vdt-border);
+            border-radius: var(--vdt-radius-lg);
         }
 
         .dashboard-nav .nav-link {
@@ -214,7 +232,7 @@
         }
 
         .metric-label {
-            color: #6b7280;
+            color: var(--vdt-muted);
             font-size: .85rem;
             text-transform: uppercase;
             letter-spacing: .04em;
@@ -228,7 +246,7 @@
         }
 
         .dashboard-table thead th {
-            color: #6b7280;
+            color: var(--vdt-muted);
             font-size: .82rem;
             text-transform: uppercase;
             letter-spacing: .04em;

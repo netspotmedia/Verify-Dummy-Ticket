@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use Config\Payment;
+use RuntimeException;
 
 class StripeGateway implements PaymentGatewayInterface
 {
@@ -10,12 +11,38 @@ class StripeGateway implements PaymentGatewayInterface
     {
         $config = config(Payment::class);
 
+        if ($config->stripeSecretKey === '') {
+            throw new RuntimeException('Stripe secret key is not configured.');
+        }
+
+        $response = (new HttpPaymentClient())->postForm(
+            'https://api.stripe.com/v1/payment_intents',
+            [
+                'amount' => (int) round(((float) ($payload['amount'] ?? 0)) * 100),
+                'currency' => strtolower((string) ($payload['currency'] ?? 'usd')),
+                'description' => 'Order ' . (string) ($payload['order_number'] ?? ''),
+                'metadata[order_number]' => (string) ($payload['order_number'] ?? ''),
+                'receipt_email' => (string) ($payload['email'] ?? ''),
+                'automatic_payment_methods[enabled]' => 'true',
+            ],
+            [
+                'Authorization' => 'Bearer ' . $config->stripeSecretKey,
+            ]
+        );
+
+        $intentId = (string) ($response['id'] ?? '');
+        $clientSecret = (string) ($response['client_secret'] ?? '');
+
+        if ($intentId === '' || $clientSecret === '') {
+            throw new RuntimeException('Unexpected Stripe response format.');
+        }
+
         return [
             'provider' => 'stripe',
-            'publishable_key' => $config->stripePublishableKey,
-            'session_id' => 'sess_' . md5((string) microtime(true)),
+            'payment_intent' => $intentId,
+            'client_secret' => $clientSecret,
+            'checkout_url' => '',
             'status' => 'initiated',
-            'note' => 'Replace with real Stripe SDK call in deployment.',
         ];
     }
 
