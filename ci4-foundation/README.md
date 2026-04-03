@@ -62,7 +62,7 @@ Part 2 foundation is now included (auth filters, login flow, payment abstraction
 
 ## Part 3
 
-Part 3 foundation is now included (Stripe gateway stub, auditable order status service, and integration security SQL extension). See `PART3.md`.
+Part 3 foundation is now included (Stripe + Paystack + PayPal gateway stubs, auditable order status service, and integration security SQL extension). See `PART3.md`.
 
 ## Next parts
 

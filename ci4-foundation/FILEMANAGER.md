@@ -38,7 +38,9 @@ ci4-foundation/
 │   ├── Services/
 │   │   └── Payments/
 │   │       ├── DummyGateway.php
+│   │       ├── PayPalGateway.php
 │   │       ├── PaymentGatewayFactory.php
+│   │       ├── PaystackGateway.php
 │   │       ├── StripeGateway.php
 │   │       └── PaymentGatewayInterface.php
 │   └── Views/

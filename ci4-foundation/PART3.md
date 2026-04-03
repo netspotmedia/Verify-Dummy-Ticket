@@ -2,8 +2,10 @@
 
 ## Included in this step
 
-- `StripeGateway` stub provider and factory support (`dummy` + `stripe` selection)
-- Payment config extension for Stripe keys/secrets
+- `StripeGateway` stub provider support
+- `PaystackGateway` support for **NGN + USD**
+- `PayPalGateway` support for **USD** with card and PayPal account flows
+- Payment config extension for Stripe, Paystack, and PayPal keys/secrets
 - `OrderStatusService` + `OrderStatusHistoryModel` for auditable admin status updates
 - `Admin\OrdersController::updateStatus` now writes status history
 - SQL extension script for integration hardening:
@@ -18,6 +20,7 @@ mysql -u root -p verify_dummy_ticket < database/part3/part3_integrations_and_sec
 
 ## Next improvements
 
-- Implement real Stripe SDK checkout + webhook signature verification
+- Implement real Paystack transaction initialize + verify API
+- Implement real PayPal Orders API + webhook verification API
 - Add API key middleware based on `api_clients`
 - Add idempotency middleware for checkout and webhook endpoints

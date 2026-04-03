@@ -14,6 +14,10 @@ class PaymentGatewayFactory
         switch ($selected) {
             case 'stripe':
                 return new StripeGateway();
+            case 'paystack':
+                return new PaystackGateway();
+            case 'paypal':
+                return new PayPalGateway();
             case 'dummy':
             default:
                 return new DummyGateway();

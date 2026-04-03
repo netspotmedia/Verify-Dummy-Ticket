@@ -3,21 +3,33 @@
 namespace App\Controllers;
 
 use App\Services\Payments\PaymentGatewayFactory;
+use Throwable;
 
 class PaymentController extends BaseController
 {
     public function checkout()
     {
+        $provider = (string) ($this->request->getPost('provider') ?? 'paystack');
+
         $payload = [
             'order_number' => (string) $this->request->getPost('order_number'),
             'amount' => (float) $this->request->getPost('amount'),
-            'currency' => (string) ($this->request->getPost('currency') ?? 'USD'),
+            'currency' => strtoupper((string) ($this->request->getPost('currency') ?? 'USD')),
+            'email' => (string) ($this->request->getPost('email') ?? ''),
         ];
 
-        $gateway = PaymentGatewayFactory::make();
-        $response = $gateway->createCheckout($payload);
+        try {
+            $gateway = PaymentGatewayFactory::make($provider);
+            $response = $gateway->createCheckout($payload);
 
-        return $this->response->setJSON(['ok' => true, 'gateway_response' => $response]);
+            return $this->response->setJSON(['ok' => true, 'gateway_response' => $response]);
+        } catch (Throwable $e) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'ok' => false,
+                'provider' => $provider,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function success(string $orderNumber)

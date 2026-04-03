@@ -11,8 +11,9 @@ class WebhookController extends BaseController
     {
         $payload = $this->request->getJSON(true) ?? [];
         $signature = $this->request->getHeaderLine('X-Signature');
+        $provider = (string) ($this->request->getGet('provider') ?? $this->request->getHeaderLine('X-Payment-Provider') ?? 'paystack');
 
-        $gateway = PaymentGatewayFactory::make();
+        $gateway = PaymentGatewayFactory::make($provider);
         $isValid = $gateway->verifyWebhook($payload, $signature);
 
         $config = config(Payment::class);
@@ -20,6 +21,10 @@ class WebhookController extends BaseController
             return $this->response->setStatusCode(401)->setJSON(['ok' => false, 'message' => 'Invalid signature']);
         }
 
-        return $this->response->setJSON(['received' => true, 'payload' => $payload]);
+        return $this->response->setJSON([
+            'received' => true,
+            'provider' => $provider,
+            'payload' => $payload,
+        ]);
     }
 }
