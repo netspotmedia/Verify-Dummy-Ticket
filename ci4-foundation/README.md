@@ -56,29 +56,6 @@ Binary artifacts are not committed to git to avoid binary-file restrictions.
 
 From `ci4-foundation/download/`, run `./PUSH_NEW_GITHUB_REPO.sh` after setting `GITHUB_USERNAME`, `GITHUB_REPO`, and `GITHUB_TOKEN` (PAT).
 
-## Part 2
+## Next parts
 
-Part 2 foundation is now included (auth filters, login flow, payment abstraction, webhook validation, upload endpoint, and SQL ops/security extension). See `PART2.md`.
-
-## Part 3
-
-Part 3 foundation is now included (Stripe + Paystack + PayPal gateway stubs, auditable order status service, and integration security SQL extension). See `PART3.md`.
-
-## Part 4
-
-Part 4 foundation is now included (API client filter, idempotency filter, and resilience/access SQL extension). See `PART4.md`.
-
-## Part 5
-
-Part 5 production-readiness foundation is now included (idempotent replay, throttling filter, webhook event persistence, and admin payment settings). See `PART5.md`.
-
-## Remaining final hardening
-
-Real provider SDK/API integration, signed webhook verification by provider APIs, automated feature tests, and deployment security runbooks are still required before go-live.
-
-
-## Order form parity progress
-
-The server-rendered order module now includes services, trip parameters, insurance, delivery speed, provider selection, and review/checkout breakdown flow (still extendable for full UI parity).
-
-For detailed pricing/validation flow rules, see `docs/ORDER_FORM_LOGIC.md`.
+Part 2 can implement the remaining feature-complete logic (service integrations, file uploads, hardening, full payment gateway adapters, and test suite).

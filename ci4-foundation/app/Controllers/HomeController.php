@@ -6,7 +6,7 @@ class HomeController extends BaseController
 {
     public function index()
     {
-        return view('home/index', ['title' => 'Verify Dummy Ticket', 'landing' => true]);
+        return view('home/index', ['title' => 'Verify Dummy Ticket']);
     }
 
     public function services()
