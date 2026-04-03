@@ -134,6 +134,60 @@
         <?php endif; ?>
 
 
+
+
+        <?php if (! empty($adminDashboard)): ?>
+        .admin-shell {
+            color: #14213d;
+        }
+
+        .admin-panel,
+        .metric-card {
+            background: #ffffff;
+            border: 1px solid #e5eaf3;
+            border-radius: 1rem;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: .78rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            color: #0d1b3f;
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .admin-table thead th {
+            color: #6b7280;
+            font-size: .8rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            border-bottom-color: #e5eaf3;
+        }
+
+        .admin-table tbody td {
+            border-bottom-color: #eef2f8;
+            vertical-align: top;
+        }
+
+        .activity-list {
+            display: grid;
+            gap: .8rem;
+        }
+
+        .activity-item {
+            border: 1px solid #edf1f8;
+            border-radius: .8rem;
+            padding: .75rem;
+            background: #fbfcff;
+        }
+        <?php endif; ?>
         <?php if (! empty($dashboard)): ?>
         .dashboard-shell { color: #14213d; }
 
