@@ -1,0 +1,5 @@
+# Generated package artifacts (do not commit)
+*.zip
+*.tar.gz
+*.sha256
+*.manifest.json

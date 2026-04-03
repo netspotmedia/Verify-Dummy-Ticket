@@ -1,0 +1,15 @@
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
+<h2>Login</h2>
+<form method="post" action="/auth/login" class="card card-body" style="max-width:420px;">
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" name="password" required>
+    </div>
+    <button class="btn btn-primary">Sign In</button>
+</form>
+<?= $this->endSection() ?>
