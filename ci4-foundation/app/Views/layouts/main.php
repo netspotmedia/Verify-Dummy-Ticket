@@ -132,6 +132,83 @@
             border-color: #1f44af;
         }
         <?php endif; ?>
+
+
+        <?php if (! empty($dashboard)): ?>
+        .dashboard-shell { color: #14213d; }
+
+        .dashboard-sidebar,
+        .dashboard-header,
+        .dashboard-panel,
+        .dashboard-metric {
+            background: #ffffff;
+            border: 1px solid #e5eaf3;
+            border-radius: 1rem;
+        }
+
+        .dashboard-nav .nav-link {
+            border-radius: .6rem;
+            color: #334160;
+            padding: .55rem .65rem;
+            font-weight: 500;
+        }
+
+        .dashboard-nav .nav-link:hover,
+        .dashboard-nav .nav-link.active {
+            background: #edf3ff;
+            color: #1f44af;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: .85rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0d1b3f;
+            line-height: 1;
+        }
+
+        .dashboard-table thead th {
+            color: #6b7280;
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            border-bottom-color: #e5eaf3;
+        }
+
+        .dashboard-table tbody td {
+            border-bottom-color: #eef2f8;
+        }
+
+        .progress-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .progress-item {
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            gap: .75rem;
+            align-items: start;
+        }
+
+        .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 999px;
+            margin-top: .3rem;
+            background: #dbe3f0;
+        }
+
+        .dot.complete { background: #198754; }
+        .dot.current { background: #2551d1; }
+        <?php endif; ?>
+
     </style>
 </head>
 <body>
