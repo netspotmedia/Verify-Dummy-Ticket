@@ -71,11 +71,11 @@ export default async function AdminOrdersPage() {
   const getServiceIcon = (type: string) => {
     switch (type) {
       case "flight":
-        return <Plane className="h-4 w-4" title="Flight" />
+        return <span title="Flight"><Plane className="h-4 w-4" /></span>
       case "hotel":
-        return <Building2 className="h-4 w-4" title="Hotel" />
+        return <span title="Hotel"><Building2 className="h-4 w-4" /></span>
       case "insurance":
-        return <Shield className="h-4 w-4" title="Insurance" />
+        return <span title="Insurance"><Shield className="h-4 w-4" /></span>
       default:
         return null
     }
