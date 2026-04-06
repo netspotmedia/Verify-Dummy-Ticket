@@ -18,11 +18,11 @@ const DELIVERY_OPTIONS: {
   price: number
 }[] = [
   {
-    value: "express",
-    title: "Express",
-    subtitle: "6 hours",
-    description: "Perfect for urgent visa appointments",
-    price: 10,
+    value: "normal",
+    title: "Normal",
+    subtitle: "24 hours",
+    description: "Standard delivery time",
+    price: 0,
   },
   {
     value: "fast",
@@ -32,11 +32,11 @@ const DELIVERY_OPTIONS: {
     price: 5,
   },
   {
-    value: "normal",
-    title: "Normal",
-    subtitle: "24 hours",
-    description: "Standard delivery time",
-    price: 0,
+    value: "express",
+    title: "Express",
+    subtitle: "6 hours",
+    description: "Best for urgent visa appointments",
+    price: 10,
   },
 ]
 
@@ -307,7 +307,8 @@ export function StepReview() {
 
       {/* Order summary table */}
       <div className="border border-slate-200 rounded overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[320px]">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
               <th className="text-left py-2 px-3 font-semibold text-black">Item</th>
@@ -352,6 +353,7 @@ export function StepReview() {
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
 
       <div className="flex gap-2 pt-1">
