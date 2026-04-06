@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import type { DeliverySpeed, Currency } from "@/lib/types"
 import { getExchangeRate } from "@/lib/types"
 
-// Express first, Fast second, Normal last
+// Normal first, Fast second, Express last
 const DELIVERY_OPTIONS: {
   value: DeliverySpeed
   title: string
