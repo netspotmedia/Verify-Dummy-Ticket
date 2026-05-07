@@ -130,8 +130,10 @@ export default async function AdminOrdersPage() {
                 <TableBody>
                   {orders.map((order) => (
                     <TableRow key={order.id}>
-                      <TableCell className="font-mono font-medium">
-                        #{(order.order_number ?? order.id)?.toString().slice(0, 12).toUpperCase()}
+                      <TableCell className="font-mono font-medium text-xs">
+                        {order.order_number
+                          ? order.order_number.toString().toUpperCase()
+                          : `#${order.id.slice(0, 8).toUpperCase()}`}
                       </TableCell>
                       <TableCell>
                         <p className="text-xs text-muted-foreground">{order.email}</p>
