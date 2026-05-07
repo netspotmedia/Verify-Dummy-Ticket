@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { createAdminClient } from "@/lib/supabase/admin"
+import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,10 +15,8 @@ export default async function AdminOrderDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = createAdminClient()
+  const supabase = await createClient()
 
-  // Fetch order and related data separately using the service-role client
-  // (bypasses RLS — safe here because the admin layout already enforces auth)
   const { data: order, error } = await supabase
     .from("orders")
     .select("*")
@@ -29,6 +27,7 @@ export default async function AdminOrderDetailPage({
     notFound()
   }
 
+  // Fetch related data with separate queries — errors return empty arrays, never 404
   const [
     { data: flightDetails },
     { data: hotelDetails },
