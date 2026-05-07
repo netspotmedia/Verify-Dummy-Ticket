@@ -633,6 +633,15 @@ const getPasswordResetEmailHtml = (name: string, siteName: string, siteLogo: str
 
 export async function POST(request: NextRequest) {
   try {
+    // Restrict to internal server-to-server calls only
+    const internalSecret = process.env.INTERNAL_API_SECRET
+    if (internalSecret) {
+      const provided = request.headers.get('x-internal-secret')
+      if (provided !== internalSecret) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+
     const body: EmailRequest = await request.json()
     const { to, subject, type, data } = body
 
