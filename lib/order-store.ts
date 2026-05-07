@@ -126,7 +126,7 @@ export const useOrderStore = create<OrderStore>()(
       setIpCountry: (country, countryCode, isNigeriaUser) =>
         set((state) => {
           const currency: Currency = isNigeriaUser ? "NGN" : "USD"
-          const paymentMethod: PaymentMethod = isNigeriaUser ? "paystack" : "paystack"
+          const paymentMethod: PaymentMethod = isNigeriaUser ? "paystack" : "paypal"
           return {
             ipCountry: country,
             ipCountryCode: countryCode,
@@ -214,7 +214,7 @@ export const useOrderStore = create<OrderStore>()(
           formData: {
             ...initialFormData,
             currency: state.isNigeria ? "NGN" : "USD",
-            paymentMethod: state.isNigeria ? "paystack" : "paystack"
+            paymentMethod: state.isNigeria ? "paystack" : "paypal",
           },
           currentStepIndex: 0,
           activeSteps: ["services", "common", "review", "payment"],

@@ -78,7 +78,7 @@ export default function LoginPage() {
   const logoUrl = settings?.site_logo?.light || settings?.site_logo?.dark
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/5 via-background to-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/5 via-background to-background px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">

@@ -33,12 +33,31 @@ export async function PATCH(
       .from("orders")
       .update(updateData)
       .eq("id", id)
-      .select()
+      .select("id, email, status")
       .single()
 
     if (dbError) {
       console.error("Order update error:", dbError)
       return NextResponse.json({ error: "Failed to update order" }, { status: 500 })
+    }
+
+    // When admin marks order as completed, notify the customer their documents are ready
+    if (status === "completed" && data?.email) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+      fetch(`${siteUrl}/api/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: data.email,
+          subject: `Your Documents Are Ready - Order ${id.slice(0, 8).toUpperCase()}`,
+          type: "order_delivered",
+          data: {
+            name: data.email.split("@")[0],
+            orderId: id,
+            trackingUrl: `${siteUrl}/dashboard/orders/${id}`,
+          },
+        }),
+      }).catch(console.error)
     }
 
     return NextResponse.json({ success: true, order: data })
