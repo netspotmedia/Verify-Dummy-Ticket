@@ -40,13 +40,15 @@ export async function GET(request: NextRequest) {
         })
         .eq("id", orderId)
 
-      // Send processing email
-      const { data: order } = await supabase
-        .from("orders")
-        .select("email")
-        .eq("id", orderId)
-        .single()
+      // Fetch order + admin support email in parallel
+      const [{ data: order }, { data: adminSettings }] = await Promise.all([
+        supabase.from("orders").select("email, services").eq("id", orderId).single(),
+        supabase.from("site_settings").select("key, value").in("key", ["support_email"]),
+      ])
 
+      const adminEmail = adminSettings?.find((s: { key: string; value: string }) => s.key === "support_email")?.value
+
+      // Customer: order processing notification
       if (order?.email) {
         fetch(`${siteUrl}/api/email`, {
           method: "POST",
@@ -56,6 +58,24 @@ export async function GET(request: NextRequest) {
             subject: `Payment Confirmed - Order ${orderId.slice(0, 8).toUpperCase()}`,
             type: "order_processing",
             data: { name: order.email.split("@")[0], orderId },
+          }),
+        }).catch(console.error)
+      }
+
+      // Admin: new paid order alert
+      if (adminEmail) {
+        fetch(`${siteUrl}/api/email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: adminEmail,
+            subject: `New Paid Order - ${orderId.slice(0, 8).toUpperCase()} (Paystack)`,
+            type: "order_placed",
+            data: {
+              name: "Admin",
+              orderId,
+              services: order?.services || [],
+            },
           }),
         }).catch(console.error)
       }

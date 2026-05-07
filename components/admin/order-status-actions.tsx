@@ -47,23 +47,25 @@ export function OrderStatusActions({ order }: OrderStatusActionsProps) {
     setIsUpdating(true)
 
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from("orders")
-        .update({
+      const res = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           status: orderStatus,
-          payment_status: paymentStatus,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", order.id)
+          paymentStatus,
+        }),
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Failed to update order")
+      }
 
       toast.success("Order updated successfully")
       router.refresh()
     } catch (err) {
       console.error("Update order error:", err)
-      toast.error("Failed to update order")
+      toast.error(err instanceof Error ? err.message : "Failed to update order")
     } finally {
       setIsUpdating(false)
     }

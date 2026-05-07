@@ -32,7 +32,6 @@ interface EmailRequest {
     orderId?: string
     resetLink?: string
     services?: string[]
-    deliveryDate?: string
     trackingUrl?: string
   }
 }
@@ -49,17 +48,29 @@ const getSiteSettings = async () => {
     settings[item.key] = item.value
   })
 
+  // Priority: env var > DB setting > fallback
+  const fromEmail =
+    process.env.RESEND_FROM_EMAIL ||
+    settings.support_email ||
+    'noreply@example.com'
+
   return {
-    fromEmail: settings.support_email || 'noreply@example.com',
+    fromEmail,
     fromName: settings.site_name || 'My Travel Services',
     siteName: settings.site_name || 'My Travel Services',
     siteLogo: settings.site_logo || '',
-    resendApiKey: settings.resend_api_key || '',
+    resendApiKey: process.env.RESEND_API_KEY || settings.resend_api_key || '',
   }
 }
 
-const sendViaResend = async (to: string, subject: string, html: string, fromName: string, apiKey: string) => {
-  
+const sendViaResend = async (
+  to: string,
+  subject: string,
+  html: string,
+  fromName: string,
+  fromEmail: string,
+  apiKey: string,
+) => {
   if (!apiKey) {
     console.log('⚠️ RESEND_API_KEY not set - email logged only')
     console.log(`📧 Email to ${to}: ${subject}`)
@@ -70,7 +81,7 @@ const sendViaResend = async (to: string, subject: string, html: string, fromName
     const { Resend } = await import('resend')
     const resend = new Resend(apiKey)
     const response = await resend.emails.send({
-      from: `${fromName} <noreply@resend.dev>`,
+      from: `${fromName} <${fromEmail}>`,
       to: [to],
       subject: subject,
       html: html,
@@ -94,6 +105,8 @@ const getBranding = (siteName: string, siteLogo: string) => {
 
   return { logoHtml, brandColor: '#c8143d', brandGradient: 'linear-gradient(135deg, #c8143d 0%, #d94a6d 100%)' }
 }
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://verifydummytickets.com'
 
 const getWelcomeEmailHtml = (name: string, siteName: string, siteLogo: string) => {
   const { logoHtml, brandGradient } = getBranding(siteName, siteLogo)
@@ -178,15 +191,15 @@ const getWelcomeEmailHtml = (name: string, siteName: string, siteLogo: string) =
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td align="center" style="padding: 24px 0 16px;">
-                      <a href="#" style="display: inline-block; background: ${brandGradient}; color: white; text-decoration: none; padding: 14px 36px; border-radius: 50px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(200,20,61,0.3);">
+                      <a href="${siteUrl}/dashboard" style="display: inline-block; background: ${brandGradient}; color: white; text-decoration: none; padding: 14px 36px; border-radius: 50px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(200,20,61,0.3);">
                         Go to My Dashboard
                       </a>
                     </td>
                   </tr>
                 </table>
-                
+
                 <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 24px 0 0; text-align: center;">
-                  Need help? Reply to this email or <a href="#" style="color: #c8143d; text-decoration: underline;">contact support</a>
+                  Need help? Reply to this email or <a href="${siteUrl}/contact" style="color: #c8143d; text-decoration: underline;">contact support</a>
                 </p>
               </td>
             </tr>
@@ -336,7 +349,7 @@ const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: strin
                 </table>
                 
                 <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 24px 0 0; text-align: center;">
-                  Track your order in your <a href="#" style="color: #c8143d; text-decoration: underline;">dashboard</a>
+                  Track your order in your <a href="${siteUrl}/dashboard/orders" style="color: #c8143d; text-decoration: underline;">dashboard</a>
                 </p>
               </td>
             </tr>
@@ -548,6 +561,76 @@ const getOrderProcessingEmailHtml = (name: string, siteName: string, siteLogo: s
 `
 }
 
+const getPasswordResetEmailHtml = (name: string, siteName: string, siteLogo: string, resetLink: string) => {
+  const { logoHtml, brandGradient } = getBranding(siteName, siteLogo)
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reset Your Password - ${siteName}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; padding: 40px 20px;">
+      <tr>
+        <td align="center">
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.08);">
+            <tr>
+              <td style="background: ${brandGradient}; padding: 35px 40px 25px; border-radius: 20px 20px 0 0;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center">
+                      ${logoHtml}
+                      <h1 style="color: white; margin: 18px 0 0; font-size: 24px; font-weight: 700;">Reset Your Password</h1>
+                      <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 15px;">We received a password reset request</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 36px 40px 30px;">
+                <p style="color: #1f2937; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">Hi ${name},</p>
+                <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 24px;">
+                  Click the button below to reset your password. This link will expire in <strong>1 hour</strong>.
+                </p>
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding: 16px 0 24px;">
+                      <a href="${sanitizeForHtml(resetLink)}" style="display: inline-block; background: ${brandGradient}; color: white; text-decoration: none; padding: 14px 36px; border-radius: 50px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(200,20,61,0.3);">
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 0; text-align: center;">
+                  If you didn't request this, you can safely ignore this email. Your password will not change.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background-color: #f9fafb; padding: 24px 40px; border-radius: 0 0 20px 20px; border-top: 1px solid #f3f4f6;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center">
+                      ${logoHtml}
+                      <p style="color: #9ca3af; font-size: 12px; margin: 12px 0 0;">© ${new Date().getFullYear()} ${siteName}. All rights reserved.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: EmailRequest = await request.json()
@@ -560,7 +643,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { siteName, siteLogo, fromName, resendApiKey } = await getSiteSettings()
+    const { siteName, siteLogo, fromName, fromEmail, resendApiKey } = await getSiteSettings()
 
     const sanitizedName = sanitizeInput(data?.name, 100)
     const sanitizedOrderId = sanitizeInput(data?.orderId, 50)
@@ -579,11 +662,14 @@ export async function POST(request: NextRequest) {
       case 'order_processing':
         html = getOrderProcessingEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '')
         break
+      case 'password_reset':
+        html = getPasswordResetEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, data?.resetLink || `${siteUrl}/auth/reset-password`)
+        break
       default:
         return NextResponse.json({ error: 'Invalid email type' }, { status: 400 })
     }
 
-    const result = await sendViaResend(to, subject, html, fromName, resendApiKey)
+    const result = await sendViaResend(to, subject, html, fromName, fromEmail, resendApiKey)
 
     return NextResponse.json({
       success: result.success,
