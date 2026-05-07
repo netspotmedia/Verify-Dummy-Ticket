@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Plane, Building2, Shield, User, Mail, Phone } from "lucide-react"
-// Phone kept for customer country fallback display
+import { ArrowLeft, Plane, Building2, Shield, User, Mail, Globe } from "lucide-react"
 import { OrderStatusActions } from "@/components/admin/order-status-actions"
 import { OrderDocumentUpload } from "@/components/admin/order-document-upload"
 
@@ -50,9 +49,18 @@ export default async function AdminOrderDetailPage({
     }
   }
 
-  const formatCurrency = (amount: number, currency: string) => {
-    if (currency === "USD") return `$${amount.toFixed(2)}`
-    return `₦${amount.toLocaleString()}`
+  const formatCurrency = (amount: number | null | undefined, currency: string) => {
+    if (amount == null) return "—"
+    if (currency === "USD") return `$${Number(amount).toFixed(2)}`
+    return `₦${Number(amount).toLocaleString()}`
+  }
+
+  const formatDelivery = (method: string | null | undefined) => {
+    switch (method) {
+      case "fast": return "Fast (12 hours)"
+      case "express": return "Express (6 hours)"
+      default: return "Normal (24 hours)"
+    }
   }
 
   return (
@@ -67,7 +75,9 @@ export default async function AdminOrderDetailPage({
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Order #{order.id.slice(0, 8).toUpperCase()}
+              {order.order_number
+                ? order.order_number.toString().toUpperCase()
+                : `Order #${order.id.slice(0, 8).toUpperCase()}`}
             </h1>
             <p className="text-muted-foreground">
               Placed on {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString()}
@@ -201,6 +211,9 @@ export default async function AdminOrderDetailPage({
               <CardDescription>People included in this booking</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {(!order.travelers || order.travelers.length === 0) && (
+                <p className="text-sm text-muted-foreground">No traveler details recorded yet.</p>
+              )}
               {order.travelers?.map((traveler: {
                 id: string
                 first_name: string
@@ -287,7 +300,7 @@ export default async function AdminOrderDetailPage({
                 </div>
                 {order.customer_country && (
                   <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <Globe className="h-4 w-4 text-muted-foreground" />
                     <span>{order.customer_country}</span>
                   </div>
                 )}
@@ -333,7 +346,7 @@ export default async function AdminOrderDetailPage({
 
               <div className="text-sm">
                 <span className="text-muted-foreground">Delivery: </span>
-                <span className="capitalize">{order.delivery_method || "normal"}</span>
+                <span>{formatDelivery(order.delivery_method)}</span>
               </div>
             </CardContent>
           </Card>
