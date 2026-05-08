@@ -119,28 +119,24 @@ export default async function AdminOrderDetailPage({
                     <h3 className="font-semibold">Flight Itinerary</h3>
                   </div>
                   <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Trip Type</span>
-                      <span className="capitalize">{flightDetails![0].trip_type?.replace("_", " ")}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Route</span>
-                      <span>{flightDetails![0].departure_city} → {flightDetails![0].arrival_city}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Departure</span>
-                      <span>{new Date(flightDetails![0].departure_date).toLocaleDateString()}</span>
-                    </div>
-                    {flightDetails![0].return_date && (
+                    {flightDetails![0].trip_type && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Return</span>
-                        <span>{new Date(flightDetails![0].return_date).toLocaleDateString()}</span>
+                        <span className="text-muted-foreground">Trip Type</span>
+                        <span className="capitalize">{flightDetails![0].trip_type.replace(/_/g, " ")}</span>
                       </div>
                     )}
-                    {flightDetails![0].preferred_airline && (
+                    {flightDetails![0].validity && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Preferred Airline</span>
-                        <span>{flightDetails![0].preferred_airline}</span>
+                        <span className="text-muted-foreground">Validity</span>
+                        <span>{flightDetails![0].validity}</span>
+                      </div>
+                    )}
+                    {flightDetails![0].itinerary_text && (
+                      <div className="mt-2">
+                        <span className="text-muted-foreground block mb-1">Itinerary Details</span>
+                        <p className="whitespace-pre-wrap rounded bg-muted/50 p-3 text-sm leading-relaxed">
+                          {flightDetails![0].itinerary_text}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -157,22 +153,16 @@ export default async function AdminOrderDetailPage({
                     <h3 className="font-semibold">Hotel Booking</h3>
                   </div>
                   <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">City</span>
-                      <span>{hotelDetails![0].city}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Check-in</span>
-                      <span>{new Date(hotelDetails![0].check_in_date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Check-out</span>
-                      <span>{new Date(hotelDetails![0].check_out_date).toLocaleDateString()}</span>
-                    </div>
-                    {hotelDetails![0].hotel_name && (
+                    {hotelDetails![0].hotel_type && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Preferred Hotel</span>
-                        <span>{hotelDetails![0].hotel_name}</span>
+                        <span className="text-muted-foreground">Confirmation Type</span>
+                        <span>{hotelDetails![0].hotel_type === "separate_per_traveler" ? "Separate per traveler" : "One for all travelers"}</span>
+                      </div>
+                    )}
+                    {hotelDetails![0].city && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">City</span>
+                        <span>{hotelDetails![0].city}</span>
                       </div>
                     )}
                   </div>
@@ -189,20 +179,35 @@ export default async function AdminOrderDetailPage({
                     <h3 className="font-semibold">Travel Insurance</h3>
                   </div>
                   <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Coverage Type</span>
-                      <span className="capitalize">{insuranceDetails![0].coverage_type?.replace("_", " ")}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Coverage Amount</span>
-                      <span>${Number(insuranceDetails![0].coverage_amount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Period</span>
-                      <span>
-                        {new Date(insuranceDetails![0].start_date).toLocaleDateString()} — {new Date(insuranceDetails![0].end_date).toLocaleDateString()}
-                      </span>
-                    </div>
+                    {insuranceDetails![0].coverage_type && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coverage Area</span>
+                        <span>{
+                          insuranceDetails![0].coverage_type === "schengen" ? "Schengen Area" :
+                          insuranceDetails![0].coverage_type === "worldwide_area_1" ? "Worldwide (Excl. US/CA/JP)" :
+                          insuranceDetails![0].coverage_type === "worldwide_area_2" ? "Worldwide (Incl. US/CA/JP)" :
+                          insuranceDetails![0].coverage_type
+                        }</span>
+                      </div>
+                    )}
+                    {insuranceDetails![0].duration && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Duration</span>
+                        <span>{
+                          insuranceDetails![0].duration === "21d" ? "21 Days" :
+                          insuranceDetails![0].duration === "3m" ? "3 Months" :
+                          insuranceDetails![0].duration === "6m" ? "6 Months" :
+                          insuranceDetails![0].duration === "1y" ? "1 Year" :
+                          insuranceDetails![0].duration
+                        }</span>
+                      </div>
+                    )}
+                    {insuranceDetails![0].coverage_amount && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coverage Amount</span>
+                        <span>${Number(insuranceDetails![0].coverage_amount).toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
