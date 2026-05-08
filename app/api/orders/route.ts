@@ -234,21 +234,13 @@ async function finaliseOrder(
 
   // ── Flight details ───────────────────────────────────────────────────────
   if (services.includes("flight") && flightDetails) {
-    const today = new Date().toISOString().split("T")[0]
     const { error: flightError } = await supabase
       .from("flight_details")
       .insert({
-        order_id:          order.id,
-        // The FlightDetails interface uses tripType/flightDetails/validity.
-        // Map to DB columns; fall back to safe defaults.
-        trip_type:         flightDetails.tripType          || flightDetails.trip_type || "one_way",
-        departure_city:    flightDetails.departureCity     || flightDetails.departure_city     || "N/A",
-        arrival_city:      flightDetails.arrivalCity       || flightDetails.arrival_city       || "N/A",
-        departure_date:    flightDetails.departureDate     || flightDetails.departure_date     || today,
-        return_date:       flightDetails.returnDate        || flightDetails.return_date        || null,
-        preferred_airline: flightDetails.preferredAirline || flightDetails.preferred_airline  || null,
-        // Store the free-text itinerary in the notes-like column if it exists
-        // (flight_details column on the FlightDetails object)
+        order_id:       order.id,
+        trip_type:      flightDetails.tripType   || flightDetails.trip_type  || "one_way",
+        validity:       flightDetails.validity   || "3d",
+        itinerary_text: flightDetails.flightDetails || null,
       })
 
     if (flightError) {
@@ -258,15 +250,11 @@ async function finaliseOrder(
 
   // ── Hotel details ────────────────────────────────────────────────────────
   if (services.includes("hotel") && hotelDetails) {
-    const today = new Date().toISOString().split("T")[0]
     const { error: hotelError } = await supabase
       .from("hotel_details")
       .insert({
-        order_id:       order.id,
-        city:           hotelDetails.city           || hotelDetails.destination || "N/A",
-        check_in_date:  hotelDetails.checkInDate    || hotelDetails.check_in_date  || today,
-        check_out_date: hotelDetails.checkOutDate   || hotelDetails.check_out_date || today,
-        hotel_name:     hotelDetails.hotelName      || hotelDetails.hotel_name     || null,
+        order_id:   order.id,
+        hotel_type: hotelDetails.type || "separate_per_traveler",
       })
 
     if (hotelError) {
@@ -276,16 +264,13 @@ async function finaliseOrder(
 
   // ── Insurance details ────────────────────────────────────────────────────
   if (services.includes("insurance") && insuranceDetails) {
-    const today = new Date().toISOString().split("T")[0]
     const { error: insuranceError } = await supabase
       .from("insurance_details")
       .insert({
-        order_id:           order.id,
-        coverage_type:      insuranceDetails.area      || "schengen",
-        destination_country: insuranceDetails.area     || "Europe",
-        start_date:         insuranceDetails.startDate || insuranceDetails.start_date || today,
-        end_date:           insuranceDetails.endDate   || insuranceDetails.end_date   || today,
-        coverage_amount:    50000,
+        order_id:        order.id,
+        coverage_type:   insuranceDetails.area     || "schengen",
+        duration:        insuranceDetails.duration || "21d",
+        coverage_amount: 50000,
       })
 
     if (insuranceError) {
