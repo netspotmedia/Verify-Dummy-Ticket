@@ -4,6 +4,40 @@ import { requireAdmin } from '@/lib/auth-helpers'
 import { rateLimit, getRateLimitIdentifier, rateLimitResponse } from '@/lib/rate-limit'
 import { contactSchema, validateRequest } from '@/lib/validation'
 
+const ADMIN_NOTIFY_EMAIL = 'verifydummyticket@gmail.com'
+
+async function sendContactNotification(name: string, email: string, subject: string, message: string) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+
+  try {
+    const { Resend } = await import('resend')
+    const resend = new Resend(apiKey)
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@verifydummytickets.com'
+
+    await resend.emails.send({
+      from: `Verify Dummy Tickets <${fromEmail}>`,
+      to: [ADMIN_NOTIFY_EMAIL],
+      subject: `New Contact Message: ${subject}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #c8143d; margin-bottom: 24px;">New Contact Form Submission</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px 0; color: #6b7280; width: 100px;">Name</td><td style="padding: 8px 0; font-weight: 600;">${name}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #c8143d;">${email}</a></td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Subject</td><td style="padding: 8px 0;">${subject}</td></tr>
+          </table>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+          <p style="color: #6b7280; margin-bottom: 8px;">Message</p>
+          <p style="color: #1f2937; white-space: pre-wrap;">${message}</p>
+        </div>
+      `,
+    })
+  } catch (err) {
+    console.error('Failed to send contact notification email:', err)
+  }
+}
+
 export async function GET() {
   const supabase = await createClient()
   
@@ -60,7 +94,10 @@ export async function POST(request: NextRequest) {
       .single()
     
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    
+
+    // Fire-and-forget email notification to admin
+    sendContactNotification(sanitizedName, sanitizedEmail, sanitizedSubject, sanitizedMessage)
+
     return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json({ error: 'Failed to submit message' }, { status: 500 })

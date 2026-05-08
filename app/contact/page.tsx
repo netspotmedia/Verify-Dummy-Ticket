@@ -82,7 +82,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold">Email</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {settings?.support_email || "support@example.com"}
+                    verifydummyticket@gmail.com
                   </p>
                 </CardContent>
               </Card>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold">Phone</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {settings?.site_phone || "+234 800 123 4567"}
+                    +27 68 707 6011
                   </p>
                 </CardContent>
               </Card>
@@ -106,7 +106,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-semibold">WhatsApp</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {settings?.site_phone || "+234 800 123 4567"}
+                    +27 68 707 6011
                   </p>
                 </CardContent>
               </Card>
