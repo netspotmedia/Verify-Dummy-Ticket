@@ -3,8 +3,6 @@ import { createClient } from "@/lib/supabase/server"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { isAdminUser } from "@/lib/admin-role"
-
 function normalizeRole(role: unknown): string {
   if (typeof role !== "string") return ""
   return role.replace(/"/g, "").trim().toLowerCase()
@@ -28,10 +26,7 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single()
 
-  const roleIsAdmin = normalizeRole(profile?.role) === "admin"
-  const metadataIsAdmin = user.user_metadata?.is_admin === true
-
-  if (!roleIsAdmin && !metadataIsAdmin) {
+  if (normalizeRole(profile?.role) !== "admin") {
     redirect("/dashboard")
   }
 

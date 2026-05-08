@@ -1,7 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { isAdminUser } from '@/lib/admin-role'
-
 function normalizeRole(role: unknown): string {
   if (typeof role !== 'string') return ''
   return role.replace(/"/g, '').trim().toLowerCase()
@@ -70,11 +68,7 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const roleIsAdmin = normalizeRole(profile?.role) === 'admin'
-    const metadataIsAdmin = user.user_metadata?.is_admin === true
-    const isAdmin = roleIsAdmin || metadataIsAdmin
-
-    if (!isAdmin) {
+    if (normalizeRole(profile?.role) !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
@@ -89,11 +83,8 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const roleIsAdmin = normalizeRole(profile?.role) === 'admin'
-    const metadataIsAdmin = user.user_metadata?.is_admin === true
-    const isAdmin = roleIsAdmin || metadataIsAdmin
     const url = request.nextUrl.clone()
-    url.pathname = isAdmin ? '/admin' : '/dashboard'
+    url.pathname = normalizeRole(profile?.role) === 'admin' ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
   }
 
