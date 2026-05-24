@@ -47,18 +47,20 @@ function StatusContent({
     return {
       iconBg: "bg-destructive/10",
       title: "Payment Failed",
-      description: "Your payment could not be processed. Your order has been saved — please try again.",
+      description: "Your payment could not be processed. Your order has been saved — you can retry payment from your dashboard.",
       steps: null,
       cta: (
         <div className="flex flex-col sm:flex-row gap-3">
+          {orderId && (
+            <Link href={`/dashboard/orders/${orderId}`} className="flex-1">
+              <Button className="w-full gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Retry Payment
+              </Button>
+            </Link>
+          )}
           <Link href="/order" className="flex-1">
-            <Button className="w-full gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Try Again
-            </Button>
-          </Link>
-          <Link href="/" className="flex-1">
-            <Button variant="outline" className="w-full">Back to Home</Button>
+            <Button variant="outline" className="w-full">Start New Order</Button>
           </Link>
         </div>
       ),
@@ -69,18 +71,20 @@ function StatusContent({
     return {
       iconBg: "bg-yellow-100",
       title: "Payment Cancelled",
-      description: "You cancelled the payment. Your order has been saved — return whenever you're ready.",
+      description: "You cancelled the payment. Your order has been saved — retry from your dashboard whenever you're ready.",
       steps: null,
       cta: (
         <div className="flex flex-col sm:flex-row gap-3">
+          {orderId && (
+            <Link href={`/dashboard/orders/${orderId}`} className="flex-1">
+              <Button className="w-full gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Retry Payment
+              </Button>
+            </Link>
+          )}
           <Link href="/order" className="flex-1">
-            <Button className="w-full gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Start New Order
-            </Button>
-          </Link>
-          <Link href="/" className="flex-1">
-            <Button variant="outline" className="w-full">Back to Home</Button>
+            <Button variant="outline" className="w-full">Start New Order</Button>
           </Link>
         </div>
       ),

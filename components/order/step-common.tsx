@@ -7,23 +7,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, ArrowRight, Plus, Minus, Globe, AlertCircle } from "lucide-react"
+import { ArrowLeft, ArrowRight, Plus, Minus, Globe, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Title } from "@/lib/types"
+import { COUNTRIES } from "@/lib/countries"
 
 const TITLES: { value: Title; label: string }[] = [
   { value: "Mr", label: "Mr." },
   { value: "Mrs", label: "Mrs." },
   { value: "Master", label: "Master" },
   { value: "Miss", label: "Miss" },
-]
-
-const COUNTRIES = [
-  { code: "NG", name: "Nigeria" }, { code: "US", name: "United States" }, { code: "GB", name: "United Kingdom" },
-  { code: "DE", name: "Germany" }, { code: "FR", name: "France" }, { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" }, { code: "NL", name: "Netherlands" }, { code: "CA", name: "Canada" },
-  { code: "AU", name: "Australia" }, { code: "AE", name: "UAE" }, { code: "ZA", name: "South Africa" },
-  { code: "IN", name: "India" }, { code: "CN", name: "China" }, { code: "JP", name: "Japan" },
 ]
 
 function FieldError({ id, message }: { id?: string; message?: string }) {
@@ -50,6 +43,11 @@ export function StepCommon() {
 
   const [tried, setTried] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [confirmEmail, setConfirmEmail] = useState("")
+  const [expandedTravelers, setExpandedTravelers] = useState<Record<number, boolean>>({})
+
+  const toggleTravelerExpanded = (index: number) =>
+    setExpandedTravelers(prev => ({ ...prev, [index]: !prev[index] }))
 
   const touch = (field: string) => setTouched(prev => ({ ...prev, [field]: true }))
 
@@ -59,6 +57,11 @@ export function StepCommon() {
       e.email = "Email address is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       e.email = "Enter a valid email address"
+    }
+    if (!confirmEmail?.trim()) {
+      e.confirmEmail = "Please confirm your email address"
+    } else if (confirmEmail.trim().toLowerCase() !== email.trim().toLowerCase()) {
+      e.confirmEmail = "Email addresses do not match"
     }
     if (!customerCountryCode) e.country = "Please select your country"
     travelers.forEach((t, i) => {
@@ -113,6 +116,28 @@ export function StepCommon() {
           <FieldError id="email-error" message={show("email")} />
         </div>
 
+        {/* Confirm email */}
+        <div className="space-y-1">
+          <Label htmlFor="confirm-email" className="text-sm text-black">
+            Confirm Email <Req />
+          </Label>
+          <Input
+            id="confirm-email"
+            type="email"
+            placeholder="Retype your email"
+            autoComplete="off"
+            value={confirmEmail}
+            onChange={(e) => setConfirmEmail(e.target.value)}
+            onBlur={() => touch("confirmEmail")}
+            aria-invalid={!!show("confirmEmail")}
+            aria-describedby={show("confirmEmail") ? "confirm-email-error" : undefined}
+            className="h-9 rounded-md border-slate-200 bg-white text-sm"
+          />
+          <FieldError id="confirm-email-error" message={show("confirmEmail")} />
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
         {/* Country */}
         <div className="space-y-1">
           <Label className="text-sm text-black">
@@ -267,6 +292,52 @@ export function StepCommon() {
                 <FieldError message={show(`lastName_${index}`)} />
               </div>
             </div>
+
+            {/* Optional passport details toggle */}
+            <button
+              type="button"
+              onClick={() => toggleTravelerExpanded(index)}
+              className="mt-2 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700"
+            >
+              {expandedTravelers[index] ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              {expandedTravelers[index] ? "Hide passport details" : "Add passport details (optional)"}
+            </button>
+
+            {expandedTravelers[index] && (
+              <div className="mt-2 grid gap-2 md:grid-cols-3">
+                <div>
+                  <Input
+                    placeholder="Nationality"
+                    autoComplete="off"
+                    value={traveler.nationality || ""}
+                    onChange={(e) => updateTraveler(index, { nationality: e.target.value })}
+                    aria-label={`Traveler ${index + 1} nationality`}
+                    className="h-9 rounded-md bg-white text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Passport number"
+                    autoComplete="off"
+                    value={traveler.passportNumber || ""}
+                    onChange={(e) => updateTraveler(index, { passportNumber: e.target.value })}
+                    aria-label={`Traveler ${index + 1} passport number`}
+                    className="h-9 rounded-md bg-white text-sm"
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="date"
+                    placeholder="Date of birth"
+                    autoComplete="off"
+                    value={traveler.dateOfBirth || ""}
+                    onChange={(e) => updateTraveler(index, { dateOfBirth: e.target.value })}
+                    aria-label={`Traveler ${index + 1} date of birth`}
+                    className="h-9 rounded-md bg-white text-sm"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

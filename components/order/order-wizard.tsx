@@ -1,8 +1,10 @@
 "use client"
 
 import { useOrderStore } from "@/lib/order-store"
+import { useSiteSettings } from "@/lib/site-settings"
 import { cn } from "@/lib/utils"
-import { Check } from "lucide-react"
+import { Check, ShieldCheck, Clock, Star, MessageCircle } from "lucide-react"
+import Link from "next/link"
 
 import { StepServices } from "./step-services"
 import { StepCommon } from "./step-common"
@@ -24,6 +26,8 @@ const STEP_TITLES: Record<string, { title: string; description: string }> = {
 
 export function OrderWizard() {
   const { currentStepIndex, activeSteps, formData, goToStep } = useOrderStore()
+  const { settings } = useSiteSettings()
+  const whatsappNumber = (settings?.site_phone || "+2348001234567").replace(/\D/g, "")
   const progress = ((currentStepIndex + 1) / activeSteps.length) * 100
 
   const currentStep = activeSteps[currentStepIndex]
@@ -85,6 +89,24 @@ export function OrderWizard() {
 
   return (
     <div className="max-w-[560px] mx-auto space-y-4 font-outfit">
+      {/* Social proof trust bar */}
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+        <span className="flex items-center gap-1 text-xs text-slate-600">
+          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+          <strong>12,000+</strong> orders delivered
+        </span>
+        <span className="hidden h-3 w-px bg-slate-300 sm:block" />
+        <span className="flex items-center gap-1 text-xs text-slate-600">
+          <Clock className="h-3 w-3 text-green-500" />
+          Delivery within <strong>24 hrs</strong>
+        </span>
+        <span className="hidden h-3 w-px bg-slate-300 sm:block" />
+        <span className="flex items-center gap-1 text-xs text-slate-600">
+          <ShieldCheck className="h-3 w-3 text-blue-500" />
+          Visa-<strong>compliant</strong> documents
+        </span>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-slate-400">Step {currentStepIndex + 1} of {activeSteps.length}</p>
@@ -130,6 +152,19 @@ export function OrderWizard() {
       </div>
 
       {renderStep()}
+
+      {/* WhatsApp help button */}
+      <div className="flex items-center justify-center pt-1">
+        <Link
+          href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hi, I need help with my order.")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2 text-xs font-medium text-green-800 hover:bg-green-100 transition-colors"
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          Need help? Chat with us on WhatsApp
+        </Link>
+      </div>
     </div>
   )
 }

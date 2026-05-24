@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { requireAuth } from "@/lib/auth-helpers"
+import { rateLimitRequest, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await rateLimitRequest(request, "order")
+    if (!rl.success) return rateLimitResponse(rl.resetIn)
+
     // Authentication required — anonymous users cannot initialize payment
     const { user, error: authError } = await requireAuth()
     if (authError || !user) {

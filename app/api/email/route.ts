@@ -26,13 +26,18 @@ function sanitizeForHtml(input: string | undefined): string {
 interface EmailRequest {
   to: string
   subject: string
-  type: 'welcome' | 'password_reset' | 'order_placed' | 'order_delivered' | 'order_processing'
+  type: 'welcome' | 'password_reset' | 'order_placed' | 'order_delivered' | 'order_processing' | 'order_abandoned'
   data?: {
     name?: string
     orderId?: string
+    orderNumber?: string
     resetLink?: string
     services?: string[]
     trackingUrl?: string
+    totalAmount?: number
+    currency?: string
+    resumeUrl?: string
+    statusUrl?: string
   }
 }
 
@@ -238,7 +243,7 @@ const getWelcomeEmailHtml = (name: string, siteName: string, siteLogo: string) =
 `
 }
 
-const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: string, orderId: string, services: string[]) => {
+const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: string, orderId: string, services: string[], statusUrl?: string) => {
   const { logoHtml, brandGradient } = getBranding(siteName, siteLogo)
   const servicesList = services?.map(s => {
     const icon = s === 'flight' ? '✈️' : s === 'hotel' ? '🏨' : '🛡️'
@@ -360,8 +365,18 @@ const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: strin
                   </tr>
                 </table>
                 
-                <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 24px 0 0; text-align: center;">
-                  Track your order in your <a href="${siteUrl}/dashboard/orders" style="color: #c8143d; text-decoration: underline;">dashboard</a>
+                <!-- Status CTA -->
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding: 20px 0 8px;">
+                      <a href="${statusUrl || `${siteUrl}/dashboard/orders`}" style="display: inline-block; background: ${brandGradient}; color: white; text-decoration: none; padding: 13px 32px; border-radius: 50px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(200,20,61,0.3);">
+                        Track My Order →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 8px 0 0; text-align: center;">
+                  No login required — use the link above anytime
                 </p>
               </td>
             </tr>
@@ -643,6 +658,145 @@ const getPasswordResetEmailHtml = (name: string, siteName: string, siteLogo: str
 `
 }
 
+const getOrderAbandonedEmailHtml = (
+  siteName: string,
+  siteLogo: string,
+  orderNumber: string,
+  services: string[],
+  totalAmount: number,
+  currency: string,
+  resumeUrl: string,
+) => {
+  const { logoHtml, brandGradient } = getBranding(siteName, siteLogo)
+
+  const currencySymbol = currency === "NGN" ? "₦" : "$"
+  const formattedTotal = currency === "NGN"
+    ? `₦${Math.round(totalAmount).toLocaleString()}`
+    : `$${totalAmount.toFixed(2)}`
+
+  const servicesList = services.map(s => {
+    const icon = s === 'flight' ? '✈️' : s === 'hotel' ? '🏨' : '🛡️'
+    const label = s === 'flight' ? 'Flight Reservation' : s === 'hotel' ? 'Hotel Booking' : 'Travel Insurance'
+    return `<tr><td style="padding: 6px 0;"><span style="margin-right: 10px;">${icon}</span><span style="color: #4b5563; font-size: 14px;">${label}</span></td></tr>`
+  }).join('') || '<tr><td style="padding: 6px 0; color: #4b5563; font-size: 14px;">Travel documents</td></tr>'
+
+  const safeResumeUrl = resumeUrl && isSafeHttpsUrl(resumeUrl) ? resumeUrl : `${siteUrl}/order`
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Complete Your Order - ${siteName}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background: ${brandGradient}; padding: 35px 40px 25px; border-radius: 20px 20px 0 0;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    ${logoHtml}
+                    <h1 style="color: white; margin: 18px 0 0; font-size: 24px; font-weight: 700;">Your order is waiting ✋</h1>
+                    <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 15px;">You're just one step away from your travel documents</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 36px 40px 30px;">
+              <p style="color: #1f2937; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">Hi there,</p>
+
+              <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 24px;">
+                We noticed you started an order but didn&apos;t complete your payment. Your travel documents are still available — it only takes a minute to finish.
+              </p>
+
+              <!-- Order summary -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #fef3f4 0%, #fff5f6 100%); border-radius: 14px; margin: 0 0 24px;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <p style="color: #c8143d; font-size: 12px; font-weight: 700; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.8px;">Your Order</p>
+                    <p style="color: #1f2937; font-size: 18px; font-weight: 700; margin: 0 0 16px; font-family: monospace; letter-spacing: 1px;">${orderNumber}</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border-top: 1px solid #fecdd3; padding-top: 16px; margin-top: 4px;">
+                      <tr><td style="padding-top: 12px;">
+                        <p style="color: #c8143d; font-size: 12px; font-weight: 700; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.8px;">Services Selected</p>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                          ${servicesList}
+                        </table>
+                      </td></tr>
+                      ${totalAmount > 0 ? `
+                      <tr><td style="padding-top: 12px; border-top: 1px solid #fecdd3;">
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td style="color: #6b7280; font-size: 14px;">Total</td>
+                            <td align="right" style="color: #c8143d; font-size: 20px; font-weight: 700;">${formattedTotal}</td>
+                          </tr>
+                        </table>
+                      </td></tr>` : ''}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Urgency note -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: #fffbeb; border-radius: 10px; margin: 0 0 24px;">
+                <tr>
+                  <td style="padding: 14px 18px;">
+                    <p style="color: #92400e; font-size: 13px; margin: 0; line-height: 1.5;">
+                      ⏰ <strong>Don&apos;t miss your visa window.</strong> Your embassy appointment won&apos;t wait — complete your order now and get your documents within 24 hours.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 8px 0 16px;">
+                    <a href="${safeResumeUrl}" style="display: inline-block; background: ${brandGradient}; color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 15px rgba(200,20,61,0.3);">
+                      Complete My Order →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 16px 0 0; text-align: center;">
+                Questions? <a href="${siteUrl}/contact" style="color: #c8143d; text-decoration: underline;">Contact our support team</a> — we&apos;re here to help.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-radius: 0 0 20px 20px; border-top: 1px solid #f3f4f6;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    ${logoHtml}
+                    <p style="color: #9ca3af; font-size: 12px; margin: 12px 0 4px;">© ${new Date().getFullYear()} ${siteName}. All rights reserved.</p>
+                    <p style="color: #d1d5db; font-size: 11px; margin: 0;">You received this because you started an order. If this wasn&apos;t you, please ignore this email.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Fail-closed: if the secret is not configured the endpoint is disabled.
@@ -676,9 +830,14 @@ export async function POST(request: NextRequest) {
       case 'welcome':
         html = getWelcomeEmailHtml(sanitizedName || 'Customer', siteName, siteLogo)
         break
-      case 'order_placed':
-        html = getOrderPlacedEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '', data?.services || [])
+      case 'order_placed': {
+        const orderNumber = sanitizeInput(data?.orderNumber, 50)
+        const statusUrl = orderNumber
+          ? `${siteUrl}/order/status?ref=${encodeURIComponent(orderNumber)}`
+          : data?.statusUrl || `${siteUrl}/dashboard/orders`
+        html = getOrderPlacedEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '', data?.services || [], statusUrl)
         break
+      }
       case 'order_delivered':
         html = getOrderDeliveredEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '', data?.trackingUrl || '')
         break
@@ -688,6 +847,20 @@ export async function POST(request: NextRequest) {
       case 'password_reset':
         html = getPasswordResetEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, data?.resetLink || `${siteUrl}/auth/reset-password`)
         break
+      case 'order_abandoned': {
+        const safeOrderNumber = sanitizeInput(data?.orderNumber, 50)
+        const safeResumeUrl = data?.resumeUrl || `${siteUrl}/order`
+        html = getOrderAbandonedEmailHtml(
+          siteName,
+          siteLogo,
+          safeOrderNumber || sanitizedOrderId || 'Your Order',
+          data?.services || [],
+          data?.totalAmount || 0,
+          data?.currency || 'USD',
+          safeResumeUrl,
+        )
+        break
+      }
       default:
         return NextResponse.json({ error: 'Invalid email type' }, { status: 400 })
     }
