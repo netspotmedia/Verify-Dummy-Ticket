@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight } from "lucide-react"
+import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { HotelType } from "@/lib/types"
 
@@ -21,14 +21,18 @@ const HOTEL_OPTIONS: { value: HotelType; title: string; description: string }[] 
   },
 ]
 
+function Req() {
+  return <span aria-hidden="true" className="text-[#c8143d] ml-0.5">*</span>
+}
+
 export function StepHotel() {
   const { formData, setHotelDetails, nextStep, prevStep } = useOrderStore()
   const { hotelDetails, travelerCount } = formData
 
   const isSingleTraveler = travelerCount <= 1
   const selectedType = hotelDetails?.type || null
+  const [tried, setTried] = useState(false)
 
-  // Auto-select for single traveler
   useEffect(() => {
     if (isSingleTraveler) {
       setHotelDetails({ type: "separate_per_traveler" } as any)
@@ -44,11 +48,16 @@ export function StepHotel() {
   const effectiveType = isSingleTraveler ? "separate_per_traveler" : selectedType
   const hotelCost = calculateHotelCost(effectiveType)
   const isValid = isSingleTraveler ? true : selectedType !== null
+  const showError = tried && !isValid
+
+  const handleContinue = () => {
+    if (!isValid) { setTried(true); return }
+    nextStep()
+  }
 
   return (
     <div className="space-y-4 font-outfit">
       {isSingleTraveler ? (
-        // Single traveler — no type choice needed
         <section className="p-4 border border-slate-200 rounded-lg bg-slate-50">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-[#c8143d]/10 flex items-center justify-center shrink-0">
@@ -59,23 +68,35 @@ export function StepHotel() {
             </div>
             <div>
               <p className="text-sm font-medium text-slate-900">Hotel Booking Confirmation</p>
-              <p className="text-xs text-slate-500 mt-0.5">
-                A verified hotel confirmation will be generated for you
-              </p>
+              <p className="text-xs text-slate-500 mt-0.5">A verified hotel confirmation will be generated for you</p>
             </div>
           </div>
         </section>
       ) : (
-        // Multiple travelers — show type selection
         <section className="space-y-2">
-          <Label className="text-sm font-medium uppercase tracking-wider text-black">
-            Hotel Confirmation Type
-          </Label>
-          <p className="text-xs text-slate-500">
-            Choose how you&apos;d like hotel confirmations issued for your group
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wider text-black">
+                Hotel Confirmation Type <Req />
+              </Label>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Choose how you&apos;d like hotel confirmations issued for your group
+              </p>
+            </div>
+            {showError && (
+              <span className="flex items-center gap-1 text-xs text-[#c8143d]">
+                <AlertCircle className="h-3 w-3" />
+                Required
+              </span>
+            )}
+          </div>
 
-          <div className="space-y-1">
+          <div
+            className={cn(
+              "space-y-1 rounded-lg p-1 transition-all",
+              showError && "ring-1 ring-[#c8143d]/40 bg-[#fff5f6]"
+            )}
+          >
             {HOTEL_OPTIONS.map((option) => {
               const cost = calculateHotelCost(option.value)
               const isSelected = selectedType === option.value
@@ -90,12 +111,10 @@ export function StepHotel() {
                       : "border-slate-200 bg-white hover:border-slate-300"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
-                      isSelected ? "border-[#c8143d]" : "border-slate-300"
-                    )}
-                  >
+                  <div className={cn(
+                    "h-4 w-4 rounded-full border flex items-center justify-center shrink-0",
+                    isSelected ? "border-[#c8143d]" : "border-slate-300"
+                  )}>
                     {isSelected && <div className="h-2 w-2 rounded-full bg-[#c8143d]" />}
                   </div>
                   <input
@@ -119,15 +138,20 @@ export function StepHotel() {
               )
             })}
           </div>
+
+          {showError && (
+            <p role="alert" className="flex items-center gap-1 text-xs text-[#c8143d] animate-in fade-in slide-in-from-top-1 duration-150">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              Please select a hotel confirmation type to continue
+            </p>
+          )}
         </section>
       )}
 
       <section className="flex items-center justify-between p-3 border border-[#c8143d] bg-[#fff7f9] rounded">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wider text-black">Hotel Cost</p>
-          <p className="text-sm text-black mt-0.5">
-            For {travelerCount} traveler{travelerCount > 1 ? "s" : ""}
-          </p>
+          <p className="text-sm text-black mt-0.5">For {travelerCount} traveler{travelerCount > 1 ? "s" : ""}</p>
         </div>
         <div className="text-right">
           <span className="text-xs text-slate-500 uppercase tracking-wider block">Total</span>
@@ -140,11 +164,7 @@ export function StepHotel() {
           <ArrowLeft className="mr-1 h-3 w-3" />
           Back
         </Button>
-        <Button
-          onClick={nextStep}
-          disabled={!isValid}
-          className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] font-medium text-xs"
-        >
+        <Button onClick={handleContinue} className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] font-medium text-xs">
           Continue
           <ArrowRight className="ml-1 h-3 w-3" />
         </Button>

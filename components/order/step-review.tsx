@@ -1,10 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { useOrderStore } from "@/lib/order-store"
 import { useSiteSettings } from "@/lib/site-settings"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, Clock, Globe } from "lucide-react"
+import { ArrowLeft, ArrowRight, Clock, Globe, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DeliverySpeed, Currency } from "@/lib/types"
 import { getExchangeRate } from "@/lib/types"
@@ -47,8 +48,13 @@ const formatPrice = (amount: number, currency: Currency, exchangeRate: number) =
   return amount === 0 ? "Free" : `+$${amount}`
 }
 
+function Req() {
+  return <span aria-hidden="true" className="text-[#c8143d] ml-0.5">*</span>
+}
+
 export function StepReview() {
   const { formData, setDeliverySpeed, nextStep, prevStep, isNigeria, ipCountry } = useOrderStore()
+  const [tried, setTried] = useState(false)
   const { settings } = useSiteSettings()
   const {
     services,
@@ -219,16 +225,29 @@ export function StepReview() {
 
       {/* DELIVERY SPEED */}
       <div className="space-y-2">
-        <div>
-          <Label className="text-sm font-medium uppercase tracking-wider text-black">
-            Delivery Speed
-          </Label>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Choose how quickly you need your documents delivered to your email.
-          </p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <Label className="text-sm font-medium uppercase tracking-wider text-black">
+              Delivery Speed <Req />
+            </Label>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Choose how quickly you need your documents delivered to your email.
+            </p>
+          </div>
+          {tried && !deliverySpeed && (
+            <span className="flex shrink-0 items-center gap-1 text-xs text-[#c8143d]">
+              <AlertCircle className="h-3 w-3" />
+              Required
+            </span>
+          )}
         </div>
 
-        <div className="space-y-1.5">
+        <div
+          className={cn(
+            "space-y-1.5 rounded-lg p-1 transition-all",
+            tried && !deliverySpeed && "ring-1 ring-[#c8143d]/40 bg-[#fff5f6]"
+          )}
+        >
           {DELIVERY_OPTIONS.map((option) => {
             const active = deliverySpeed === option.value
             const priceLabel =
@@ -303,6 +322,13 @@ export function StepReview() {
             )
           })}
         </div>
+
+        {tried && !deliverySpeed && (
+          <p role="alert" className="flex items-center gap-1 px-1 text-xs text-[#c8143d] animate-in fade-in slide-in-from-top-1 duration-150">
+            <AlertCircle className="h-3 w-3 shrink-0" />
+            Please select a delivery speed to continue
+          </p>
+        )}
       </div>
 
       {/* Order summary table */}
@@ -362,8 +388,7 @@ export function StepReview() {
           Back
         </Button>
         <Button
-          onClick={nextStep}
-          disabled={!deliverySpeed}
+          onClick={() => { setTried(true); if (deliverySpeed) nextStep() }}
           className="flex-1 h-9 rounded-md bg-[#c8143d] hover:bg-[#b01030] text-xs font-medium"
         >
           Continue
