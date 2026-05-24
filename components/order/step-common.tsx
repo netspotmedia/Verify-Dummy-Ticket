@@ -51,7 +51,7 @@ export function StepCommon() {
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1">
           <Label className="text-sm text-black">Email Address</Label>
-          <Input type="email" placeholder="your@email.com" value={email} onChange={(e) => setCustomerInfo({ email: e.target.value })} className="h-9 rounded-md border-slate-200 bg-white text-sm" />
+          <Input type="email" placeholder="your@email.com" autoComplete="email" value={email} onChange={(e) => setCustomerInfo({ email: e.target.value })} className="h-9 rounded-md border-slate-200 bg-white text-sm" />
         </div>
         <div className="space-y-1">
           <Label className="text-sm text-black">Country</Label>
@@ -111,8 +111,8 @@ export function StepCommon() {
                 <SelectTrigger className="h-9 rounded-md bg-white text-sm"><SelectValue placeholder="Title" /></SelectTrigger>
                 <SelectContent>{TITLES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
               </Select>
-              <Input placeholder="First name" value={traveler.firstName} onChange={(e) => updateTraveler(index, { firstName: e.target.value })} className="h-9 rounded-md bg-white text-sm" />
-              <Input placeholder="Last name" value={traveler.lastName} onChange={(e) => updateTraveler(index, { lastName: e.target.value })} className="h-9 rounded-md bg-white text-sm" />
+              <Input placeholder="First name" autoComplete={index === 0 ? "given-name" : "off"} value={traveler.firstName} onChange={(e) => updateTraveler(index, { firstName: e.target.value })} className="h-9 rounded-md bg-white text-sm" />
+              <Input placeholder="Last name" autoComplete={index === 0 ? "family-name" : "off"} value={traveler.lastName} onChange={(e) => updateTraveler(index, { lastName: e.target.value })} className="h-9 rounded-md bg-white text-sm" />
             </div>
           </div>
         ))}

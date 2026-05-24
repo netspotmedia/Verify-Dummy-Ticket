@@ -33,6 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: siteUrl,
+    },
     title: {
       default: 'VerifyDummyTickets - Flight, Hotel & Travel Insurance for Visa Applications',
       template: '%s | VerifyDummyTickets'

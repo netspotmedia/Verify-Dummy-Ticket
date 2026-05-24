@@ -7,15 +7,20 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, User, ArrowRight } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Blog - Visa Tips & Travel Guides | Diplomatic Courier",
-  description: "Expert visa application tips, travel document guides, and insider advice for seamless international travel. Stay updated with the latest visa requirements and travel insurance insights.",
+  title: "Blog – Visa Tips & Travel Guides | Verify Dummy Tickets",
+  description: "Expert visa application tips, travel document guides, and insider advice for seamless international travel.",
   keywords: ["visa tips", "travel guide", "visa application", "travel documents", "visa requirements", "travel insurance"],
   openGraph: {
-    title: "Blog - Visa Tips & Travel Guides | Diplomatic Courier",
+    title: "Blog – Visa Tips & Travel Guides | Verify Dummy Tickets",
     description: "Expert visa application tips, travel document guides, and insider advice for seamless international travel.",
     type: "website",
-    url: "/blog",
-    siteName: "Diplomatic Courier",
+    url: "https://verifydummytickets.com/blog",
+    siteName: "Verify Dummy Tickets",
+  },
+  twitter: {
+    card: "summary",
+    title: "Blog – Verify Dummy Tickets",
+    description: "Visa tips, travel guides, and document advice.",
   },
 }
 

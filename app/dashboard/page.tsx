@@ -13,31 +13,17 @@ export default async function DashboardPage() {
     return null
   }
 
-  // Get user's orders
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(5)
-
-  // Get stats
-  const { count: totalOrders } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-
-  const { count: pendingOrders } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .in("status", ["pending", "processing"])
-
-  const { count: completedOrders } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("status", "completed")
+  const [
+    { data: orders },
+    { count: totalOrders },
+    { count: pendingOrders },
+    { count: completedOrders },
+  ] = await Promise.all([
+    supabase.from("orders").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["pending", "processing"]),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "completed"),
+  ])
 
   const stats = [
     { label: "Total Orders", value: totalOrders || 0, icon: ShoppingBag },
@@ -127,7 +113,9 @@ export default async function DashboardPage() {
                     </div>
                     <div>
                       <p className="font-medium">
-                        Order #{order.id.slice(0, 8).toUpperCase()}
+                        {order.order_number
+                          ? order.order_number.toString().toUpperCase()
+                          : `#${order.id.slice(0, 8).toUpperCase()}`}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {(order.services || []).map((service: string) => service.charAt(0).toUpperCase() + service.slice(1)).join(", ")}

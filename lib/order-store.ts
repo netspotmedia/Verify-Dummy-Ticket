@@ -1,7 +1,7 @@
 "use client"
 
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { persist, createJSONStorage } from "zustand/middleware"
 import type { 
   OrderFormData, 
   ServiceType, 
@@ -109,11 +109,15 @@ export const useOrderStore = create<OrderStore>()(
 
       setServices: (services) =>
         set((state) => {
-          const newFormData = { ...state.formData, services }
+          const newFormData  = { ...state.formData, services }
+          const newSteps     = computeActiveSteps(newFormData)
+          // Clamp current step to the new step count so the user is not
+          // unexpectedly thrown back to step 0 when they merely change services
+          const clampedIndex = Math.min(state.currentStepIndex, newSteps.length - 1)
           return {
-            formData: newFormData,
-            activeSteps: computeActiveSteps(newFormData),
-            currentStepIndex: 0,
+            formData:         newFormData,
+            activeSteps:      newSteps,
+            currentStepIndex: clampedIndex,
           }
         }),
 
@@ -232,6 +236,10 @@ export const useOrderStore = create<OrderStore>()(
     }),
     {
       name: "order-form-storage",
+      // sessionStorage clears when the tab closes — PII is not persisted long-term
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined" ? sessionStorage : localStorage
+      ),
     }
   )
 )

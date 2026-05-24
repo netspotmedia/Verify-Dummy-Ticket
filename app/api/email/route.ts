@@ -94,9 +94,21 @@ const sendViaResend = async (
   }
 }
 
+function isSafeHttpsUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 const getBranding = (siteName: string, siteLogo: string) => {
-  const logoHtml = siteLogo 
-    ? `<img src="${siteLogo}" alt="${siteName}" style="height: 40px; width: auto;">`
+  // Only use the logo if it is a valid HTTPS URL — never inject untrusted content
+  const safeLogoUrl = siteLogo && isSafeHttpsUrl(siteLogo) ? siteLogo : null
+  const safeSiteName = sanitizeForHtml(siteName)
+  const logoHtml = safeLogoUrl
+    ? `<img src="${safeLogoUrl}" alt="${safeSiteName}" style="height: 40px; width: auto;">`
     : `<div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: linear-gradient(135deg, #c8143d 0%, #d94a6d 100%); border-radius: 10px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/>
@@ -633,13 +645,15 @@ const getPasswordResetEmailHtml = (name: string, siteName: string, siteLogo: str
 
 export async function POST(request: NextRequest) {
   try {
-    // Restrict to internal server-to-server calls only
+    // Fail-closed: if the secret is not configured the endpoint is disabled.
+    // This prevents unauthenticated callers from sending emails on our behalf.
     const internalSecret = process.env.INTERNAL_API_SECRET
-    if (internalSecret) {
-      const provided = request.headers.get('x-internal-secret')
-      if (provided !== internalSecret) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+    if (!internalSecret) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+    }
+    const provided = request.headers.get('x-internal-secret')
+    if (provided !== internalSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body: EmailRequest = await request.json()

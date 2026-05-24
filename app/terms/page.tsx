@@ -52,9 +52,9 @@ export default function TermsOfServicePage() {
             <div className="mx-auto max-w-3xl">
 
               <P>
-                Please read these Terms of Service ("Terms", "Agreement") carefully before using the
+                Please read these Terms of Service (&ldquo;Terms&rdquo;, &ldquo;Agreement&rdquo;) carefully before using the
                 website located at <A href={SITE_URL}>{SITE_URL}</A> or any services offered by{" "}
-                {COMPANY} ("we", "us", "our", or "the Company"). By accessing or using our services,
+                {COMPANY} (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;, or &ldquo;the Company&rdquo;). By accessing or using our services,
                 you confirm that you have read, understood, and agree to be bound by these Terms. If
                 you do not agree, do not use our services.
               </P>
@@ -226,7 +226,7 @@ export default function TermsOfServicePage() {
 
               <H2>8. Disclaimer of Warranties</H2>
               <P>
-                Our services are provided <strong>"as is"</strong> and <strong>"as available"</strong>,
+                Our services are provided <strong>&ldquo;as is&rdquo;</strong> and <strong>&ldquo;as available&rdquo;</strong>,
                 without warranty of any kind, express or implied. To the fullest extent permitted by law,
                 we disclaim all warranties, including but not limited to:
               </P>
@@ -311,7 +311,7 @@ export default function TermsOfServicePage() {
               <H2>14. Changes to These Terms</H2>
               <P>
                 We reserve the right to modify these Terms at any time. Changes will be effective
-                immediately upon posting on our website. The "Last updated" date at the top of this page
+                immediately upon posting on our website. The &ldquo;Last updated&rdquo; date at the top of this page
                 will reflect when changes were made. Your continued use of our services after any changes
                 constitutes acceptance of the new Terms.
               </P>

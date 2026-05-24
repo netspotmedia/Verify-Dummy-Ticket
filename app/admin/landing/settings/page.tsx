@@ -245,7 +245,7 @@ export default function SettingsPage() {
               <p><strong>Option 1: Supabase Storage</strong></p>
               <ol className="list-decimal list-inside space-y-1 ml-2">
                 <li>Go to Supabase Dashboard → Storage</li>
-                <li>Create a new bucket named "logos" (public)</li>
+                <li>Create a new bucket named &ldquo;logos&rdquo; (public)</li>
                 <li>Upload your logo files</li>
                 <li>Copy the public URL and paste above</li>
               </ol>

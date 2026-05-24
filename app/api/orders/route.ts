@@ -4,6 +4,22 @@ import crypto from "crypto"
 import { getCaptchaSecret } from "@/lib/captcha"
 import { calculatePriceBreakdown } from "@/lib/types"
 import type { ServiceType, DeliverySpeed } from "@/lib/types"
+import { z } from "zod"
+
+const orderBodySchema = z.object({
+  services: z.array(z.enum(["flight", "hotel", "insurance"])).min(1),
+  email: z.string().email(),
+  currency: z.enum(["USD", "NGN"]),
+  paymentMethod: z.enum(["paypal", "paystack"]),
+  deliveryMethod: z.enum(["normal", "fast", "express"]).optional(),
+  customerCountry: z.string().optional(),
+  customerCountryCode: z.string().optional(),
+  captchaToken: z.string().min(1),
+  travelers: z.array(z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+  })).min(1),
+})
 
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
 
@@ -39,8 +55,13 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
-    console.log("=== ORDER API CALLED ===")
-    console.log("User:", user?.id ?? "anonymous")
+    const parsed = orderBodySchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({
+        error: parsed.error.errors[0]?.message ?? "Invalid request body",
+      }, { status: 400 })
+    }
+
 
     const captchaSecret = getCaptchaSecret()
     if (!captchaSecret) {
@@ -116,7 +137,6 @@ export async function POST(request: NextRequest) {
       payment_reference:     paymentReference     || null,
     }
 
-    console.log("Inserting order for:", orderEmail, "| services:", normalizedServices)
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -125,11 +145,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (orderError) {
-      console.error("=== ORDER INSERT FAILED ===")
-      console.error("Code:", orderError.code)
-      console.error("Message:", orderError.message)
-      console.error("Details:", orderError.details)
-      console.error("Hint:", orderError.hint)
+      console.error("Order insert failed", { code: orderError.code })
 
       // If it's a missing-column error, retry with the minimal guaranteed columns
       // This handles databases that haven't run all migrations.
@@ -138,7 +154,6 @@ export async function POST(request: NextRequest) {
         orderError.message?.includes("column") ||
         orderError.message?.includes("does not exist")
       ) {
-        console.log("Retrying with minimal payload (schema migration may be incomplete)...")
 
         const minimalPayload = {
           order_number:   orderPayload.order_number,
@@ -161,7 +176,6 @@ export async function POST(request: NextRequest) {
           console.error("Retry also failed:", retryError.message)
           return NextResponse.json({
             error: "Failed to create order. Please ensure the database migrations have been run.",
-            details: retryError.message,
           }, { status: 500 })
         }
 
@@ -179,25 +193,17 @@ export async function POST(request: NextRequest) {
             if (updateErr) console.warn("Could not update extended columns:", updateErr.message)
           })
 
-        console.log("Order created (minimal):", orderRetry!.id)
         return await finaliseOrder(supabase, orderRetry!, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail)
       }
 
-      return NextResponse.json({
-        error: "Failed to create order. " + (orderError.message || ""),
-        details: orderError.message,
-      }, { status: 500 })
+      return NextResponse.json({ error: "Failed to create order." }, { status: 500 })
     }
 
-    console.log("Order created:", order.id)
     return await finaliseOrder(supabase, order, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail)
 
   } catch (error) {
     console.error("=== UNEXPECTED ERROR ===", error)
-    return NextResponse.json({
-      error: "Internal server error",
-      details: error instanceof Error ? error.message : String(error),
-    }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
@@ -278,7 +284,6 @@ async function finaliseOrder(
     }
   }
 
-  console.log("=== ORDER COMPLETE:", order.id, "===")
 
   return NextResponse.json({
     success: true,

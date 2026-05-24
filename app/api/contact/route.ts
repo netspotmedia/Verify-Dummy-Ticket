@@ -1,40 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-helpers'
-import { rateLimit, getRateLimitIdentifier, rateLimitResponse } from '@/lib/rate-limit'
+import { rateLimitRequest, rateLimitResponse } from '@/lib/rate-limit'
 import { contactSchema, validateRequest } from '@/lib/validation'
 
-const ADMIN_NOTIFY_EMAIL = 'verifydummyticket@gmail.com'
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+async function getAdminEmail(): Promise<string | null> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'support_email')
+      .single()
+    if (data?.value) {
+      const val = typeof data.value === 'string' ? data.value.replace(/"/g, '') : String(data.value)
+      return val || null
+    }
+  } catch { /* ignore */ }
+  return null
+}
 
 async function sendContactNotification(name: string, email: string, subject: string, message: string) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return
+
+  const adminEmail = await getAdminEmail()
+  if (!adminEmail) return
 
   try {
     const { Resend } = await import('resend')
     const resend = new Resend(apiKey)
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@verifydummytickets.com'
 
+    // All user-supplied values are HTML-encoded before insertion
+    const safeName    = escapeHtml(name)
+    const safeEmail   = escapeHtml(email)
+    const safeSubject = escapeHtml(subject)
+    const safeMessage = escapeHtml(message)
+
     await resend.emails.send({
       from: `Verify Dummy Tickets <${fromEmail}>`,
-      to: [ADMIN_NOTIFY_EMAIL],
-      subject: `New Contact Message: ${subject}`,
+      to: [adminEmail],
+      subject: `New Contact Message: ${safeSubject}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #c8143d; margin-bottom: 24px;">New Contact Form Submission</h2>
           <table style="width: 100%; border-collapse: collapse;">
-            <tr><td style="padding: 8px 0; color: #6b7280; width: 100px;">Name</td><td style="padding: 8px 0; font-weight: 600;">${name}</td></tr>
-            <tr><td style="padding: 8px 0; color: #6b7280;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #c8143d;">${email}</a></td></tr>
-            <tr><td style="padding: 8px 0; color: #6b7280;">Subject</td><td style="padding: 8px 0;">${subject}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280; width: 100px;">Name</td><td style="padding: 8px 0; font-weight: 600;">${safeName}</td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Email</td><td style="padding: 8px 0;"><a href="mailto:${safeEmail}" style="color: #c8143d;">${safeEmail}</a></td></tr>
+            <tr><td style="padding: 8px 0; color: #6b7280;">Subject</td><td style="padding: 8px 0;">${safeSubject}</td></tr>
           </table>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
           <p style="color: #6b7280; margin-bottom: 8px;">Message</p>
-          <p style="color: #1f2937; white-space: pre-wrap;">${message}</p>
+          <p style="color: #1f2937; white-space: pre-wrap;">${safeMessage}</p>
         </div>
       `,
     })
-  } catch (err) {
-    console.error('Failed to send contact notification email:', err)
+  } catch {
+    // Fire-and-forget — do not surface email errors to the client
   }
 }
 
@@ -63,9 +95,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   
-  // Rate limiting - 5 submissions per minute per IP
-  const identifier = getRateLimitIdentifier(request)
-  const { success, resetIn } = rateLimit(identifier, 5, 60000)
+  // Rate limiting — 5 contact submissions per minute per IP (Redis-backed)
+  const { success, resetIn } = await rateLimitRequest(request, "contact")
   if (!success) {
     return rateLimitResponse(resetIn)
   }
