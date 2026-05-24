@@ -28,9 +28,17 @@ CREATE INDEX IF NOT EXISTS coupons_code_idx ON coupons (code);
 -- RLS: only service-role can insert/update coupons; public can read for validation
 ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Public can read active coupons"
-  ON coupons FOR SELECT
-  USING (is_active = TRUE);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'coupons' AND policyname = 'Public can read active coupons'
+  ) THEN
+    CREATE POLICY "Public can read active coupons"
+      ON coupons FOR SELECT
+      USING (is_active = TRUE);
+  END IF;
+END $$;
 
 -- ── 4. RPC: atomically increment uses_count ───────────────────────────────────
 CREATE OR REPLACE FUNCTION increment_coupon_uses(p_code TEXT)
