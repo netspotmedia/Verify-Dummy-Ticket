@@ -37,6 +37,7 @@ interface EmailRequest {
     totalAmount?: number
     currency?: string
     resumeUrl?: string
+    statusUrl?: string
   }
 }
 
@@ -242,7 +243,7 @@ const getWelcomeEmailHtml = (name: string, siteName: string, siteLogo: string) =
 `
 }
 
-const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: string, orderId: string, services: string[]) => {
+const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: string, orderId: string, services: string[], statusUrl?: string) => {
   const { logoHtml, brandGradient } = getBranding(siteName, siteLogo)
   const servicesList = services?.map(s => {
     const icon = s === 'flight' ? '✈️' : s === 'hotel' ? '🏨' : '🛡️'
@@ -364,8 +365,18 @@ const getOrderPlacedEmailHtml = (name: string, siteName: string, siteLogo: strin
                   </tr>
                 </table>
                 
-                <p style="color: #9ca3af; font-size: 13px; line-height: 1.6; margin: 24px 0 0; text-align: center;">
-                  Track your order in your <a href="${siteUrl}/dashboard/orders" style="color: #c8143d; text-decoration: underline;">dashboard</a>
+                <!-- Status CTA -->
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td align="center" style="padding: 20px 0 8px;">
+                      <a href="${statusUrl || `${siteUrl}/dashboard/orders`}" style="display: inline-block; background: ${brandGradient}; color: white; text-decoration: none; padding: 13px 32px; border-radius: 50px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(200,20,61,0.3);">
+                        Track My Order →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="color: #9ca3af; font-size: 12px; line-height: 1.6; margin: 8px 0 0; text-align: center;">
+                  No login required — use the link above anytime
                 </p>
               </td>
             </tr>
@@ -819,9 +830,14 @@ export async function POST(request: NextRequest) {
       case 'welcome':
         html = getWelcomeEmailHtml(sanitizedName || 'Customer', siteName, siteLogo)
         break
-      case 'order_placed':
-        html = getOrderPlacedEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '', data?.services || [])
+      case 'order_placed': {
+        const orderNumber = sanitizeInput(data?.orderNumber, 50)
+        const statusUrl = orderNumber
+          ? `${siteUrl}/order/status?ref=${encodeURIComponent(orderNumber)}`
+          : data?.statusUrl || `${siteUrl}/dashboard/orders`
+        html = getOrderPlacedEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '', data?.services || [], statusUrl)
         break
+      }
       case 'order_delivered':
         html = getOrderDeliveredEmailHtml(sanitizedName || 'Customer', siteName, siteLogo, sanitizedOrderId || '', data?.trackingUrl || '')
         break

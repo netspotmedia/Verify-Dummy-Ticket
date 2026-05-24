@@ -47,6 +47,8 @@ interface OrderStore {
   setCurrency: (currency: Currency) => void
   setPaymentMethod: (method: PaymentMethod) => void
   setCaptchaToken: (token: string) => void
+  setCoupon: (code: string, discount: number) => void
+  clearCoupon: () => void
   setIpCountry: (country: string, countryCode: string, isNigeria: boolean) => void
   
   // Navigation
@@ -193,6 +195,16 @@ export const useOrderStore = create<OrderStore>()(
       setCaptchaToken: (captchaToken) =>
         set((state) => ({
           formData: { ...state.formData, captchaToken },
+        })),
+
+      setCoupon: (couponCode, couponDiscount) =>
+        set((state) => ({
+          formData: { ...state.formData, couponCode, couponDiscount },
+        })),
+
+      clearCoupon: () =>
+        set((state) => ({
+          formData: { ...state.formData, couponCode: undefined, couponDiscount: undefined },
         })),
 
       nextStep: () =>

@@ -27,6 +27,9 @@ export interface Traveler {
   title: Title
   firstName: string
   lastName: string
+  nationality?: string
+  passportNumber?: string
+  dateOfBirth?: string
 }
 
 export interface FlightDetails {
@@ -68,6 +71,8 @@ export interface OrderFormData {
   currency: Currency
   paymentMethod: PaymentMethod
   captchaToken?: string
+  couponCode?: string
+  couponDiscount?: number
 }
 
 export interface PriceBreakdown {

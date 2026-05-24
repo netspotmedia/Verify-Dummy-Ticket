@@ -5,20 +5,58 @@ import { getCaptchaSecret } from "@/lib/captcha"
 import { calculatePriceBreakdown } from "@/lib/types"
 import type { ServiceType, DeliverySpeed } from "@/lib/types"
 import { z } from "zod"
+import { rateLimitRequest, rateLimitResponse } from "@/lib/rate-limit"
+
+function sanitize(value: string | undefined, maxLen = 200): string {
+  if (!value) return ""
+  return value
+    .toString()
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .slice(0, maxLen)
+    .trim()
+}
+
+const travelerSchema = z.object({
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  title: z.string().max(20).optional(),
+  nationality: z.string().max(100).optional(),
+  passportNumber: z.string().max(50).optional(),
+  dateOfBirth: z.string().max(20).optional(),
+})
+
+const flightDetailsSchema = z.object({
+  tripType: z.enum(["one_way", "return_trip", "multi_city"]),
+  validity: z.enum(["3d", "7d", "14d", "21d", "30d"]),
+  flightDetails: z.string().min(10).max(2000),
+})
+
+const hotelDetailsSchema = z.object({
+  type: z.enum(["separate_per_traveler", "one_for_all"]),
+})
+
+const insuranceDetailsSchema = z.object({
+  area: z.enum(["schengen", "worldwide_area_1", "worldwide_area_2"]),
+  duration: z.enum(["21d", "3m", "6m", "1y"]),
+})
 
 const orderBodySchema = z.object({
   services: z.array(z.enum(["flight", "hotel", "insurance"])).min(1),
-  email: z.string().email(),
+  email: z.string().email().max(254),
   currency: z.enum(["USD", "NGN"]),
   paymentMethod: z.enum(["paypal", "paystack"]),
   deliveryMethod: z.enum(["normal", "fast", "express"]).optional(),
-  customerCountry: z.string().optional(),
-  customerCountryCode: z.string().optional(),
+  customerCountry: z.string().max(100).optional(),
+  customerCountryCode: z.string().max(10).optional(),
   captchaToken: z.string().min(1),
-  travelers: z.array(z.object({
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-  })).min(1),
+  travelers: z.array(travelerSchema).min(1).max(10),
+  flightDetails: flightDetailsSchema.optional(),
+  hotelDetails: hotelDetailsSchema.optional(),
+  insuranceDetails: insuranceDetailsSchema.optional(),
+  couponCode: z.string().max(50).optional(),
 })
 
 const CAPTCHA_EXPIRY = 5 * 60 * 1000
@@ -50,6 +88,10 @@ function verifyCaptchaToken(token: string, secret: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting — 10 order attempts per minute per IP
+    const rl = await rateLimitRequest(request, "order")
+    if (!rl.success) return rateLimitResponse(rl.resetIn)
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -60,6 +102,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         error: parsed.error.errors[0]?.message ?? "Invalid request body",
       }, { status: 400 })
+    }
+
+    // Validate that service detail objects are present for every selected service
+    const selectedServices: ServiceType[] = parsed.data.services
+    if (selectedServices.includes("flight") && !parsed.data.flightDetails) {
+      return NextResponse.json({ error: "Flight details are required when flight service is selected." }, { status: 400 })
+    }
+    if (selectedServices.includes("hotel") && !parsed.data.hotelDetails) {
+      return NextResponse.json({ error: "Hotel details are required when hotel service is selected." }, { status: 400 })
+    }
+    if (selectedServices.includes("insurance") && !parsed.data.insuranceDetails) {
+      return NextResponse.json({ error: "Insurance details are required when insurance service is selected." }, { status: 400 })
     }
 
 
@@ -86,6 +140,7 @@ export async function POST(request: NextRequest) {
       customerCountryCode,
       deliveryMethod,
       email,
+      couponCode,
     } = body
 
     // Verify captcha
@@ -115,26 +170,72 @@ export async function POST(request: NextRequest) {
       deliverySpeed
     )
 
-    const orderEmail = email || user?.email || "unknown@example.com"
+    const orderEmail = sanitize(email || user?.email || "unknown@example.com", 254)
+
+    // Fetch the live exchange rate from site_settings so we lock it at order time
+    const { data: rateRow } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "currency_conversion_rate")
+      .single()
+    const liveExchangeRate = rateRow?.value ? parseFloat(rateRow.value) : 1650
+
+    // Recalculate total using the live server-side rate (ignores client-supplied totalAmount)
+    const serverPricing = calculatePriceBreakdown(
+      normalizedServices,
+      travelerCount,
+      isNigeria,
+      flightDetails,
+      hotelDetails,
+      insuranceDetails,
+      deliverySpeed,
+    )
+
+    // Server-side coupon validation — apply discount if code is valid
+    let couponDiscountPercent = 0
+    const safeCouponCode = couponCode ? sanitize(couponCode, 50).toUpperCase() : null
+    if (safeCouponCode) {
+      const { data: couponRow } = await supabase
+        .from("coupons")
+        .select("discount_percent, is_active, max_uses, uses_count, expires_at")
+        .eq("code", safeCouponCode)
+        .single()
+
+      if (
+        couponRow?.is_active &&
+        (!couponRow.expires_at || new Date(couponRow.expires_at) >= new Date()) &&
+        (couponRow.max_uses === null || couponRow.uses_count < couponRow.max_uses)
+      ) {
+        couponDiscountPercent = couponRow.discount_percent
+      }
+    }
+
+    const couponDiscountAmount = couponDiscountPercent > 0
+      ? (serverPricing.total * couponDiscountPercent) / 100
+      : 0
+    const finalTotal = Math.max(0, serverPricing.total - couponDiscountAmount)
 
     // ── Build order payload with safe type handling ──────────────────────────
-    // `services` may be stored as TEXT[] or JSONB depending on migration state.
-    // We cast to a plain array; PostgREST handles both column types correctly.
     const orderPayload: Record<string, unknown> = {
-      order_number:   generateOrderNumber(),
-      user_id:        user?.id || null,
-      email:          orderEmail,
-      status:         "pending",
-      currency:       currency || "USD",
-      total_amount:   pricing.total,
-      payment_method: paymentMethod || "paystack",
-      payment_status: "unpaid",
+      order_number:       generateOrderNumber(),
+      user_id:            user?.id || null,
+      email:              orderEmail,
+      status:             "pending",
+      currency:           currency || "USD",
+      total_amount:       finalTotal,
+      payment_method:     paymentMethod || "paystack",
+      payment_status:     "unpaid",
       // Extended columns (added by migrations 007/009/010)
       services:              normalizedServices,
       delivery_method:       deliverySpeed,
-      customer_country:      customerCountry      || null,
-      customer_country_code: customerCountryCode  || null,
-      payment_reference:     paymentReference     || null,
+      customer_country:      sanitize(customerCountry, 100)     || null,
+      customer_country_code: sanitize(customerCountryCode, 10)  || null,
+      payment_reference:     paymentReference                   || null,
+      // Lock the exchange rate used at order creation time (migration 015)
+      exchange_rate_used: liveExchangeRate,
+      // Coupon (migration 016)
+      coupon_code:            safeCouponCode                    || null,
+      coupon_discount_amount: couponDiscountAmount > 0 ? couponDiscountAmount : null,
     }
 
 
@@ -193,13 +294,13 @@ export async function POST(request: NextRequest) {
             if (updateErr) console.warn("Could not update extended columns:", updateErr.message)
           })
 
-        return await finaliseOrder(supabase, orderRetry!, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail)
+        return await finaliseOrder(supabase, orderRetry!, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail, safeCouponCode)
       }
 
       return NextResponse.json({ error: "Failed to create order." }, { status: 500 })
     }
 
-    return await finaliseOrder(supabase, order, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail)
+    return await finaliseOrder(supabase, order, travelers, normalizedServices, flightDetails, hotelDetails, insuranceDetails, orderEmail, safeCouponCode)
 
   } catch (error) {
     console.error("=== UNEXPECTED ERROR ===", error)
@@ -217,7 +318,12 @@ async function finaliseOrder(
   hotelDetails: any,
   insuranceDetails: any,
   orderEmail: string,
+  couponCode?: string | null,
 ) {
+  // Increment coupon uses_count if a valid coupon was applied
+  if (couponCode) {
+    try { await supabase.rpc("increment_coupon_uses", { p_code: couponCode }) } catch {}
+  }
   // ── Travelers ────────────────────────────────────────────────────────────
   if (Array.isArray(travelers) && travelers.length > 0) {
     for (const traveler of travelers) {
@@ -225,15 +331,21 @@ async function finaliseOrder(
         .from("travelers")
         .insert({
           order_id:        order.id,
-          first_name:      traveler.firstName || traveler.first_name || "",
-          last_name:       traveler.lastName  || traveler.last_name  || "",
-          nationality:     traveler.nationality     || null,
-          passport_number: traveler.passportNumber  || traveler.passport_number || null,
-          email:           traveler.email           || orderEmail,
+          first_name:      sanitize(traveler.firstName || traveler.first_name, 100),
+          last_name:       sanitize(traveler.lastName  || traveler.last_name, 100),
+          nationality:     sanitize(traveler.nationality, 100) || null,
+          passport_number: sanitize(traveler.passportNumber || traveler.passport_number, 50) || null,
+          date_of_birth:   traveler.dateOfBirth || null,
+          email:           sanitize(traveler.email || orderEmail, 254),
         })
 
       if (travelerError) {
         console.error("Traveler insert error:", travelerError.message)
+        // Block: if travelers can't be saved the order is unprocessable
+        return NextResponse.json(
+          { error: "Failed to save traveler details. Please try again." },
+          { status: 500 }
+        )
       }
     }
   }

@@ -4,8 +4,9 @@ import { useOrderStore } from "@/lib/order-store"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import type { ServiceType } from "@/lib/types"
-import { ArrowRight, Check } from "lucide-react"
+import { ArrowRight, Check, Sparkles, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 const services = [
   {
@@ -104,15 +105,42 @@ export function StepServices() {
         })}
       </div>
 
+      {/* Upsell prompt — show when only flight is selected and hotel/insurance not added */}
+      {selectedServices.includes("flight") && !selectedServices.includes("hotel") && !selectedServices.includes("insurance") && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+          <Sparkles className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
+          <span>
+            <strong>Tip:</strong> Most embassies also require hotel confirmation. Add it now to avoid delays — 90% of customers bundle flight + hotel.
+          </span>
+        </div>
+      )}
+
+      {selectedServices.includes("hotel") && !selectedServices.includes("insurance") && !selectedServices.includes("flight") && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+          <Sparkles className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-500" />
+          <span>
+            <strong>Tip:</strong> Schengen visas require a flight reservation too. Add it now to have everything in one order.
+          </span>
+        </div>
+      )}
+
       <div className="pt-2">
-        <Button 
-          onClick={nextStep} 
+        <Button
+          onClick={nextStep}
           disabled={selectedServices.length === 0}
           className="w-full h-10 rounded bg-[#c8143d] hover:bg-[#b01030] font-medium text-white"
         >
           Continue
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
+      </div>
+
+      {/* Blog link — contextual help */}
+      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
+        <BookOpen className="h-3 w-3" />
+        <Link href="/blog" className="hover:text-[#c8143d] underline underline-offset-2">
+          Not sure what you need? Read our visa document guide →
+        </Link>
       </div>
     </div>
   )
