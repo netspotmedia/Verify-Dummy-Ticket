@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { requireAdmin } from "@/lib/auth-helpers"
+import { normalizeRole } from "@/lib/admin-role"
 
 export async function GET() {
   try {
@@ -17,7 +18,7 @@ export async function GET() {
       .eq("id", user.id)
       .single()
 
-    if (profile?.role !== "admin") {
+    if (normalizeRole(profile?.role) !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
       .eq("id", user.id)
       .single()
 
-    if (profile?.role !== "admin") {
+    if (normalizeRole(profile?.role) !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

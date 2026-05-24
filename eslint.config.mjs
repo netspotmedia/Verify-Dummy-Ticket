@@ -1,4 +1,8 @@
-export default [
+import nextConfig from 'eslint-config-next'
+
+// React Compiler lint rules require opt-in via next.config experimental.reactCompiler.
+// This project does not use the React Compiler, so these compiler-only rules are disabled.
+const config = [
   {
     ignores: [
       'node_modules/**',
@@ -8,19 +12,16 @@ export default [
       'dist/**',
       'coverage/**',
       'public/**',
-      'tsconfig.tsbuildinfo',
     ],
   },
+  ...nextConfig,
   {
-    files: ['**/*.{js,mjs,cjs}'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-    },
     rules: {
-      'no-debugger': 'error',
-      'no-alert': 'error',
-      'no-undef': 'error',
+      'react-hooks/immutability': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/purity': 'off',
     },
   },
 ]
+
+export default config

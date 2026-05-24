@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const filePath = buildUserScopedPath(user.id, file.name)
 
     const { data, error } = await supabase.storage
-      .from('public')
+      .from('order-documents')
       .upload(filePath, buffer, {
         contentType: file.type,
         upsert: false,
@@ -61,14 +61,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const { data: urlData } = supabase.storage
-      .from('public')
-      .getPublicUrl(filePath)
+    // Return a 1-hour signed URL — documents are private, not publicly accessible
+    const { data: signedData, error: signError } = await supabase.storage
+      .from('order-documents')
+      .createSignedUrl(data.path, 3600)
+
+    if (signError || !signedData) {
+      return NextResponse.json({ error: 'Failed to generate download link' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
       path: data.path,
-      url: urlData.publicUrl,
+      url: signedData.signedUrl,
     })
   } catch (error) {
     console.error('Upload error:', error)

@@ -1,22 +1,17 @@
-"use server"
-
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { rateLimit, getRateLimitIdentifier, rateLimitResponse } from "@/lib/rate-limit"
+import { rateLimitRequest, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
+  const { success, resetIn } = await rateLimitRequest(request, "support")
+  if (!success) return rateLimitResponse(resetIn)
+
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const identifier = getRateLimitIdentifier(request)
-  const { success, resetIn } = rateLimit(identifier, 10, 60000)
-  if (!success) {
-    return rateLimitResponse(resetIn)
   }
   
   try {
@@ -50,7 +45,7 @@ export async function POST(request: NextRequest) {
       .single()
     
     if (ticketError) {
-      console.error("Ticket creation error:", ticketError)
+      console.error("Ticket creation error:", ticketError.code)
       return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 })
     }
     
@@ -89,7 +84,8 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
     
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error("Fetch tickets error:", error.code)
+      return NextResponse.json({ error: "Failed to fetch tickets" }, { status: 500 })
     }
     
     return NextResponse.json(data)

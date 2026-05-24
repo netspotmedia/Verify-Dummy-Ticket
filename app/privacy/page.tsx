@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
             <div className="mx-auto max-w-3xl">
 
               <P>
-                Welcome to {COMPANY} ("{COMPANY}", "we", "us", or "our"). We are committed to protecting
+                Welcome to {COMPANY} (&ldquo;{COMPANY}&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;). We are committed to protecting
                 your personal information and your right to privacy. This Privacy Policy explains how we
                 collect, use, disclose, and safeguard your information when you visit our website{" "}
                 <A href={SITE_URL}>{SITE_URL}</A> and use our services.
@@ -155,7 +155,7 @@ export default function PrivacyPolicyPage() {
               <UL>
                 <LI><strong>Right to access:</strong> Request a copy of the personal data we hold about you</LI>
                 <LI><strong>Right to rectification:</strong> Request correction of inaccurate or incomplete data</LI>
-                <LI><strong>Right to erasure:</strong> Request deletion of your personal data ("right to be forgotten"), subject to certain legal exceptions</LI>
+                <LI><strong>Right to erasure:</strong> Request deletion of your personal data (&ldquo;right to be forgotten&rdquo;), subject to certain legal exceptions</LI>
                 <LI><strong>Right to restrict processing:</strong> Request that we limit how we use your data</LI>
                 <LI><strong>Right to data portability:</strong> Receive your data in a structured, machine-readable format</LI>
                 <LI><strong>Right to object:</strong> Object to processing based on legitimate interests</LI>
@@ -210,7 +210,7 @@ export default function PrivacyPolicyPage() {
                 safeguards are in place in accordance with applicable data protection laws.
               </P>
 
-              <H2>10. Children's Privacy</H2>
+              <H2>10. Children&apos;s Privacy</H2>
               <P>
                 Our services are not directed to individuals under the age of 18. We do not knowingly
                 collect personal data from children. If you are a parent or guardian and believe your
@@ -228,7 +228,7 @@ export default function PrivacyPolicyPage() {
               <H2>12. Changes to This Privacy Policy</H2>
               <P>
                 We may update this Privacy Policy from time to time. The updated version will be indicated
-                by the "Last updated" date at the top of this page. We encourage you to review this
+                by the &ldquo;Last updated&rdquo; date at the top of this page. We encourage you to review this
                 policy periodically. If we make material changes, we will notify you by email or by
                 posting a prominent notice on our website before the changes take effect.
               </P>

@@ -1,9 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-function normalizeRole(role: unknown): string {
-  if (typeof role !== 'string') return ''
-  return role.replace(/"/g, '').trim().toLowerCase()
-}
+import { normalizeRole } from '@/lib/admin-role'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,14 +32,9 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getUser() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
-  // Refresh session first to get updated user_metadata
-  await supabase.auth.refreshSession()
+  // Do not run code between createServerClient and supabase.auth.getUser().
+  // getUser() validates the session with the Supabase Auth server on every call —
+  // no separate refreshSession() call is needed or beneficial here.
   const {
     data: { user },
   } = await supabase.auth.getUser()

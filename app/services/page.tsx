@@ -1,9 +1,27 @@
+import type { Metadata } from "next"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check, Plane, Building2, Shield } from "lucide-react"
 import Link from "next/link"
+
+export const metadata: Metadata = {
+  title: "Services – Verify Dummy Tickets",
+  description: "Flight itineraries, hotel confirmations, and travel insurance dummy documents for visa applications. Fast delivery, verifiable PNR codes.",
+  openGraph: {
+    title: "Our Services – Verify Dummy Tickets",
+    description: "Flight itineraries, hotel confirmations, and travel insurance for visa applications.",
+    type: "website",
+    url: "https://verifydummytickets.com/services",
+    siteName: "Verify Dummy Tickets",
+  },
+  twitter: {
+    card: "summary",
+    title: "Services – Verify Dummy Tickets",
+    description: "Dummy travel documents for visa applications. Fast, verifiable, secure.",
+  },
+}
 
 const services = [
   {

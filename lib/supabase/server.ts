@@ -29,7 +29,5 @@ export async function createClient() {
     },
   )
 
-  await supabase.auth.refreshSession()
-
   return supabase
 }

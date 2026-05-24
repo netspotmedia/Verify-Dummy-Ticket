@@ -11,26 +11,42 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Eye, Plane, Building2, Shield } from "lucide-react"
+import { Eye, Plane, Building2, Shield, ChevronLeft, ChevronRight } from "lucide-react"
 
-export default async function AdminOrdersPage() {
+const PAGE_SIZE = 25
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const { page: pageParam } = await searchParams
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10))
+  const offset = (page - 1) * PAGE_SIZE
+
   const supabase = await createClient()
 
-  const { data: orders, error } = await supabase
-    .from("orders")
-    .select(`
-      id,
-      order_number,
-      email,
-      status,
-      payment_status,
-      payment_method,
-      currency,
-      total_amount,
-      services,
-      created_at
-    `)
-    .order("created_at", { ascending: false })
+  const [{ data: orders, error }, { count: totalCount }] = await Promise.all([
+    supabase
+      .from("orders")
+      .select(`
+        id,
+        order_number,
+        email,
+        status,
+        payment_status,
+        payment_method,
+        currency,
+        total_amount,
+        services,
+        created_at
+      `)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1),
+    supabase.from("orders").select("id", { count: "exact", head: true }),
+  ])
+
+  const totalPages = Math.max(1, Math.ceil((totalCount ?? 0) / PAGE_SIZE))
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -103,7 +119,7 @@ export default async function AdminOrdersPage() {
         <CardHeader>
           <CardTitle>All Orders</CardTitle>
           <CardDescription>
-            {orders?.length ?? 0} total orders
+            {totalCount ?? 0} total orders · page {page} of {totalPages}
             {error && (
               <span className="ml-2 text-destructive text-xs">
                 (Error loading: {error.message})
@@ -113,6 +129,7 @@ export default async function AdminOrdersPage() {
         </CardHeader>
         <CardContent>
           {orders && orders.length > 0 ? (
+            <div className="space-y-4">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -170,6 +187,26 @@ export default async function AdminOrdersPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+            {/* Pagination */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {offset + 1}–{Math.min(offset + PAGE_SIZE, totalCount ?? 0)} of {totalCount ?? 0}
+              </p>
+              <div className="flex items-center gap-2">
+                <Link href={`/admin/orders?page=${page - 1}`}>
+                  <Button variant="outline" size="sm" disabled={page <= 1}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <span className="text-sm">{page} / {totalPages}</span>
+                <Link href={`/admin/orders?page=${page + 1}`}>
+                  <Button variant="outline" size="sm" disabled={page >= totalPages}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">
