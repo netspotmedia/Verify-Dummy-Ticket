@@ -49,7 +49,7 @@ INSERT INTO hero_section (
   'Start Your Order',
   '/order',
   'Chat on WhatsApp',
-  'https://wa.me/2348070076011',
+  'https://wa.me/27687076011',
   'gradient'
 );
 
