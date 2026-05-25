@@ -44,7 +44,7 @@ export default function HeroSectionPage() {
     cta_primary_text: 'Start Your Order',
     cta_primary_link: '/order',
     cta_secondary_text: 'Chat on WhatsApp',
-    cta_secondary_link: 'https://wa.me/2348070076011',
+    cta_secondary_link: 'https://wa.me/27687076011',
     background_type: 'gradient',
     background_color: '',
     background_image_url: '',
