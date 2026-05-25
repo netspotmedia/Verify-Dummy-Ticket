@@ -8,7 +8,7 @@ import { Mail, Phone } from "lucide-react"
 
 export function OrderSupportSection() {
   const { settings } = useSiteSettings()
-  const sitePhone = settings?.site_phone || "+234 800 123 4567"
+  const sitePhone = settings?.site_phone || "+27 68 707 6011"
   const supportEmail = settings?.support_email || "support@example.com"
 
   return (

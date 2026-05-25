@@ -228,7 +228,7 @@ export default function SettingsPage() {
                 <Input
                   value={settings.site_phone || ''}
                   onChange={(e) => setSettings({ ...settings, site_phone: e.target.value })}
-                  placeholder="+234 800 123 4567"
+                  placeholder="+27 68 707 6011"
                 />
               </div>
             </div>

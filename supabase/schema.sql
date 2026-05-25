@@ -76,7 +76,7 @@ VALUES
   ('general', 'site_logo', '{"light": "/logo-light.svg", "dark": "/logo-dark.svg", "favicon": "/favicon.ico"}', 'Site logo URLs', true),
   ('general', 'site_name', '"My Travel Services"', 'Site display name', true),
   ('general', 'site_tagline', '"Flight, Hotel & Travel Insurance for Visa Applications"', 'Site tagline', true),
-  ('general', 'site_phone', '"+234 800 123 4567"', 'Site contact phone number', true),
+  ('general', 'site_phone', '"+27 68 707 6011"', 'Site contact phone number', true),
   ('landing', 'footer_company_name', '"My Travel Services"', 'Footer company name', true),
   ('landing', 'footer_copyright', '"© {year} My Travel Services. All rights reserved."', 'Footer copyright text', true),
   ('landing', 'footer_facebook', '"https://facebook.com"', 'Facebook URL', true),

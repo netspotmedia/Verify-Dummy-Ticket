@@ -196,10 +196,13 @@ export function StepCommon() {
         </div>
       </div>
 
-      {customerCountryCode === "NG" && (
+      {customerCountryCode && (
         <div className="flex items-center gap-2 rounded bg-blue-50 px-2 py-1.5 text-xs text-blue-700">
           <Globe className="h-3 w-3 shrink-0" />
-          <span>Nigerian location detected — prices shown in NGN. Paystack available.</span>
+          {customerCountryCode === "NG"
+            ? <span>Nigeria detected — prices in NGN, Paystack enabled.</span>
+            : <span>Location detected — payment gateway and currency set for your region.</span>
+          }
         </div>
       )}
 
