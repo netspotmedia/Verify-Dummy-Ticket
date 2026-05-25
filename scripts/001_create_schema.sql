@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
 
 -- Insert default site settings
 INSERT INTO public.site_settings (key, value) VALUES
-  ('whatsapp_number', '"+2347067676011"'),
+  ('whatsapp_number', '"+27687076011"'),
   ('support_email', '"support@verifydummytickets.com"'),
   ('paypal_enabled', 'true'),
   ('paystack_enabled', 'true')
