@@ -148,7 +148,7 @@ export default function ProfilePage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+234 800 000 0000"
+                placeholder="+1 555 000 0000"
               />
             </div>
 

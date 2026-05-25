@@ -48,10 +48,10 @@ export default function AdminSettingsPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [settings, setSettings] = useState<SiteSettings>({
     site_name: process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
-    site_phone: process.env.NEXT_PUBLIC_SITE_PHONE || "+234 800 123 4567",
+    site_phone: process.env.NEXT_PUBLIC_SITE_PHONE || "+27 68 707 6011",
     support_email: "support@example.com",
-    support_phone: "+234 800 123 4567",
-    whatsapp_number: "+234 800 123 4567",
+    support_phone: "+27 68 707 6011",
+    whatsapp_number: "+27 68 707 6011",
     address: "",
     logo_url: "",
     footer_company_name: process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
@@ -86,7 +86,7 @@ export default function AdminSettingsPage() {
 
       setSettings({
         site_name: settingsMap.site_name || process.env.NEXT_PUBLIC_SITE_NAME || "My Travel Services",
-        site_phone: settingsMap.site_phone || process.env.NEXT_PUBLIC_SITE_PHONE || "+234 800 123 4567",
+        site_phone: settingsMap.site_phone || process.env.NEXT_PUBLIC_SITE_PHONE || "+27 68 707 6011",
         support_email: settingsMap.support_email || "",
         support_phone: settingsMap.support_phone || "",
         whatsapp_number: settingsMap.whatsapp_number || "",
@@ -345,7 +345,7 @@ export default function AdminSettingsPage() {
                   type="tel"
                   value={settings.support_phone}
                   onChange={(e) => setSettings({ ...settings, support_phone: e.target.value })}
-                  placeholder="+234 800 000 0000"
+                  placeholder="+27 68 707 6011"
                 />
               </div>
 
@@ -356,7 +356,7 @@ export default function AdminSettingsPage() {
                   type="tel"
                   value={settings.whatsapp_number}
                   onChange={(e) => setSettings({ ...settings, whatsapp_number: e.target.value })}
-                  placeholder="+234 800 000 0000"
+                  placeholder="+27 68 707 6011"
                 />
               </div>
             </div>

@@ -163,7 +163,7 @@ function StatusContent({
 function OrderConfirmationContent() {
   const searchParams = useSearchParams()
   const { settings } = useSiteSettings()
-  const sitePhone = settings?.site_phone || "+234 800 123 4567"
+  const sitePhone = settings?.site_phone || "+27 68 707 6011"
   const supportEmail = settings?.support_email || "support@example.com"
   const orderId = searchParams.get("id")
   const paymentParam = searchParams.get("payment") as PaymentStatus

@@ -27,7 +27,7 @@ const STEP_TITLES: Record<string, { title: string; description: string }> = {
 export function OrderWizard() {
   const { currentStepIndex, activeSteps, formData, goToStep } = useOrderStore()
   const { settings } = useSiteSettings()
-  const whatsappNumber = (settings?.site_phone || "+2348001234567").replace(/\D/g, "")
+  const whatsappNumber = (settings?.site_phone || "+27687076011").replace(/\D/g, "")
   const progress = ((currentStepIndex + 1) / activeSteps.length) * 100
 
   const currentStep = activeSteps[currentStepIndex]

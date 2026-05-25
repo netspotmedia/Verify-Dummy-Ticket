@@ -39,7 +39,7 @@ const defaultSettings: SiteSettings = {
   },
   site_name: "My Travel Services",
   site_tagline: "Flight, Hotel & Travel Insurance for Visa Applications",
-  site_phone: "+234 800 123 4567",
+  site_phone: "+27 68 707 6011",
   support_email: "support@example.com",
   site_url: "",
   order_page_image: "",
